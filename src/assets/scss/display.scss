@@ -1,0 +1,327 @@
+
+
+
+
+// .container {
+//   display: flex;
+//   height: 100vh;
+//   overflow: hidden;
+// }
+
+// .sidebar {
+//   width: 80px; /* Adjust width to fit icons */
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   padding: 20px;
+//   background-color: #f0f0f0;
+// }
+
+// .icon-button {
+//   margin-bottom: 20px;
+//   padding: 8px;
+// }
+
+// .menu-icon,
+// .device-icon,
+// .hour-icon {
+//   font-size: 30px; /* Adjust icon size */
+//   color: #333; /* Default color */
+// }
+
+// .create-display-btn {
+//   color: #007bff; /* Icon color */
+// }
+
+// .create-display-btn:hover {
+//   color: #0056b3; /* Hover color */
+// }
+
+// .content {
+//   flex: 1;
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   position: relative;
+// }
+
+// .template {
+//   border: 3px solid black;
+//   width: 1280px;
+//   height: 720px;
+// }
+
+// .popup {
+//   position: fixed; /* Fixed to viewport */
+//   top: 0;
+//   left: 0;
+//   right: 0;
+//   bottom: 0;
+//   background: rgba(0, 0, 0, 0.5);
+//   display: flex;
+//   justify-content: center;
+//   align-items: center;
+//   visibility: hidden;
+//   z-index: 1000; /* Ensure popup is on top */
+// }
+
+// .popup.show {
+//   visibility: visible;
+// }
+
+// .popup-content {
+//   background: white;
+//   padding: 20px;
+//   border-radius: 5px;
+//   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+//   max-width: 90%; /* Responsive width */
+//   width: 400px; /* Fixed width */
+// }
+
+// .popup-content label {
+//   display: block;
+//   margin-bottom: 10px;
+// }
+
+// .popup-content button {
+//   margin-top: 20px;
+//   padding: 10px 20px;
+//   background-color: #007bff;
+//   color: white;
+//   border: none;
+//   border-radius: 4px;
+//   cursor: pointer;
+// }
+
+// .popup-content button:hover {
+//   background-color: #0056b3;
+// }
+
+// .menu-details,
+// .store-device-details {
+//   margin-top: 20px;
+// }
+
+// .menu-details h3,
+// .store-device-details h3 {
+//   margin: 0 0 10px 0;
+// }
+
+// .menu-details p,
+// .store-device-details p {
+//   margin: 0 0 10px 0;
+// }
+
+// .menu-details ul {
+//   list-style-type: none;
+//   padding: 0;
+// }
+
+// .menu-details ul li {
+//   margin: 5px 0;
+// }
+
+// .time-inputs {
+//   display: flex;
+//   gap: 10px;
+//   justify-content: center;
+//   margin-top: 10px;
+// }
+
+// .time-input {
+//   width: 60px;
+//   padding: 10px;
+//   font-size: 16px;
+//   border: 1px solid #ccc;
+//   border-radius: 4px;
+//   text-align: center;
+// }
+
+// .time-input::placeholder {
+//   text-align: center;
+// }
+
+// .time-input:focus {
+//   outline: none;
+//   border-color: #007bff;
+//   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+// }
+
+
+.container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f0f0f0;
+}
+
+.icon-button {
+  margin-bottom: 20px;
+  padding: 8px;
+}
+
+.menu-icon,
+.device-icon,
+.hour-icon {
+  font-size: 30px;
+  color: #333;
+}
+
+.create-display-btn {
+  color: #007bff;
+}
+
+.create-display-btn:hover {
+  color: #0056b3;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  
+}
+
+.template {
+  border: 3px solid black;
+  width: 1280px;
+  height: 720px;
+ 
+}
+
+
+
+.popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+  z-index: 1000;
+}
+
+.popup.show {
+  visibility: visible;
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: 90%;
+  width: 400px;
+}
+
+.popup-content label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.popup-content button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.popup-content button:hover {
+  background-color: #0056b3;
+}
+
+.menu-details,
+.store-device-details {
+  margin-top: 20px;
+}
+
+.menu-details h3,
+.store-device-details h3 {
+  margin: 0 0 10px 0;
+}
+
+.menu-details p,
+.store-device-details p {
+  margin: 0 0 10px 0;
+}
+
+.menu-details ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu-details ul li {
+  margin: 5px 0;
+}
+
+.time-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.time-input {
+  width: 60px;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.time-input::placeholder {
+  text-align: center;
+}
+
+.time-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f0f0f0;
+}
