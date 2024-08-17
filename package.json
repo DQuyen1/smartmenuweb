@@ -2,7 +2,7 @@
   "name": "berry-free-material-react-cra",
   "version": "3.4.2",
   "private": true,
-  "homepage": "https://berrydashboard.io/free",
+  "homepage": "./",
   "dependencies": {
     "16": "^0.0.2",
     "@cloudinary/react": "^1.13.0",
