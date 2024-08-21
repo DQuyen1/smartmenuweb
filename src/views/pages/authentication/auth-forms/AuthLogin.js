@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 // material-ui
 import { useTheme } from '@mui/material/styles';
@@ -64,8 +64,8 @@ const FirebaseLogin = ({ ...others }) => {
 
       <Formik
         initialValues={{
-          userName: 'Username',
-          password: 'Password',
+          userName: '',
+          password: '',
           submit: null
         }}
         onSubmit={async (values, { setStatus, setSubmitting }) => {
@@ -167,7 +167,7 @@ const FirebaseLogin = ({ ...others }) => {
                 label="Remember me"
               />
               <Typography variant="subtitle1" color="secondary" sx={{ textDecoration: 'none', cursor: 'pointer' }}>
-                Forgot Password?
+                <Link to="/pages/forgot-password">Forgot Password?</Link>
               </Typography>
             </Stack>
             {errors.submit && (
