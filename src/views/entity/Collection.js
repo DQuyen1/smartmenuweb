@@ -19,8 +19,12 @@ import {
   InputAdornment,
   Snackbar,
   CardMedia,
+  MenuItem,
   FormHelperText,
-  Input
+  Input,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { AddCircleOutlined, Edit, Delete, Visibility } from '@mui/icons-material';
@@ -50,11 +54,21 @@ const EntityCollection = () => {
     collectionDescription: '',
     collectionBackgroundImgPath: ''
   });
-  const filteredCollectionData = collectionData.filter((collection) => {
-    const collectionNameMatch = collection.collectionName?.toLowerCase().includes(filter.toLowerCase());
-    const brandIdMatch = collection.brandId?.toString().includes(filter.toLowerCase());
-    return collectionNameMatch || brandIdMatch;
-  });
+  const [selectedBrandId, setSelectedBrandId] = useState('');
+  const handleBrandChange = (event) => {
+    setSelectedBrandId(event.target.value);
+  };
+  //  const filteredCollectionData = collectionData.filter((collection) => {
+  //   const collectionNameMatch = collection.collectionName?.toLowerCase().includes(filter.toLowerCase());
+  //   const brandIdMatch = selectedBrandId ? collection.brandId?.toString() === selectedBrandId : true;
+  //   return collectionNameMatch && brandIdMatch;
+  // });
+
+  const filteredCollectionData = collectionData.filter(
+    (collection) =>
+      collection.collectionName.toLowerCase().includes(filter.toLowerCase()) &&
+      (selectedBrandId === '' || collection.brandId === parseInt(selectedBrandId))
+  );
   const [validationErrors, setValidationErrors] = useState({});
   const [collectionBackgroundImgPath, setCollectionBackgroundImgPath] = useState(false);
 
@@ -254,30 +268,38 @@ const EntityCollection = () => {
     <>
       <MainCard title="Collections">
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            variant="outlined"
-            sx={{
-              marginBottom: '16px'
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: '16px' }}>
+            <TextField
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              variant="outlined"
+              sx={{ marginBottom: '16px' }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <FormControl sx={{ mb: 2, width: '200px' }}>
+              <InputLabel id="brand-filter-label">Brand</InputLabel>
+              <Select label="Brand" value={selectedBrandId} onChange={handleBrandChange} labelId="brand-filter-label">
+                <MenuItem value="">All Brands</MenuItem>
+                {brandData.map((brand) => (
+                  <MenuItem key={brand.brandId} value={brand.brandId}>
+                    {brand.brandName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           <Button
             variant="contained"
             color="success"
             onClick={() => setShowAddCollectionDialog(true)}
             startIcon={<AddCircleOutlined />}
-            sx={{
-              mb: 2,
-              color: 'white'
-            }}
+            sx={{ mb: 2, color: 'white' }}
           >
             Add Collection
           </Button>
@@ -368,6 +390,8 @@ const EntityCollection = () => {
             label="Collection Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newCollectionData.collectionDescription}
             onChange={handleAddCollectionChange}
@@ -415,6 +439,8 @@ const EntityCollection = () => {
             label="Collection Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={editingCollection?.collectionDescription || ''}
             onChange={handleEditChange}

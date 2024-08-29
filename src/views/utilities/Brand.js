@@ -3,7 +3,6 @@ import MainCard from 'ui-component/cards/MainCard';
 import axios from 'axios';
 import {
   Box,
-  Grid,
   Typography,
   TextField,
   InputAdornment,
@@ -24,7 +23,8 @@ import {
   DialogActions,
   CircularProgress,
   Input,
-  FormHelperText
+  FormHelperText,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Edit, Delete } from '@mui/icons-material';
@@ -52,6 +52,8 @@ const UtilitiesBrand = () => {
   const [filter, setFilter] = useState('');
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [brandImage, setBrandImage] = useState(false);
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const validateNewBrandData = () => {
     const errors = {};
@@ -115,6 +117,7 @@ const UtilitiesBrand = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await axios.post('https://3.1.81.96/api/Brands', { ...newBrandData, brandImage: brandImage });
       if (response.status === 201) {
@@ -154,6 +157,8 @@ const UtilitiesBrand = () => {
         position: 'right',
         backgroundColor: 'linear-gradient(to right, #ff0000, #ff6347)'
       }).showToast();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -290,8 +295,15 @@ const UtilitiesBrand = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=10');
-      setBrandData(response.data);
+      const response = await axios.get('https://3.1.81.96/api/Brands', {
+        params: {
+          pageSize: rowsPerPage,
+          pageNumber: page
+        }
+      });
+      const sortedData = response.data.sort((a, b) => new Date(b.brandId) - new Date(a.brandId));
+      setBrandData(sortedData);
+      setPage(0);
     } catch (error) {
       console.error('Error fetching brand data:', error);
       setError(error.message);
@@ -303,12 +315,6 @@ const UtilitiesBrand = () => {
   useEffect(() => {
     fetchBrandData();
   }, []);
-
-  const filteredBrandData = brandData.filter((brand) => {
-    return (
-      brand.brandName.toLowerCase().includes(filter.toLowerCase()) || brand.brandContactEmail.toLowerCase().includes(filter.toLowerCase())
-    );
-  });
 
   const handleImageUpload = async (event) => {
     const userId = 469;
@@ -337,6 +343,15 @@ const UtilitiesBrand = () => {
         console.log('Result hihi: ', result.data.secure_url);
       });
     }
+  };
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -377,46 +392,48 @@ const UtilitiesBrand = () => {
                 <TableRow>
                   <TableCell>Brand Image</TableCell>
                   <TableCell>Brand Name</TableCell>
-                  <TableCell>Brand Description</TableCell>
                   <TableCell>Contact Email</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredBrandData.map((brand) => (
-                  <TableRow key={brand.brandId}>
-                    <TableCell>
-                      <Avatar src={brand.brandImage} sx={{ width: 56, height: 56 }} />
-                    </TableCell>
-                    <TableCell>{brand.brandName}</TableCell>
-                    <TableCell>{brand.brandDescription}</TableCell>
-                    <TableCell>{brand.brandContactEmail}</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={1}>
-                        <Button
-                          variant="contained"
-                          color="info"
-                          size="small"
-                          onClick={() => handleOpenUpdateDialog(brand)}
-                          startIcon={<Edit />}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="error"
-                          size="small"
-                          onClick={() => handleOpenDeleteConfirmDialog(brand)}
-                          startIcon={<Delete />}
-                        >
-                          Delete
-                        </Button>
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {brandData
+                  .filter(
+                    (brand) =>
+                      brand.brandName.toLowerCase().includes(filter.toLowerCase()) ||
+                      brand.brandContactEmail.toLowerCase().includes(filter.toLowerCase())
+                  )
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((brand) => (
+                    <TableRow key={brand.brandId}>
+                      <TableCell>
+                        <Avatar src={brand.brandImage} sx={{ width: 56, height: 56 }} />
+                      </TableCell>
+                      <TableCell>{brand.brandName}</TableCell>
+                      <TableCell>{brand.brandContactEmail}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
+                          <Button variant="contained" color="info" size="small" onClick={() => handleOpenUpdateDialog(brand)}>
+                            <Edit />
+                          </Button>
+                          <Button variant="contained" color="error" size="small" onClick={() => handleOpenDeleteConfirmDialog(brand)}>
+                            <Delete />
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              count={brandData.length}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[3, 5, 10]}
+            />
           </TableContainer>
         )}
       </MainCard>
@@ -442,6 +459,8 @@ const UtilitiesBrand = () => {
             label="Brand Description"
             name="brandDescription"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newBrandData.brandDescription}
             onChange={handleChange}
@@ -473,7 +492,9 @@ const UtilitiesBrand = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddBrandDialog}>Cancel</Button>
-          <Button onClick={handleAddBrand}>Add</Button>
+          <Button onClick={handleAddBrand} disabled={isLoading} variant="contained" color="success">
+            <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -486,6 +507,8 @@ const UtilitiesBrand = () => {
             label="Brand Description"
             name="brandDescription"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={updateBrandData.brandDescription}
             onChange={handleUpdateChange}
@@ -507,7 +530,9 @@ const UtilitiesBrand = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseUpdateBrandDialog}>Cancel</Button>
-          <Button onClick={handleUpdateBrand}>Update</Button>
+          <Button onClick={handleUpdateBrand} variant="contained">
+            Update
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -518,10 +543,8 @@ const UtilitiesBrand = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteConfirmDialog}>Cancel</Button>
-          <Button onClick={handleDeleteBrand}>
-            <Typography color="error" sx={{ fontWeight: 'bold' }}>
-              Delete
-            </Typography>
+          <Button onClick={handleDeleteBrand} variant="contained" color="error">
+            <Typography sx={{ fontWeight: 'bold' }}>Delete</Typography>
           </Button>
         </DialogActions>
       </Dialog>
