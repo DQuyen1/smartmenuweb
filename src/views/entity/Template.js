@@ -26,7 +26,10 @@ import {
   DialogContentText,
   DialogActions,
   Input,
-  FormHelperText
+  FormHelperText,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Delete, Edit } from '@mui/icons-material';
@@ -56,6 +59,11 @@ const EntityTemplate = () => {
   const [showEditTemplateDialog, setShowEditTemplateDialog] = useState(false);
   const [editTemplateData, setEditTemplateData] = useState({});
   const [templateImgPath, setTemplateImgPath] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState('');
+
+  const handleBrandChange = (event) => {
+    setSelectedBrand(event.target.value);
+  };
 
   const validateNewTemplateData = () => {
     const errors = {};
@@ -94,7 +102,6 @@ const EntityTemplate = () => {
     if (!validateNewTemplateData()) {
       return;
     }
-
     try {
       const response = await axios.post('https://3.1.81.96/api/Templates', { ...newTemplateData, templateImgPath: templateImgPath });
       if (response.status === 201) {
@@ -105,8 +112,8 @@ const EntityTemplate = () => {
         setShowAddTemplateDialog(false);
 
         console.log('Template added successfully:', response.data);
-
-        navigate(`/pages/template/${response.data.templateId}`, { state: { templateType: response.data.templateType } });
+        // navigate('/pages/template', { state: { templateData: response.data.templateId } });
+        navigate(`/pages/template/${response.data.templateId}`);
       } else {
         console.error('Error creating template:', response);
         setError(`Error: ${response.statusText}`);
@@ -250,8 +257,10 @@ const EntityTemplate = () => {
     fetchData();
   }, []);
 
-  const filteredTemplates = templateData.filter((template) => template.templateName.toLowerCase().includes(filter.toLowerCase()));
-
+  const filteredTemplates = templateData.filter(
+    (template) =>
+      template.templateName.toLowerCase().includes(filter.toLowerCase()) && (selectedBrand === '' || template.brandId === selectedBrand)
+  );
   const handleImageUpload = async (event) => {
     const userId = 469;
     const file = event.target.files[0];
@@ -298,19 +307,32 @@ const EntityTemplate = () => {
     <>
       <MainCard title="Templates">
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            variant="outlined"
-            sx={{ marginBottom: '16px' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: '16px' }}>
+            <TextField
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              variant="outlined"
+              sx={{ marginBottom: '16px' }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <FormControl sx={{ mb: 2, width: '200px' }}>
+              <InputLabel id="brand-filter-label">Brand</InputLabel>
+              <Select labelId="brand-filter-label" label="Brand" value={selectedBrand} onChange={handleBrandChange}>
+                <MenuItem value="">All Brands</MenuItem>
+                {brandData.map((brand) => (
+                  <MenuItem key={brand.brandId} value={brand.brandId}>
+                    {brand.brandName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           <Button
             variant="contained"
             color="success"
@@ -444,6 +466,8 @@ const EntityTemplate = () => {
             label="Template Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newTemplateData.templateDescription}
             onChange={handleAddTemplateChange}
@@ -513,6 +537,8 @@ const EntityTemplate = () => {
             label="Template Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={editTemplateData.templateDescription}
             onChange={handleEditTemplateChange}

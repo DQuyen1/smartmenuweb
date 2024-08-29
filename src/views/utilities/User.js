@@ -20,17 +20,16 @@ import {
   Select,
   FormControl,
   InputLabel,
-  InputAdornment
+  InputAdornment,
+  TablePagination
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
 import axios from 'axios';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import SearchIcon from '@mui/icons-material/Search';
-import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
+import { AddCircleOutlined, Search } from '@mui/icons-material';
 
 const UtilitiesBrandStaff = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +58,8 @@ const UtilitiesBrandStaff = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [brandFilter, setBrandFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   const validateNewUserData = () => {
     const errors = {};
@@ -150,6 +151,17 @@ const UtilitiesBrandStaff = () => {
     fetchData();
   }, []);
 
+  const handleBrandFilterChange = (event) => {
+    setBrandFilter(event.target.value);
+    if (!event.target.value) {
+      setBrandFilter(null);
+    }
+  };
+
+  const handleStatusFilterChange = (event) => {
+    setStatusFilter(event.target.value);
+  };
+
   const getRoleName = (role) => {
     switch (role) {
       case 1:
@@ -220,6 +232,7 @@ const UtilitiesBrandStaff = () => {
     if (!validateNewUserData()) {
       return;
     }
+    setIsLoading(true);
     try {
       await axios.post('https://3.1.81.96/api/Auth/Register', newUser);
       Toastify({
@@ -281,10 +294,11 @@ const UtilitiesBrandStaff = () => {
   };
 
   const handleDeleteUser = async () => {
+    setIsLoading(true);
     try {
       await axios.delete(`https://3.1.81.96/api/Users/${userToDelete.userId}`);
       Toastify({
-        text: 'User deleted successfully!',
+        text: 'User disabled successfully!',
         duration: 3000,
         gravity: 'top',
         position: 'right',
@@ -304,27 +318,68 @@ const UtilitiesBrandStaff = () => {
     setSearchTerm(e.target.value);
   };
 
-  const filteredBrandData = brandData.filter((staff) => staff.userName.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredBrandData = brandData
+    .filter((staff) => {
+      const matchesSearchTerm =
+        staff.userName.toLowerCase().includes(searchTerm.toLowerCase()) || staff.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+      return (
+        matchesSearchTerm && // Lọc theo searchTerm
+        (brandFilter ? staff.brandName?.toLowerCase().includes(brandFilter.toLowerCase()) : true) &&
+        (statusFilter ? staff.isDeleted === (statusFilter === 'active') : true)
+      );
+    })
+    .sort((a, b) => {
+      const isAUnassignedEnabled = a.brandName === 'Unassigned' && !a.isDeleted;
+      const isBUnassignedEnabled = b.brandName === 'Unassigned' && !b.isDeleted;
+
+      if (isAUnassignedEnabled && !isBUnassignedEnabled) {
+        return -1; // a comes before b
+      } else if (!isAUnassignedEnabled && isBUnassignedEnabled) {
+        return 1; // b comes before a
+      }
+      return 0; // keep original order
+    });
 
   return (
     <MainCard title="Brand Staff Table">
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <TextField
-              label="Search"
-              variant="outlined"
-              value={searchTerm}
-              onChange={handleSearchInputChange}
-              sx={{ marginBottom: '16px' }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                )
-              }}
-            />
+            <Box display="flex" alignItems="center" gap={2}>
+              <TextField
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearchInputChange}
+                sx={{ marginBottom: '16px' }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search />
+                    </InputAdornment>
+                  )
+                }}
+              />
+              <FormControl sx={{ mb: 2, width: '200px' }}>
+                <InputLabel id="brand-filter-label">Brand</InputLabel>
+                <Select labelId="brand-filter-label" value={brandFilter} onChange={handleBrandFilterChange} label="Brand">
+                  <MenuItem value={null}>All Brands</MenuItem>
+                  {brands.map((brand) => (
+                    <MenuItem key={brand.brandId} value={brand.brandName}>
+                      {brand.brandName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl sx={{ mb: 2, width: '200px' }}>
+                <InputLabel id="status-filter-label">Status</InputLabel>
+                <Select labelId="status-filter-label" value={statusFilter} onChange={handleStatusFilterChange} label="Status">
+                  <MenuItem value={null}>All</MenuItem>
+                  <MenuItem value="inactive">Active</MenuItem>
+                  <MenuItem value="active">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
             <Button
               variant="contained"
               color="success"
@@ -335,54 +390,44 @@ const UtilitiesBrandStaff = () => {
               Add User
             </Button>
           </Box>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <CircularProgress />
-            </Box>
-          ) : brandData.length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>User Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Brand Name</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Actions</TableCell>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>User Name</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Brand Name</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredBrandData.map((staff) => (
+                  <TableRow key={staff.userId} hover>
+                    <TableCell>{staff.userName}</TableCell>
+                    <TableCell>{getRoleName(staff.role)}</TableCell>
+                    <TableCell>{staff.brandName}</TableCell>
+                    <TableCell sx={{ color: staff.isDeleted ? 'red' : 'green' }}>{staff.isDeleted ? 'Inactive' : 'Active'}</TableCell>
+                    <TableCell sx={{ display: 'flex', gap: 1 }}>
+                      <Button size="small" color="primary" onClick={() => handleViewDetails(staff)} variant="contained">
+                        View Details
+                      </Button>
+                      {staff.brandName === 'Unassigned' && staff.isDeleted === false && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button size="small" color="success" onClick={() => handleAssignOpen(staff)} variant="contained">
+                            <Typography sx={{ color: 'white' }}>Assign</Typography>
+                          </Button>
+                          <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
+                            Disable
+                          </Button>
+                        </Box>
+                      )}
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredBrandData.map((staff) => (
-                    <TableRow key={staff.userId} hover>
-                      <TableCell>{staff.userName}</TableCell>
-                      <TableCell>{staff.email}</TableCell>
-                      <TableCell>{getRoleName(staff.role)}</TableCell>
-                      <TableCell>{staff.brandName}</TableCell>
-                      <TableCell sx={{ color: staff.isDeleted ? 'red' : 'green' }}>{staff.isDeleted ? 'Disabled' : 'Enabled'}</TableCell>
-                      <TableCell sx={{ display: 'flex', gap: 1 }}>
-                        <Button size="small" color="primary" onClick={() => handleViewDetails(staff)}>
-                          View Details
-                        </Button>
-                        {staff.brandName === 'Unassigned' && staff.isDeleted === false && (
-                          <Box>
-                            <Button size="small" color="success" onClick={() => handleAssignOpen(staff)}>
-                              Assign
-                            </Button>
-                            <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)}>
-                              Disable
-                            </Button>
-                          </Box>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          ) : (
-            <Typography>No brand data found.</Typography>
-          )}
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </Grid>
       </Grid>
       <Dialog open={open} onClose={handleClose}>
@@ -436,8 +481,8 @@ const UtilitiesBrandStaff = () => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="primary">
-            Submit
+          <Button onClick={handleSubmit} color="success" variant="contained" disabled={isLoading}>
+            <Typography color={'white'}>Submit</Typography>
           </Button>
         </DialogActions>
       </Dialog>
@@ -452,6 +497,7 @@ const UtilitiesBrandStaff = () => {
               value={assignData.brandId}
               onChange={handleAssignChange}
               error={!!validationErrors.brandId}
+              fullWidth
             >
               {brands.map((brand) => (
                 <MenuItem key={brand.brandId} value={brand.brandId}>
@@ -474,6 +520,7 @@ const UtilitiesBrandStaff = () => {
                 value={assignData.storeId}
                 onChange={handleAssignChange}
                 error={!!validationErrors.storeId}
+                fullWidth
               >
                 {filteredStores.map((store) => (
                   <MenuItem key={store.storeId} value={store.storeId}>
@@ -498,8 +545,8 @@ const UtilitiesBrandStaff = () => {
           <Button onClick={handleAssignClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleAssignSubmit} color="primary">
-            Assign
+          <Button onClick={handleAssignSubmit} color="success" variant="contained" disabled={isLoading}>
+            <Typography color={'white'}>{isLoading ? 'Assigning...' : 'Assign'}</Typography>
           </Button>
         </DialogActions>
       </Dialog>
@@ -510,8 +557,8 @@ const UtilitiesBrandStaff = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteClose}>Cancel</Button>
-          <Button onClick={handleDeleteUser} color="error">
-            Disable
+          <Button onClick={handleDeleteUser} color="error" variant="contained" disabled={isLoading}>
+            {isLoading ? 'Disabling...' : 'Disable'}
           </Button>
         </DialogActions>
       </Dialog>

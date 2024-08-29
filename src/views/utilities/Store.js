@@ -22,12 +22,16 @@ import {
   Typography,
   InputAdornment,
   CircularProgress,
-  Box
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
+import { AddCircleOutlined, Visibility, Delete } from '@mui/icons-material';
 
 const UtilitiesShadow = () => {
   const [storeData, setStoreData] = useState([]);
@@ -40,6 +44,8 @@ const UtilitiesShadow = () => {
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [storeToDelete, setStoreToDelete] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const navigate = useNavigate();
   const [newStoreData, setNewStoreData] = useState({
     brandId: '',
@@ -77,6 +83,7 @@ const UtilitiesShadow = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       const response = await axios.post('https://3.1.81.96/api/Stores', newStoreData);
       if (response.status === 201) {
@@ -104,6 +111,8 @@ const UtilitiesShadow = () => {
     } catch (error) {
       console.error('Error creating store:', error);
       setError(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -145,6 +154,7 @@ const UtilitiesShadow = () => {
   }, []);
 
   const handleDelete = async () => {
+    setIsLoading(true);
     try {
       const response = await axios.delete(`https://3.1.81.96/api/Stores/${storeToDelete.storeId}`);
 
@@ -166,6 +176,8 @@ const UtilitiesShadow = () => {
     } catch (error) {
       console.error('Error deleting store:', error);
       setError(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -177,33 +189,78 @@ const UtilitiesShadow = () => {
     setSearchQuery(event.target.value);
   };
 
-  const filteredStoreData = storeData.filter((store) => {
-    const lowercasedQuery = searchQuery.toLowerCase();
-    return (
-      store.brandName.toLowerCase().includes(lowercasedQuery) ||
-      store.storeCode.toLowerCase().includes(lowercasedQuery) ||
-      store.storeName.toLowerCase().includes(lowercasedQuery) ||
-      store.storeLocation.toLowerCase().includes(lowercasedQuery)
-    );
-  });
+  const handleBrandFilterChange = (event) => {
+    setSelectedBrand(event.target.value);
+  };
+
+  const handleStatusFilterChange = (event) => {
+    setStatusFilter(event.target.value);
+  };
+
+  const filteredStoreData = storeData
+    .filter((store) => {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      const matchesQuery =
+        store.brandName.toLowerCase().includes(lowercasedQuery) ||
+        store.storeCode.toLowerCase().includes(lowercasedQuery) ||
+        store.storeName.toLowerCase().includes(lowercasedQuery) ||
+        store.storeLocation.toLowerCase().includes(lowercasedQuery);
+
+      const matchesBrandFilter = selectedBrand ? store.brandId === selectedBrand : true;
+
+      const matchesStatus =
+        statusFilter === '' || (statusFilter === 'active' && store.storeStatus) || (statusFilter === 'inactive' && !store.storeStatus);
+
+      return matchesQuery && matchesStatus && matchesBrandFilter;
+    })
+    .sort((a, b) => {
+      if (a.storeId > b.storeId) {
+        return -1;
+      }
+      if (a.storeId < b.storeId) {
+        return 1;
+      }
+      return 0;
+    });
 
   return (
     <div>
       <MainCard title="Store Table">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <TextField
-            variant="outlined"
-            value={searchQuery}
-            onChange={handleSearchChange}
-            sx={{ marginBottom: '16px' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: '16px' }}>
+            <TextField
+              variant="outlined"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              sx={{ marginBottom: '16px' }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <FormControl sx={{ mb: 2, width: '200px' }}>
+              <InputLabel id="brand-filter-label">Brand</InputLabel>
+              <Select labelId="brand-filter-label" value={selectedBrand} onChange={handleBrandFilterChange} label="Brand">
+                <MenuItem value="">All Brands</MenuItem>
+                {brandData.map((brand) => (
+                  <MenuItem key={brand.brandId} value={brand.brandId}>
+                    {brand.brandName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ mb: 2, width: '200px' }}>
+              <InputLabel id="status-filter-label">Status</InputLabel>
+              <Select labelId="status-filter-label" value={statusFilter} onChange={handleStatusFilterChange} label="Status">
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="active">Active</MenuItem>
+                <MenuItem value="inactive">Inactive</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
           <Button
             variant="contained"
             onClick={() => setShowAddStoreDialog(true)}
@@ -225,10 +282,9 @@ const UtilitiesShadow = () => {
             <Table sx={{ minWidth: 650 }}>
               <TableHead>
                 <TableRow>
-                  <TableCell>Brand Name</TableCell>
                   <TableCell>Store Code</TableCell>
                   <TableCell>Store Name</TableCell>
-                  <TableCell>Location</TableCell>
+                  <TableCell>Brand</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Actions</TableCell>
                 </TableRow>
@@ -236,27 +292,25 @@ const UtilitiesShadow = () => {
               <TableBody>
                 {filteredStoreData.map((store) => (
                   <TableRow key={store.storeId}>
-                    <TableCell>{store.brandName}</TableCell>
                     <TableCell>{store.storeCode}</TableCell>
                     <TableCell>{store.storeName}</TableCell>
-                    <TableCell>{store.storeLocation}</TableCell>
+                    <TableCell>{store.brandName}</TableCell>
                     <TableCell>
                       <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>{store.storeStatus ? 'True' : 'False'}</Typography>
                     </TableCell>
                     <TableCell sx={{ display: 'flex', gap: 1 }}>
+                      <Button variant="contained" onClick={() => handleViewDetails(store)}>
+                        <Visibility />
+                      </Button>
                       <Button
                         variant="contained"
                         color="error"
-                        size="small"
                         onClick={() => {
                           setStoreToDelete(store);
                           setShowDeleteConfirmDialog(true);
                         }}
                       >
-                        Delete
-                      </Button>
-                      <Button variant="contained" size="small" onClick={() => handleViewDetails(store)}>
-                        View Details
+                        <Delete />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -316,6 +370,8 @@ const UtilitiesShadow = () => {
               label="Store Location"
               type="text"
               fullWidth
+              multiline
+              rows={4}
               variant="outlined"
               value={newStoreData.storeLocation}
               onChange={handleChange}
@@ -352,8 +408,8 @@ const UtilitiesShadow = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseAddStoreDialog}>Cancel</Button>
-            <Button variant="contained" onClick={handleAddStore}>
-              Add Store
+            <Button variant="contained" onClick={handleAddStore} disabled={isLoading} color="success">
+              <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
             </Button>
           </DialogActions>
         </Dialog>
@@ -372,8 +428,8 @@ const UtilitiesShadow = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setShowDeleteConfirmDialog(false)}>Cancel</Button>
-            <Button variant="contained" color="error" onClick={handleDelete}>
-              Delete
+            <Button variant="contained" color="error" onClick={handleDelete} disabled={isLoading}>
+              {isLoading ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogActions>
         </Dialog>

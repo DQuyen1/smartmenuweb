@@ -22,11 +22,13 @@ import {
   CircularProgress,
   InputAdornment,
   Box,
-  Typography,
-  Grid,
   MenuItem,
   Input,
-  FormHelperText
+  FormHelperText,
+  Stack,
+  FormControl,
+  InputLabel,
+  Select
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Visibility, Delete } from '@mui/icons-material';
@@ -54,33 +56,28 @@ const UtilitiesProduct = () => {
   const [productsByCategory, setProductsByCategory] = useState({});
   const [productImgPath, setProductImgPath] = useState(false);
   const [productLogoPath, setProductLogoPath] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('');
 
   const validateNewProductData = () => {
     const errors = {};
-
     if (!newProductData.categoryId) {
       errors.categoryId = 'Category is required';
     }
-
     if (!newProductData.productName.trim()) {
       errors.productName = 'Product name is required';
     } else if (newProductData.productName.trim().length > 100) {
       errors.productName = 'Product name must be 100 characters or less';
     }
-
     if (!newProductData.productDescription.trim()) {
       errors.productDescription = 'Product description is required';
     } else if (newProductData.productDescription.trim().length > 200) {
       errors.productDescription = 'Product description must be 200 characters or less';
     }
-
     const categoryProducts = productsByCategory[newProductData.categoryId] || [];
     const duplicateProduct = categoryProducts.find((product) => product.productName === newProductData.productName);
-
     if (duplicateProduct) {
       errors.productName = 'A product with this name already exists in the selected category.';
     }
-
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -263,11 +260,14 @@ const UtilitiesProduct = () => {
     navigate('/product-details', { state: { productData: product } });
   };
 
-  const filteredProductData = productData.filter((product) => {
-    const productNameMatch = product.productName?.toLowerCase().includes(filter.toLowerCase());
-    const categoryIdMatch = product.categoryName?.toLowerCase().includes(filter.toLowerCase());
-    return productNameMatch || categoryIdMatch;
-  });
+  const filteredProductData = productData
+    .filter((product) => {
+      const productNameMatch = product.productName?.toLowerCase().includes(filter.toLowerCase());
+      const categoryIdMatch = product.categoryName?.toLowerCase().includes(filter.toLowerCase());
+      const categoryFilterMatch = selectedCategory === '' || product.categoryId === selectedCategory;
+      return (productNameMatch || categoryIdMatch) && categoryFilterMatch;
+    })
+    .sort((a, b) => new Date(b.productId) - new Date(a.productId));
 
   const handleImageUpload = async (event) => {
     const userId = 469;
@@ -320,19 +320,37 @@ const UtilitiesProduct = () => {
     <>
       <MainCard title="Product Table">
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            variant="outlined"
-            sx={{ marginBottom: '16px' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-          />
+          <Box sx={{ display: 'flex', gap: '16px' }}>
+            <TextField
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              variant="outlined"
+              sx={{ marginBottom: '16px' }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                )
+              }}
+            />
+            <FormControl sx={{ mb: 2, width: '200px' }}>
+              <InputLabel id="category-filter-label">Category</InputLabel>
+              <Select
+                labelId="category-filter-label"
+                value={selectedCategory}
+                label="Category"
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <MenuItem value="">All Categories</MenuItem>
+                {categoryOptions.map((category) => (
+                  <MenuItem key={category.id} value={category.id}>
+                    {category.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           <Button
             variant="contained"
             color="success"
@@ -353,8 +371,6 @@ const UtilitiesProduct = () => {
               <TableHead>
                 <TableRow>
                   <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Price Currency</TableCell>
                   <TableCell>Image</TableCell>
                   <TableCell>Logo</TableCell>
                   <TableCell>Category</TableCell>
@@ -365,10 +381,6 @@ const UtilitiesProduct = () => {
                 {filteredProductData.map((product) => (
                   <TableRow key={product.productId}>
                     <TableCell>{product.productName}</TableCell>
-                    <TableCell>{product.productDescription}</TableCell>
-                    <TableCell>
-                      {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
-                    </TableCell>
                     <TableCell>
                       {product.productImgPath ? (
                         <img
@@ -393,12 +405,14 @@ const UtilitiesProduct = () => {
                     </TableCell>
                     <TableCell>{categoryMap[product.categoryId]}</TableCell>
                     <TableCell>
-                      <Button color="primary" onClick={() => handleViewDetails(product)} startIcon={<Visibility />} sx={{ mr: 1 }}>
-                        View
-                      </Button>
-                      <Button color="error" onClick={() => handleDelete(product.productId)} startIcon={<Delete />}>
-                        Delete
-                      </Button>
+                      <Stack direction="row" spacing={1}>
+                        <Button color="primary" onClick={() => handleViewDetails(product)} variant="contained">
+                          <Visibility />
+                        </Button>
+                        <Button color="error" onClick={() => handleDelete(product.productId)} variant="contained">
+                          <Delete />
+                        </Button>
+                      </Stack>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -414,7 +428,6 @@ const UtilitiesProduct = () => {
           <DialogContentText>Please enter the details of the new product.</DialogContentText>
           {error && <Alert severity="error">{error}</Alert>}
           <TextField
-            autoFocus
             margin="dense"
             id="categoryId"
             name="categoryId"
@@ -424,7 +437,6 @@ const UtilitiesProduct = () => {
             variant="outlined"
             value={newProductData.categoryId}
             onChange={handleChange}
-            sx={{ mb: 2 }}
             select
             SelectProps={{ native: true }}
             error={!!validationErrors.categoryId}
@@ -457,10 +469,11 @@ const UtilitiesProduct = () => {
             label="Product Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newProductData.productDescription}
             onChange={handleChange}
-            sx={{ mb: 2 }}
             error={!!validationErrors.productDescription}
             helperText={validationErrors.productDescription}
           />
