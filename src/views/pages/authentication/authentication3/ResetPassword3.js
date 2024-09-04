@@ -1,23 +1,21 @@
-import { Link } from 'react-router-dom';
-
-// material-ui
-import { useTheme } from '@mui/material/styles';
-import { Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
-
-// project imports
+import { Divider, FormControl, Grid, InputLabel, OutlinedInput, Stack, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { Box } from '@mui/system';
+import { Formik } from 'formik';
+import MinimalLayout from 'layout/MinimalLayout';
+import { useState } from 'react';
 import AuthWrapper1 from '../AuthWrapper1';
-import AuthCardWrapper from '../AuthCardWrapper';
-import AuthLogin from '../auth-forms/AuthLogin';
+import { Link } from 'react-router-dom';
 import Logo from 'ui-component/Logo';
+import AuthCardWrapper from '../AuthCardWrapper';
 import AuthFooter from 'ui-component/cards/AuthFooter';
+import AuthResetPassword from '../auth-forms/AuthResetPassword';
 
-// assets
-
-// ================================|| AUTH3 - LOGIN ||================================ //
-
-const Login = () => {
+const ResetPassword3 = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
+  const [user, setUser] = useState({
+    userName: ''
+  });
 
   return (
     <AuthWrapper1>
@@ -37,25 +35,18 @@ const Login = () => {
                       <Grid item>
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
                           <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
-                            Hi, Welcome Back
+                            Reset password
                           </Typography>
                         </Stack>
                       </Grid>
                     </Grid>
                   </Grid>
                   <Grid item xs={12}>
-                    <AuthLogin />
+                    <AuthResetPassword />
                   </Grid>
                   <Grid item xs={12}>
                     <Divider />
                   </Grid>
-                  {/* <Grid item xs={12}>
-                    <Grid item container direction="column" alignItems="center" xs={12}>
-                      <Typography component={Link} to="/pages/register/register3" variant="subtitle1" sx={{ textDecoration: 'none' }}>
-                        Don&apos;t have an account?
-                      </Typography>
-                    </Grid>
-                  </Grid> */}
                 </Grid>
               </AuthCardWrapper>
             </Grid>
@@ -69,4 +60,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword3;

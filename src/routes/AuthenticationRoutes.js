@@ -3,6 +3,10 @@ import { lazy } from 'react';
 // project imports
 import Loadable from 'ui-component/Loadable';
 import MinimalLayout from 'layout/MinimalLayout';
+import ResetPassword3 from 'views/pages/authentication/authentication3/ResetPassword3';
+import { element } from 'prop-types';
+import UserMailVerify from 'views/pages/authentication/authentication3/UserMailVerify';
+import AuthForgotPassword from 'views/pages/authentication/auth-forms/AuthForgotPassword';
 
 // login option 3 routing
 const AuthLogin3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Login3')));
@@ -51,6 +55,18 @@ const AuthenticationRoutes = {
     {
       path: '/pages/admin-choose-template',
       element: <AdminChooseTemplate />
+    },
+    {
+      path: '/pages/reset-password',
+      element: <ResetPassword3 />
+    },
+    {
+      path: '/pages/email-verify',
+      element: <UserMailVerify />
+    },
+    {
+      path: '/pages/forgot-password',
+      element: <AuthForgotPassword />
     }
   ]
 };
