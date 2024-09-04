@@ -20,7 +20,7 @@ class displayItemService {
 
     try {
       const response = await axios.post(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/DisplayItems/${displayItemId}`,
+        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/DisplayItems/${displayItemId}`,
         reqBody
       );
 

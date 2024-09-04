@@ -112,8 +112,14 @@ const EntityTemplate = () => {
         setShowAddTemplateDialog(false);
 
         console.log('Template added successfully:', response.data);
-        // navigate('/pages/template', { state: { templateData: response.data.templateId } });
-        navigate(`/pages/template/${response.data.templateId}`);
+
+        navigate(`/pages/template/${response.data.templateId}`, {
+          state: {
+            templateType: response.data.templateType,
+            templateWidth: response.data.templateWidth,
+            templateHeight: response.data.templateHeight
+          }
+        });
       } else {
         console.error('Error creating template:', response);
         setError(`Error: ${response.statusText}`);
@@ -156,8 +162,8 @@ const EntityTemplate = () => {
     if (name === 'templateOrientation') {
       setNewTemplateData((prevState) => ({
         ...prevState,
-        templateWidth: value === 'vertical' ? 900 : 1600,
-        templateHeight: value === 'vertical' ? 1600 : 900, // Correct the order for horizontal
+        templateWidth: value === 'vertical' ? 900 : 1080,
+        templateHeight: value === 'vertical' ? 1600 : 608, // Correct the order for horizontal
         [name]: value
       }));
     } else {

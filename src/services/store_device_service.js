@@ -4,7 +4,7 @@ class storeDeviceService {
   async getAllStoreDevice() {
     try {
       const response = await axios.get(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/StoreDevices?pageNumber=1&pageSize=100`
+        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/StoreDevices?pageNumber=1&pageSize=100`
       );
 
       const storeDevices = response.data.map((storeDevice) => {
