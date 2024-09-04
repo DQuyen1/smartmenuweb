@@ -46,16 +46,16 @@ const BrandStaffDetails = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`https://3.1.81.96/api/Users?userId=${staffId}`);
+      const response = await axios.get(`http://3.1.81.96/api/Users?userId=${staffId}`);
       setUserData(response.data[0]);
-      const existingBrandStaff = await axios.get(`https://3.1.81.96/api/BrandStaffs?userId=${staffId}`);
+      const existingBrandStaff = await axios.get(`http://3.1.81.96/api/BrandStaffs?userId=${staffId}`);
       if (existingBrandStaff.data.length > 0) {
         const brandId = existingBrandStaff.data[0].brandId;
-        const brandResponse = await axios.get(`https://3.1.81.96/api/Brands?brandId=${brandId}`);
+        const brandResponse = await axios.get(`http://3.1.81.96/api/Brands?brandId=${brandId}`);
         setBrandStaffId(existingBrandStaff.data[0].brandStaffId);
         if (existingBrandStaff.data[0].storeId !== null) {
           const storeId = existingBrandStaff.data[0].storeId;
-          const storeResponse = await axios.get(`https://3.1.81.96/api/Stores?storeId=${storeId}`);
+          const storeResponse = await axios.get(`http://3.1.81.96/api/Stores?storeId=${storeId}`);
           setUserData((prevUserData) => ({
             ...prevUserData,
             brandName: brandResponse.data[0].brandName,
@@ -73,9 +73,9 @@ const BrandStaffDetails = () => {
           storeName: 'Unassigned'
         }));
       }
-      const allBrandsResponse = await axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=1000');
+      const allBrandsResponse = await axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=1000');
       setBrands(allBrandsResponse.data);
-      const allStoresResponse = await axios.get('https://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000');
+      const allStoresResponse = await axios.get('http://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000');
       setStores(allStoresResponse.data);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -108,7 +108,7 @@ const BrandStaffDetails = () => {
 
     if (name === 'brandId') {
       try {
-        const response = await axios.get(`https://3.1.81.96/api/Stores?brandId=${value}`);
+        const response = await axios.get(`http://3.1.81.96/api/Stores?brandId=${value}`);
         setFilteredStores(response.data);
       } catch (err) {
         setError('Error fetching stores for selected brand');
@@ -138,7 +138,7 @@ const BrandStaffDetails = () => {
 
   const checkExistingAssignment = async () => {
     try {
-      const response = await axios.get(`https://3.1.81.96/api/BrandStaffs?brandId=${assignData.brandId}`);
+      const response = await axios.get(`http://3.1.81.96/api/BrandStaffs?brandId=${assignData.brandId}`);
       const existingStoreManagers = response.data.filter((staff) => staff.storeId !== null && staff.storeId === assignData.storeId);
       return existingStoreManagers.length > 0; // If there are any store managers, it means an assignment exists
     } catch (err) {
@@ -159,7 +159,7 @@ const BrandStaffDetails = () => {
       }
     }
     try {
-      await axios.post('https://3.1.81.96/api/BrandStaffs', assignData);
+      await axios.post('http://3.1.81.96/api/BrandStaffs', assignData);
       Toastify({
         text: 'Assigned successfully!',
         duration: 3000,
@@ -179,7 +179,7 @@ const BrandStaffDetails = () => {
 
   const handleDeleteSubmit = async () => {
     try {
-      await axios.delete(`https://3.1.81.96/api/BrandStaffs/${brandStaffId}`);
+      await axios.delete(`http://3.1.81.96/api/BrandStaffs/${brandStaffId}`);
       Toastify({
         text: 'Brand Staff deleted successfully!',
         duration: 3000,

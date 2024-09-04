@@ -28,7 +28,8 @@ import {
   Stack,
   FormControl,
   InputLabel,
-  Select
+  Select,
+  Typography
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Visibility, Delete } from '@mui/icons-material';
@@ -40,6 +41,8 @@ const UtilitiesProduct = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [showAddProductDialog, setShowAddProductDialog] = useState(false);
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
   const navigate = useNavigate();
   const [newProductData, setNewProductData] = useState({
     categoryId: '',
@@ -85,6 +88,7 @@ const UtilitiesProduct = () => {
     if (!validateNewProductData()) {
       return;
     }
+    setIsLoading(true);
     try {
       const payload = {
         ...newProductData,
@@ -94,7 +98,7 @@ const UtilitiesProduct = () => {
       };
 
       console.log('Payload being sent to API:', payload);
-      const response = await axios.post('https://3.1.81.96/api/Products', payload);
+      const response = await axios.post('http://3.1.81.96/api/Products', payload);
       if (response.status === 201) {
         setNewProductData({
           categoryID: '',
@@ -107,8 +111,8 @@ const UtilitiesProduct = () => {
         setShowAddProductDialog(false);
 
         const [updatedProductResponse, categoryResponse] = await Promise.all([
-          axios.get('https://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
-          axios.get('https://3.1.81.96/api/Categories?pageNumber=1&pageSize=100')
+          axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
+          axios.get('http://3.1.81.96/api/Categories?pageNumber=1&pageSize=100')
         ]);
 
         if (!updatedProductResponse.data || !categoryResponse.data) {
@@ -165,6 +169,8 @@ const UtilitiesProduct = () => {
         console.error('Error message:', error.message);
       }
       setError(`An error occurred: ${error.response?.data?.error || error.message}`); // Display a generic error message
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -186,9 +192,9 @@ const UtilitiesProduct = () => {
 
       try {
         const [productResponse, categoryResponse, brandResponse] = await Promise.all([
-          axios.get('https://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
-          axios.get('https://3.1.81.96/api/Categories?pageNumber=1&pageSize=100'),
-          axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+          axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
+          axios.get('http://3.1.81.96/api/Categories?pageNumber=1&pageSize=100'),
+          axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
         ]);
 
         if (!productResponse.data || !categoryResponse.data || !brandResponse.data) {
@@ -229,21 +235,12 @@ const UtilitiesProduct = () => {
     fetchProductData();
   }, []);
 
-  const handleDelete = async (productId) => {
+  const handleDelete = async () => {
+    if (!productToDelete) return;
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Products/${productId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Products/${productToDelete.productId}`);
       if (response.status === 200) {
-        const updatedProductData = productData.filter((product) => product.productId !== productId);
-        setProductData(updatedProductData);
-
-        const updatedProductsByCategory = updatedProductData.reduce((acc, product) => {
-          if (!acc[product.categoryId]) acc[product.categoryId] = [];
-          acc[product.categoryId].push(product);
-          return acc;
-        }, {});
-
-        setProductsByCategory(updatedProductsByCategory);
-
+        setProductData((prevData) => prevData.filter((product) => product.productId !== productToDelete.productId));
         setOpenSnackbar(true);
         setSnackbarMessage('Product deleted successfully!');
       } else {
@@ -253,7 +250,20 @@ const UtilitiesProduct = () => {
     } catch (error) {
       console.error('Error deleting product:', error);
       setError(`Error: ${error.message}`);
+    } finally {
+      setConfirmDeleteDialogOpen(false); // Close the dialog after the action
+      setProductToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteDialogOpen(false);
+    setProductToDelete(null); // Clear the product to delete
+  };
+
+  const handleOpenDeleteDialog = (product) => {
+    setProductToDelete(product);
+    setConfirmDeleteDialogOpen(true);
   };
 
   const handleViewDetails = (product) => {
@@ -409,7 +419,7 @@ const UtilitiesProduct = () => {
                         <Button color="primary" onClick={() => handleViewDetails(product)} variant="contained">
                           <Visibility />
                         </Button>
-                        <Button color="error" onClick={() => handleDelete(product.productId)} variant="contained">
+                        <Button color="error" onClick={() => handleOpenDeleteDialog(product)} variant="contained">
                           <Delete />
                         </Button>
                       </Stack>
@@ -514,8 +524,21 @@ const UtilitiesProduct = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddProductDialog}>Cancel</Button>
-          <Button onClick={handleAddProduct} color="primary">
-            Add
+          <Button onClick={handleAddProduct} color="success" variant="contained" disabled={isLoading}>
+            <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmDeleteDialogOpen} onClose={handleCancelDelete}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to delete the product? This action cannot be undone.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

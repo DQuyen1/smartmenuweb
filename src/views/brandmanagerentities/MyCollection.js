@@ -89,7 +89,7 @@ const MyCollection = () => {
     }
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.post('https://3.1.81.96/api/Collections', {
+      const response = await axios.post('http://3.1.81.96/api/Collections', {
         ...newCollectionData,
         brandId: brandId,
         collectionBackgroundImgPath: collectionBackgroundImgPath
@@ -122,7 +122,7 @@ const MyCollection = () => {
     }
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.put(`https://3.1.81.96/api/Collections/${editCollectionData.collectionId}`, {
+      const response = await axios.put(`http://3.1.81.96/api/Collections/${editCollectionData.collectionId}`, {
         ...editCollectionData,
         brandId: brandId,
         collectionBackgroundImgPath: collectionBackgroundImgPath
@@ -176,7 +176,7 @@ const MyCollection = () => {
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.get('https://3.1.81.96/api/Collections', {
+      const response = await axios.get('http://3.1.81.96/api/Collections', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -202,7 +202,7 @@ const MyCollection = () => {
 
   const handleDelete = async (collectionId) => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Collections/${collectionId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Collections/${collectionId}`);
       if (response.status === 200) {
         setCollectionData(collectionData.filter((collection) => collection.collectionId !== collectionId));
         setOpenSnackbar(true);
@@ -376,6 +376,8 @@ const MyCollection = () => {
             label="Collection Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newCollectionData.collectionDescription}
             onChange={handleChange}
@@ -427,6 +429,8 @@ const MyCollection = () => {
             label="Collection Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={editCollectionData.collectionDescription}
             onChange={handleEditChange}
