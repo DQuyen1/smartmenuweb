@@ -14,7 +14,6 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import html2canvas from 'html2canvas';
 import axios from 'axios';
 import Toastify from 'toastify-js';
-// import { OrbitProgress } from 'react-loading-indicators';
 
 import boxService from 'services/box_service';
 import layerService from 'services/layer_service';
@@ -24,6 +23,9 @@ import layerItemService from 'services/layer_item_service';
 import fontService from 'services/font_service';
 import cloudinaryService from 'services/cloudinary_service';
 import { useParams } from 'react-router';
+
+import canvasFeatures from 'utils/canvasFeatures';
+import dataHandler from 'utils/dataHandler';
 
 function Template() {
   const { templateId } = useParams();
@@ -62,6 +64,7 @@ function Template() {
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [selectedTool, setSelectedTool] = useState(null);
+  const [selectedRect, setSelectedRect] = useState(null); // Add this state to track selected rectangle
 
   const box_service = new boxService();
   const layer_service = new layerService();
@@ -70,18 +73,21 @@ function Template() {
   const layer_item_service = new layerItemService();
   const font_service = new fontService();
   const cloudinary_service = new cloudinaryService();
+  const canvasFeature = new canvasFeatures();
+  const dataConvert = new dataHandler();
 
   // const cloudName = import.meta.env.VITE_CLOUD_NAME;
   // const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
 
   // const cloudName = 'dchov8fes';
   // const uploadPreset = 'ml_default';
-  const templateType = location.state.templateType;
+  // const templateType = location.state.templateType;
+
   // const userId = localStorage.getItem('userId');
-  const canvasWidth = 794;
-  const canvasHeight = 1123;
-  const displayWidth = 608;
-  const displayHeight = 800;
+  const canvasWidth = location.state.templateWidth;
+  const canvasHeight = location.state.templateHeight;
+  const displayWidth = canvasWidth;
+  const displayHeight = canvasHeight;
 
   const defaultCanvasWidth = 608;
   const defaultCanvasHeight = 1080;
@@ -105,7 +111,6 @@ function Template() {
         activeObject.set('textAlign', newAlign);
         editor.canvas.renderAll();
       }
-
       return newAlign;
     });
   };
@@ -184,12 +189,12 @@ function Template() {
       // Fetch asset images
       const assetResult = await cloudinary_service.getAllImages(tag);
       const assetImages = assetResult.resources; // Access the resources property
-      console.log('Asset Images: ', assetImages);
+      // console.log('Asset Images: ', assetImages);
 
       // Fetch user images
       const userResult = await cloudinary_service.getAllImages('469');
       const userImages = userResult.resources; // Access the resources property
-      console.log('User Images: ', userImages);
+      // console.log('User Images: ', userImages);
 
       // Combine the images
       const combinedImages = [...userImages, ...assetImages];
@@ -220,15 +225,16 @@ function Template() {
     try {
       await font_service.getAll().then((value) => {
         setFonts(value);
+        console.log('value: ', value);
       });
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
   };
 
-  const updateLayerItem = async (layerItemId, layerItemValue) => {
+  const updateLayerItem = async (layerItemId, layerItemType, layerItemValue) => {
     try {
-      const id = await layer_item_service.updateLayerItem(layerItemId, layerItemValue);
+      const id = await layer_item_service.updateLayerItem(layerItemId, layerItemType, layerItemValue);
       return id;
     } catch (error) {
       console.log('Error message: ' + error.message);
@@ -254,9 +260,9 @@ function Template() {
     }
   };
 
-  const createBox = async (layerId, boxPositionX, boxPositionY, boxWidth, boxHeight, boxType, maxProductItem) => {
+  const createBox = async (layerId, boxPositionX, boxPositionY, boxWidth, boxHeight, boxType) => {
     try {
-      const id = await box_service.createBox(layerId, boxPositionX, boxPositionY, boxWidth, boxHeight, boxType, maxProductItem);
+      const id = await box_service.createBox(layerId, boxPositionX, boxPositionY, boxWidth, boxHeight, boxType);
 
       return id;
     } catch (error) {
@@ -317,33 +323,13 @@ function Template() {
   // };
 
   useEffect(() => {
-    // createUserTemplate();
-    // window.addEventListener('beforeunload', handleBeforeUnload);
-    // console.log('userId: ' + userId);
-    // if (templateType === 0) {
-    //   setCanvasDimensions({
-    //     canvasWidth: 1080,
-    //     canvasHeight: 608,
-    //     displayWidth: 1080,
-    //     displayHeight: 608
-    //   });
-    // } else if (templateType === 1) {
-    //   setCanvasDimensions({
-    //     canvasWidth: 608,
-    //     canvasHeight: 1080,
-    //     displayWidth: 608,
-    //     displayHeight: 800
-    //   });
-    // }
-
-    // console.log('dimension: ', canvasDimensions);
-
-    getLayersByTemplateId(179);
-
     getAllFont();
 
+    console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
+
     getAssetImages('asset/images');
-    getUserImages(`469`);
+
+    getUserImages(`46`);
 
     document.addEventListener('keydown', detectKeydown);
 
@@ -528,92 +514,20 @@ function Template() {
     };
   }, [detectKeydown]);
 
-  const getLayersByTemplateId = async (templateId) => {
-    const layers = await layer_service.getLayersByTemplateId(templateId);
-    console.log('layers: ', layers);
-    layers.map((layer) => {
-      if (layer.layerId && layer.layerType === 2 ) {
-        const textValue = layer.layerItem.layerItemValue;
-        const positionX = layer.boxes[0].boxPositionX;
-        const positionY = layer.boxes[0].boxPositionY;
-        const width = layer.boxes[0].boxWidth;
-        const height = layer.boxes[0].boxHeight;
-        const layerId = layer.layerId;
-        const boxId = layer.boxes[0].boxHeightId;
-        const boxItemId = layer.boxes[0].boxItems[0].boxItemId;
-
-        console.log(
-          'Object: ' +
-            JSON.stringify({
-              textValue: textValue,
-              positionX: positionX,
-              positionY: positionY,
-              width: width,
-              height: height,
-              layerId: layerId,
-              boxId: boxId,
-              boxItemId: boxItemId
-            })
-        );
-
-        console.log('add text');
-        addTextThroughApi(textValue, positionX, positionY, width, height, layerId, boxId, boxItemId);
-      }
+  const loadCanvas = () => {
+    getLayersByTemplateId(2).then((canvasJson) => {
+      editor.canvas.loadFromJSON(canvasJson, function () {
+        editor.canvas.renderAll();
+        // console.log('json: ', canvasJson);
+      });
     });
   };
 
-  const addTextThroughApi = (textValue, positionX, positionY, width, height, layerId, boxId, boxItemId) => {
-    // if (editor && editor.canvas) {
-    let text = new fabric.Text(textValue, {
-      top: positionY,
-      left: positionX,
-      fill: color,
-      width: width,
-      // fontSize: getFontSizeV2(),
-      // fontSize: 40,
-      height: height,
-      layerId: layerId,
-      boxId: boxId,
-      boxItemId: boxItemId,
-      zIndex: 1,
-      opacity: 100,
-      backgroundColor: 'transparent'
-      // fontStyle: isItalic ? 'italic' : 'normal',
-      // fontWeight: isBold ? 'bold' : 'normal',
-      // textAlign: textAlign
-    });
+  const getLayersByTemplateId = async (templateId) => {
+    const canvas = await layer_service.getLayersByTemplateId(templateId);
+    console.log('asdads');
 
-    text.setControlsVisibility({
-      mtr: false,
-      mt: false, // middle top disable
-      mb: false, // midle bottom
-      ml: false, // middle left
-      mr: false // middle right
-    });
-    // editor.canvas.add(text);
-
-    text.on('mousemove', function () {
-      // setHeight(text.height.toFixed(1));
-      // setWidth(text.width.toFixed(1));
-      // setPositionX(text.left.toFixed(1));
-      // setPositionY(text.top.toFixed(1));
-
-      setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      setSelectedTool('text');
-    });
-
-    text.on('mouseup', function () {
-      console.log('clicked to text layer');
-      setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      setSelectedTool('text');
-    });
-
-    // editor.canvas.on('mouse:down', function (options) {
-    //   if (options.target !== rect) {
-    //     setActiveTab(null);
-    //   }
-    //   setSelectedTool(null);
-    // });
+    return canvas;
   };
 
   // function Copy() {
@@ -669,16 +583,43 @@ function Template() {
   //   editor.canvas.remove(editor.canvas.getActiveObject());
   // };
 
+  // const addSampleText = (top, left, width, height, fontSize) => {
+  //   let text = new fabric.Text('Text', {
+  //     top: top,
+  //     left: left,
+  //     fill: 'black',
+  //     width: width,
+  //     fontSize: fontSize,
+  //     height: height
+  //   });
+  //   console.log('add text');
+
+  //   editor.addText(text);
+  //   editor.canvas.renderAll();
+  // };
+
   useEffect(() => {
     if (!editor || !fabric) {
       return;
     }
     // editor.canvas.setHeight('100%');
     // editor.canvas.setWidth('100%');
-    editor.canvas.preserveObjectStacking = true;
+
     editor.canvas.setHeight(canvasHeight);
     editor.canvas.setWidth(canvasWidth);
+    editor.canvas.preserveObjectStacking = true;
+
+    //loadCanvas();
+    console.log('render');
+
     editor.canvas.renderAll();
+    console.log('done');
+
+    // if (editor.canvas) {
+    //   console.log('Addingsa');
+
+    // }
+
     // createUserTemplate();
   }, []);
 
@@ -714,8 +655,13 @@ function Template() {
   //   }
   // };
 
-  const addImage = (file, layerId) => {
+  const addImage = (file) => {
     const reader = new FileReader();
+    const userId = 46;
+    const formData = new FormData();
+    const preset_key = process.env.REACT_APP_PRESET_KEY;
+    const folder = `users/${userId}`;
+    const tags = `${userId}`;
     reader.onload = (e) => {
       fabric.Image.fromURL(e.target.result, async (img) => {
         const myImg = img.set({
@@ -732,34 +678,46 @@ function Template() {
         let positionX = myImg.left;
         let positionY = myImg.top;
 
-        const boxId = await createBox(layerId, positionX, positionY, width, height, 0, 0);
+        formData.append('file', file);
+        formData.append('upload_preset', preset_key);
+        formData.append('tags', tags);
+        formData.append('folder', folder);
+        axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
+          const layerItemValue = result.data.secure_url;
+          const layerId = await createLayer(templateId, 1);
+          const layerItemId = await createLayerItem(layerId, layerItemValue);
 
-        const boxItemId = await createBoxItem(
-          boxId,
-          5,
-          positionX,
-          positionY,
-          width,
-          height,
-          7,
-          JSON.stringify({
-            transparency: 100
-          })
-        );
+          const public_id = result.data.public_id;
 
-        myImg.boxId = boxId;
-        myImg.boxItemId = boxItemId;
+          setAssetImage((preImages) => [public_id, ...preImages]);
 
-        console.log('boxItemId: ', boxItemId);
-        console.log('boxId: ', boxId);
+          console.log('Result hihi: ', result);
+          console.log('layerId: ', layerId);
+          console.log('layerItemId: ', layerItemId);
 
-        myImg.on('modified', function () {
-          console.log('Left: ' + myImg.left + ' Top: ' + myImg.top);
-          console.log('layerId: ', myImg.layerId);
+          const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
 
-          // console.log('Width: ' + myImg.getScaledWidth() + ' Height: ' + myImg.getScaledHeight());
-          // updateBox(boxId, myImg.left, myImg.top, myImg.getScaledWidth(), myImg.getScaledHeight(), 100);
+          const boxItemId = await createBoxItem(
+            boxId,
+            5,
+            positionX,
+            positionY,
+            width,
+            height,
+            7,
+            JSON.stringify({
+              transparency: 100
+            })
+          );
+
+          myImg.boxId = boxId;
+          myImg.boxItemId = boxItemId;
+
+          // console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
         });
+
+        // console.log('boxItemId: ', boxItemId);
+        // console.log('boxId: ', boxId);
 
         editor.canvas.on('mouse:down', function (options) {
           if (options.target !== rect) {
@@ -778,6 +736,7 @@ function Template() {
         editor.canvas.renderAll();
       });
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -796,42 +755,10 @@ function Template() {
   // }
 
   const handleImageUpload = async (event) => {
-    const userId = 469;
     const file = event.target.files[0];
-    const formData = new FormData();
-    const preset_key = 'xdm798lx';
-    const folder = `users/${userId}`;
-    const tags = `${userId}`;
+
     if (file) {
-      // const url = URL.createObjectURL(file);
-      formData.append('file', file);
-      formData.append('upload_preset', preset_key);
-      formData.append('tags', tags);
-      formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const layerItemValue = result.data.secure_url;
-        const layerId = await createLayer(templateId, 1);
-        const layerItemId = await createLayerItem(layerId, layerItemValue);
-        addImage(file, layerId);
-        // await createBox(layerId, 0).then((boxId) => {
-        //   addImage(file, boxId);
-        // })
-
-        // setAssetImage((prevImages) => [result.data, ...prevImages]);
-
-        // await createBox(layerId, 0);
-        const public_id = result.data.public_id;
-
-        setAssetImage((preImages) => [public_id, ...preImages]);
-
-        console.log('Result hihi: ', result);
-        console.log('layerId: ', layerId);
-        console.log('layerItemId: ', layerItemId);
-
-        // console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
-      });
-      // addImage(file, boxId);
-      // uploadWidget();
+      addImage(file);
     }
   };
 
@@ -863,12 +790,21 @@ function Template() {
   };
 
   const changeColor = (e) => {
-    setColor(e.target.value);
-    const o = editor.canvas.getActiveObject();
-    o.set('fill', color);
-    editor?.setStrokeColor(color);
-    o.fire('modified');
-    editor.canvas.renderAll();
+    const newColor = e.target.value;
+
+    setColor(newColor);
+
+    const activeObject = editor.canvas.getActiveObject(); // Get the active object
+    if (activeObject && activeObject.type === 'textbox') {
+      // Ensure it's a text object
+      activeObject.set('fill', newColor); // Set the new color
+      editor.canvas.renderAll(); // Re-render the canvas
+    }
+
+    // const o = editor.canvas.getActiveObject();
+    // o.set('fill', color);
+    // editor?.setStrokeColor(color);
+    //editor.canvas.renderAll();
   };
 
   // const isBold = () => {
@@ -893,7 +829,7 @@ function Template() {
 
   const toggleItalic = () => {
     const o = editor.canvas.getActiveObject();
-    if (o && o.type === 'textbox') {
+    if ((o && o.type === 'textbox') || o.type === 'text') {
       setIsItalic((prev) => !prev);
       o.set('fontStyle', !isItalic ? 'italic' : 'normal');
       o.fire('modified');
@@ -951,56 +887,60 @@ function Template() {
     return parseFloat(fontSizeInPoints.toFixed(1));
   };
 
+  const convertAngleToDegree = (angle) => {
+    if (angle === 180) {
+      return -angle;
+    } else if (angle > 180) {
+      return angle - 360;
+    }
+    return angle;
+  };
+
   const addText = async () => {
-    setColor(color);
-    let text = new fabric.Text('Text', {
+    //setColor(color);
+    let text = new fabric.Textbox('Text', {
       top: 300,
       left: 300,
       fill: 'black',
-      // width: 100,
-      // fontSize: getFontSizeV2(),
-      // fontSize: 40,
-      // height: 50,
-      zIndex: 1,
-      opacity: opacity,
+      // zIndex: 1,
       backgroundColor: 'transparent',
-      fontStyle: isItalic ? 'italic' : 'normal',
-      fontWeight: isBold ? 'bold' : 'normal',
-      textAlign: textAlign,
-      editable: true
+      // fontStyle: isItalic ? 'italic' : 'normal',
+      // fontWeight: isBold ? 'bold' : 'normal',
+      // textAlign: textAlign,
+      editable: true,
+      angle: 0
     });
     // addToUndoStack();
 
     text.setControlsVisibility({
-      mtr: false,
       mt: false, // middle top disable
-      mb: false, // midle bottom
-      ml: false, // middle left
-      mr: false // middle right
+      mb: false // midle bottom
     });
 
-    // console.log('text fill0: ', text.fill);
+    text.on('scaling', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
 
-    // text.on('mousemove', function () {
-    //   // setHeight(text.height.toFixed(1));
-    //   // setWidth(text.width.toFixed(1));
-    //   // setPositionX(text.left.toFixed(1));
-    //   // setPositionY(text.top.toFixed(1));
+      const scaledWidth = text.getScaledWidth();
+      const scaledHeight = text.getScaledHeight();
 
-    //   setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-    //   setSelectedTool('text');
-    // });
+      setActiveTab('positionSize');
+      // console.log('scale');
+      //console.log('Text fontSize after scaled: ', text.fontSize * text.scaleY);
+      console.log('Text fontSize after scaled: ', text.fontSize * text.scaleX);
 
-    // text.on('object:selected', function () {
-    //   console.log('clicked to text layer');
-    //   setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-    //   setSelectedTool('text');
-    // });
+      setPositionX((text.left * scaleX).toFixed(1));
+      setPositionY((text.top * scaleY).toFixed(1));
+
+      setHeight((scaledHeight * scaleX).toFixed(1));
+      setWidth((scaledWidth * scaleY).toFixed(1));
+    });
 
     text.on('moving', function () {
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
-
+      setActiveTab('positionSize');
+      setSelectedTool('textBox');
       // setHeight(text.getScaledHeight());
       // setWidth(text.getScaledWidth());
       setPositionX((text.left * scaleX).toFixed(1));
@@ -1014,18 +954,24 @@ function Template() {
       setSelectedTool(null);
     });
 
-    // text.on('mouseup', function () {
-    //   // toggleHeaderVisibility();
-    //   setSelectedTool('text');
-    //   setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-    // });
+    text.on('mouseup', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
 
-    // editor.canvas.on('mouse:down', function (options) {
-    //   if (options.target !== text) {
-    //     setIsHeaderVisible(false);
-    //   }
-    //   setSelectedTool(null);
-    // });
+      const scaledWidth = text.getScaledWidth();
+      const scaledHeight = text.getScaledHeight();
+      setFontSize((text.fontSize * text.scaleX).toFixed(1));
+      setColor(text.fill);
+
+      setHeight((scaledHeight * scaleX).toFixed(1));
+      setWidth((scaledWidth * scaleY).toFixed(1));
+      setPositionX((text.left * scaleX).toFixed(1));
+      setPositionY((text.top * scaleY).toFixed(1));
+
+      setIsHeaderVisible(true);
+      setSelectedTool('textBox');
+      setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+    });
 
     editor.canvas.add(text);
 
@@ -1041,9 +987,10 @@ function Template() {
 
     const layerId = await createLayer(templateId, 2);
     const layerItemId = await createLayerItem(layerId, 'Text');
-    const boxId = await createBox(layerId, text.left, text.top, text.width, text.height, 0, 1);
+    const boxId = await createBox(layerId, text.left, text.top, text.width, text.height, 0);
     const boxItemId = await createBoxItem(boxId, 5, text.left, text.top, text.width, text.height, 0, JSON.stringify(style));
 
+    text.layerItemId = layerItemId;
     text.layerId = layerId;
     text.boxItemId = boxItemId;
     text.boxId = boxId;
@@ -1055,69 +1002,16 @@ function Template() {
     console.log('Box id: ', boxId);
     console.log('Box item id: ', boxItemId);
 
-    const isTextUppercase = (text) => text === text.toUpperCase();
-
-    // Function to check if text is lowercase
-    const isTextLowercase = (text) => text === text.toLowerCase();
-
-    const checkTextCaseUppercase = () => {
-      const currentText = text.text;
-      return isTextUppercase(currentText);
-    };
-
-    // Function to check if text is lowercase
-    const checkTextCaseLowercase = () => {
-      const currentText = text.text;
-      return isTextLowercase(currentText);
-    };
-
-    const isUppercase = checkTextCaseUppercase();
-    const isLowercase = checkTextCaseLowercase();
-
-    // console.log('font size: ', getFontSize());
-
     text.on('modified', function () {
-      // console.log('scale width: ', text.getScaledWidth(), 'scale height: ', text.getScaledHeight());
-      // console.log('width: ', text.width, 'height: ', text.height);
-      // console.log('font sizeV2: ', getFontSizeV2());
-      // updateStyle(style, text);
-      // updateBoxItem(
-      //   text.boxItemId,
-      //   5,
-      //   text.left,
-      //   text.top,
-      //   text.getScaledWidth() + 30,
-      //   text.getScaledHeight() + 30,
-      //   JSON.stringify({
-      //     textColor: text.fill,
-      //     bFontId: 5,
-      //     fontSize: getFontSizeV2(),
-      //     fontStyle: getFontStyleValue(text.fontStyle),
-      //     alignment: getAlignmentValue(text.textAlign),
-      //     transparency: text.opacity,
-      //     uppercase: false
-      //   })
-      // );
-      // updateBox(text.boxId, text.left, text.top, text.getScaledWidth() + 30, text.getScaledHeight() + 30, 1);
-      // updateLayerItem(layerId, text.text);
-      console.log('Is text uppercase: ', isUppercase);
-      console.log('Is text lowercase: ', isLowercase);
+      // console.log('color: ', text.fill);
+      // console.log('alignemnt: ', text.textAlign);
+      // console.log('Angle: ', convertAngleToDegree(text.angle));
     });
-
-    // text.on('object:selected', function (options) {
-    //   options.target.bringToFront();
-    // });
-
-    // text.on('selected', function () {
-    //   setSelectedTool('text');
-    //   setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-    // });
 
     text.on('editing:exited', function () {
       console.log('Text editing exited, new text: ', text.text);
+      updateLayerItem(text.layerItemIdId, 2, text.text);
     });
-
-    // console.log('initial text: ', text.fontSize);
 
     editor.canvas.renderAll();
   };
@@ -1126,18 +1020,22 @@ function Template() {
     let rect = new fabric.Rect({
       left: 100,
       top: 150,
-      fill: backgroundColor,
+      fill: 'green',
       borderColor: 'dark',
       width: 200,
       height: 200,
       opacity: 0.3
     });
 
-    console.log('width and height: ', rect.width, rect.height);
+    editor.canvas.add(rect);
 
-    // console.log('canvas width and height: ', editor.canvas.width, editor.canvas.height);
+    rect.id = `rect-${new Date().getTime()}`;
 
-    // rect.on('mouseup', function () {})
+    rect.productCounter = 1;
+    rect.imageCounter = 1;
+    rect.nameCounter = 1;
+    rect.priceCounter = 1;
+
     rect.setControlsVisibility({
       mtr: false,
       mt: false // middle top disable
@@ -1150,9 +1048,6 @@ function Template() {
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
 
-      setHeight(rect.getScaledHeight());
-      setWidth(rect.getScaledWidth());
-
       setPositionX((rect.left * scaleX).toFixed(1));
       setPositionY((rect.top * scaleY).toFixed(1));
       setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
@@ -1160,13 +1055,21 @@ function Template() {
     });
 
     rect.on('mouseup', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
+      const scaledWidth = rect.getScaledWidth();
+      const scaledHeight = rect.getScaledHeight();
+
       setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
       setSelectedTool('rect');
-      // setHeight(rect.height.toFixed(1));
-      // setWidth(rect.width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
-      // console.log('clicked to render layer');
+      setSelectedRect(rect);
+      // console.log('touched');
+
+      setHeight((scaledHeight * scaleX).toFixed(1));
+      setWidth((scaledWidth * scaleY).toFixed(1));
+      setPositionX((rect.left * scaleX).toFixed(1));
+      setPositionY((rect.top * scaleY).toFixed(1));
     });
 
     editor.canvas.on('mouse:down', function (options) {
@@ -1176,12 +1079,11 @@ function Template() {
       setSelectedTool(null);
     });
 
-    editor.canvas.add(rect);
-    setRect(rect);
+    //setRect(rect);
     setRenderQuantity((prevCounter) => prevCounter + 1);
 
     const layerId = await createLayer(templateId, 3);
-    const boxId = await createBox(layerId, rect.top, rect.left, rect.width, rect.height, 0, 1);
+    const boxId = await createBox(layerId, rect.left, rect.top, rect.width, rect.height, 0);
     setBoxId(boxId);
     rect.layerId = layerId;
     rect.boxId = boxId;
@@ -1189,25 +1091,15 @@ function Template() {
     console.log('Layer id: ', layerId);
     console.log('Box id: ', boxId);
 
-    rect.on('modified', function () {
-      // const scaleX = canvasWidth / displayWidth;
-      // const scaleY = canvasHeight / displayHeight;
-      // console.log('Position X: ', rect.left * scaleX);
-      // console.log('Position Y: ', rect.top * scaleY);
-      // updateBox(boxId, rect.left, rect.top, rect.getScaledWidth(), rect.getScaledHeight(), quantity);
-    });
+    rect.on('modified', function () {});
 
-    // rect.on('scaling', function () {
-    //   rect.width = rect.width * rect.scaleX;
-    //   rect.height = rect.height * rect.scaleY;
-    //   const o = editor.canvas.getActiveObject();
-    //   console.log('width: ', o.width, 'height: ', o.height);
-    //   setHeight(height.toFixed(1));
-    //   setWidth(width.toFixed(1));
-    // });
     rect.on('scaling', function () {
       const newWidth = rect.width * rect.scaleX;
       const newHeight = rect.height * rect.scaleY;
+
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
       rect.set({
         width: newWidth,
         height: newHeight,
@@ -1216,6 +1108,9 @@ function Template() {
       });
       setHeight(newHeight.toFixed(1));
       setWidth(newWidth.toFixed(1));
+
+      setPositionX((rect.left * scaleX).toFixed(1));
+      setPositionY((rect.top * scaleY).toFixed(1));
     });
 
     // editor.canvas.renderAll();
@@ -1299,18 +1194,38 @@ function Template() {
     const folder = `users/${userId}`;
     const tags = `${userId}`;
     if (file) {
+      addBackgroundImage(file);
       formData.append('file', file);
       formData.append('upload_preset', preset_key);
       formData.append('tags', tags);
       formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const layerItemValue = result.data.secure_url;
+
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        const layerItemValue = result.secure_url;
+
         const layerId = await createLayer(templateId, 0);
         const layerItemId = await createLayerItem(layerId, layerItemValue);
-        addBackgroundImage(file);
+
         console.log('layerId: ', layerId);
         console.log('layerItemId: ', layerItemId);
-      });
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+
+      // axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
+      //   const layerItemValue = result.data.secure_url;
+      //   const layerId = await createLayer(templateId, 0);
+      //   const layerItemId = await createLayerItem(layerId, layerItemValue);
+
+      //   console.log('layerId: ', layerId);
+      //   console.log('layerItemId: ', layerItemId);
+      // });
     }
   };
 
@@ -1386,7 +1301,7 @@ function Template() {
       let positionX = myImg.left;
       let positionY = myImg.top;
 
-      const boxId = await createBox(layerId, positionX, positionY, width, height, 0, 0);
+      const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
 
       const boxItemId = await createBoxItem(
         boxId,
@@ -1452,11 +1367,6 @@ function Template() {
     });
   };
 
-  // const saveTemplate = () => {
-  //   takeScreenShot();
-
-  // };
-
   const getAllCanvasProperties = () => {
     const scaleX = canvasWidth / displayWidth;
     const scaleY = canvasHeight / displayHeight;
@@ -1466,6 +1376,8 @@ function Template() {
     try {
       // Get all objects on the canvas
       const objects = editor.canvas.getObjects();
+
+      console.log('Convert canvas to JSON: ', editor.canvas.toJSON(['boxId', 'boxItemId']));
 
       // Collect properties of each object
       objects.map((obj) => {
@@ -1495,11 +1407,12 @@ function Template() {
                 textColor: obj.fill,
                 bFontId: 5,
                 // fontSize: getFontSizeV2(obj),
-                fontSize: 12,
+                fontSize: obj.fontSize * obj.scaleX,
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
-                uppercase: false
+                uppercase: false,
+                rotation: convertAngleToDegree(obj.angle)
               })
             );
             // updateLayerItem(obj.layerItemId);
@@ -1519,7 +1432,8 @@ function Template() {
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
-                uppercase: false
+                uppercase: false,
+                rotation: convertAngleToDegree(obj.angle)
               })
             );
             // return {
@@ -1527,8 +1441,6 @@ function Template() {
             // };
           }
         } else if (obj instanceof fabric.Image) {
-          console.log('dcmmm');
-
           if (obj.boxId) {
             updateBox(obj.boxId, obj.left * scaleX, obj.top * scaleY, obj.getScaledWidth() * scaleX, obj.getScaledHeight() * scaleY, 1);
             updateBoxItem(
@@ -1553,18 +1465,36 @@ function Template() {
     }
   };
 
-  const handleQuantityChange = (e) => {
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      // Allows only digits
-      setQuantity(value);
-      console.log('value: ', value);
+  // const handleQuantityChange = (e) => {
+  //   const value = e.target.value;
+  //   if (/^\d*$/.test(value)) {
+  //     // Allows only digits
+  //     // setQuantity(value);
+  //     // console.log('value: ', value);
 
-      if (rect) {
-        updateBox(rect.boxId, rect.top, rect.left, rect.width, rect.height, value);
-      }
-    }
-  };
+  //     if (rect && value > 0) {
+  //       const rect = editor.canvas.getActiveObject();
+  //       rect.set('quantity', value);
+  //       console.log('Rect information: ', rect);
+
+  //       // rect.quantity = value;
+  //       setQuantity(value);
+  //       updateBox(rect.boxId, rect.top, rect.left, rect.width, rect.height, value);
+  //     } else if (value <= 0) {
+  //       Toastify({
+  //         text: 'Quantity must be greater than 0',
+  //         className: 'info',
+  //         gravity: 'top',
+  //         position: 'right',
+
+  //         duration: 3000,
+  //         style: {
+  //           background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //         }
+  //       }).showToast();
+  //     }
+  //   }
+  // };
 
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -1605,735 +1535,672 @@ function Template() {
   }
 
   const addProductDescription = async () => {
-    if (descriptionCounter < quantity) {
-      let textBox = new fabric.Text(`Product Description ${descriptionCounter + 1} `, {
-        left: 100,
-        top: 180,
-        // fontSize: fontSize,
-        fontSize: 13,
-        backgroundColor: getRandomColor(),
-        borderColor: 'dark',
+    let textBox = new fabric.Text(`Product Description  ${selectedRect.productCounter}`, {
+      left: selectedRect.left + 10,
+      top: selectedRect.left + 10,
+      // fontSize: fontSize,
+      fontSize: 13,
+      backgroundColor: getRandomColor(),
+      borderColor: 'dark',
 
-        // width: 100,
-        // height: 100,
-        fill: 'white',
-        // fontFamily: 'Arial',
-        // fontStyle: 'normal',
-        // textAlign: 'left',
-        opacity: 100
+      // width: 100,
+      // height: 100,
+      fill: 'white',
+      // fontFamily: 'Arial',
+      // fontStyle: 'normal',
+      // textAlign: 'left',
+      opacity: 100,
+      productCounter: 1
+      // selectionBackgroundColor: 'black'
+    });
 
-        // selectionBackgroundColor: 'black'
-      });
+    textBox.rectId = selectedRect.id;
 
-      setDescriptionCounter((prevCounter) => prevCounter + 1);
+    selectedRect.productCounter += 1;
 
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        // mb: false, // midle bottom
-        ml: false // middle left
-        // mr: false // middle right
-      });
+    setDescriptionCounter((prevCounter) => prevCounter + 1);
 
-      // console.log('width scale: ', textBox.getScaledWidth(), 'height scale: ', textBox.getScaledHeight());
-      // console.log('width: ', textBox.width, 'height: ', textBox.height);
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      // mb: false, // midle bottom
+      ml: false // middle left
+      // mr: false // middle right
+    });
 
-      editor.canvas.add(textBox);
-      let height = textBox.height;
-      let width = textBox.width;
-      // const layerId = await createLayer(3);
-      // const layerItemId = await createLayerItem(layerId, `Product Description ${descriptionCounter + 1}`);
+    editor.canvas.add(textBox);
+    let height = textBox.height;
+    let width = textBox.width;
+    // const layerId = await createLayer(3);
+    // const layerItemId = await createLayerItem(layerId, `Product Description ${descriptionCounter + 1}`);
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 1,
-        fontSize: textBox.fontSize,
-        // fontStyle: getFontStyleValue(textBox.fontStyle),
-        // alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 1,
+      fontSize: textBox.fontSize,
+      // fontStyle: getFontStyleValue(textBox.fontStyle),
+      // alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-      if (boxId) {
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 3, JSON.stringify(style));
+    if (boxId) {
+      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 3, JSON.stringify(style));
 
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 3;
-        console.log('boxItemId: ', boxItemId);
-      }
-
-      // console.log('boxItemId: ', boxItemId);
-
-      textBox.on('modified', function () {
-        // console.log('fontsize: ', getFontSizeV2(textBox));
-        // console.log('width: ', textBox.width, 'height: ', textBox.height);
-        // console.log('boxItemId: ', textBox.boxItemId);
-        // console.log('boxItemType: ', textBox.boxItemType);
-        // textBox.set('fontSize', getFontSizeV2());
-        //updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      });
-
-      textBox.on('scaling', function () {
-        setActiveTab('positionSize');
-
-        width = rect.width * rect.scaleX;
-        height = rect.height * rect.scaleY;
-        const o = editor.canvas.getActiveObject();
-        console.log('width: ', o.width, 'height: ', o.height, 'top: ', o.top, 'left: ', o.left);
-        setHeight(height.toFixed(1));
-        setWidth(width.toFixed(1));
-      });
-
-      textBox.on('moving', function () {
-        const scaleX = canvasWidth / displayWidth;
-        const scaleY = canvasHeight / displayHeight;
-
-        setPositionX((rect.left * scaleX).toFixed(1));
-        setPositionY((rect.top * scaleY).toFixed(1));
-        // console.log('moving');
-
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-
-      textBox.on('mouseup', function () {
-        setHeight(height.toFixed(1));
-        setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
-        // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-        setActiveTab('positionSize');
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      textBox.on('mousemove', function () {
-        setHeight(textBox.height.toFixed(1));
-        setWidth(textBox.width.toFixed(1));
-        setPositionX(textBox.left.toFixed(1));
-        setPositionY(textBox.top.toFixed(1));
-        // console.log('Move');
-
-        // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-        setActiveTab('positionSize');
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'Can not add more descriptions',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 3;
+      console.log('boxItemId: ', boxItemId);
     }
+
+    textBox.on('modified', function () {});
+
+    textBox.on('scaling', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
+      const scaledWidth = textBox.getScaledWidth();
+      const scaledHeight = textBox.getScaledHeight();
+
+      const newWidth = textBox.width * textBox.scaleX;
+      const newHeight = textBox.height * textBox.scaleY;
+      console.log('scaledWidth: ', (scaledHeight * scaleX).toFixed(1), ' scaledHeight: ', (scaledWidth * scaleY).toFixed(1));
+
+      setHeight(newHeight.toFixed(1));
+      setWidth(newWidth.toFixed(1));
+      setActiveTab('positionSize');
+    });
+
+    textBox.on('moving', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
+      // setPositionX((textBox.left * scaleX).toFixed(1));
+      // setPositionY((textBox.top * scaleY).toFixed(1));
+      // console.log('moving');
+
+      const scaledWidth = textBox.getScaledWidth();
+      const scaledHeight = textBox.getScaledHeight();
+
+      setHeight((scaledHeight * scaleX).toFixed(1));
+      setWidth((scaledWidth * scaleY).toFixed(1));
+
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      //Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
+
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      // setPositionX(rect.left.toFixed(1));
+      // setPositionY(rect.top.toFixed(1));
+      // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setColor(textBox.fill);
+      //setActiveTab('positionSize');
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    textBox.on('mousemove', function () {
+      setHeight(textBox.height.toFixed(1));
+      setWidth(textBox.width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      // console.log('Move');
+
+      // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      //setActiveTab('positionSize');
+      //setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
   };
 
   const addProductName = async () => {
-    if (nameCounter < quantity) {
-      const textBox = new fabric.Text(`Product Name ${nameCounter + 1} `, {
-        left: 100,
-        top: 90,
-        fontSize: 20,
-        fill: 'white',
+    const textBox = new fabric.Text(`Product Name ${selectedRect.nameCounter} `, {
+      left: selectedRect.left + 15,
+      top: selectedRect.top + 15,
+      fontSize: 20,
+      fill: 'white',
 
-        backgroundColor: getRandomColor()
-      });
+      backgroundColor: getRandomColor()
+    });
 
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        // mb: false, // midle bottom
-        ml: false // middle left
-        // mr: false // middle right
-      });
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      // mb: false, // midle bottom
+      ml: false // middle left
+      // mr: false // middle right
+    });
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 1,
-        fontSize: textBox.fontSize,
-        fontStyle: getFontStyleValue(textBox.fontStyle),
-        alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 1,
+      fontSize: textBox.fontSize,
+      fontStyle: getFontStyleValue(textBox.fontStyle),
+      alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-      editor.canvas.add(textBox);
-      setNameCounter((prevCounter) => prevCounter + 1);
+    editor.canvas.add(textBox);
+    setNameCounter((prevCounter) => prevCounter + 1);
 
-      if (boxId) {
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 2, JSON.stringify(style));
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 2;
-        console.log('boxItemId: ', boxItemId);
-      }
+    selectedRect.nameCounter += 1;
 
-      textBox.on('mouseup', function () {
-        // setHeight(height.toFixed(1));
-        // setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
-
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-
-      textBox.on('modified', function () {
-        // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-        // console.log(
-        //   'width: ',
-        //   textBox.width,
-        //   'height: ',
-        //   textBox.height,
-        //   'top',
-        //   textBox.top,
-        //   'left: ',
-        //   textBox.left,
-        //   'fontSize: ',
-        //   textBox.fontSize,
-        //   'color: ',
-        //   textBox.fill,
-        //   'fontFamily: ',
-        //   textBox.fontFamily,
-        //   'opacity: ',
-        //   textBox.opacity,
-        //   'textAlign: ',
-        //   textBox.textAlign
-        // );
-      });
-
-      textBox.on('moving', function () {
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        // Get the rectangle boundaries
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'Can not add more names',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+    if (boxId) {
+      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 2, JSON.stringify(style));
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 2;
+      console.log('boxItemId: ', boxItemId);
     }
+
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      // setPositionX(rect.left.toFixed(1));
+      // setPositionY(rect.top.toFixed(1));
+      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
+
+    textBox.on('modified', function () {
+      // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+      // console.log(
+      //   'width: ',
+      //   textBox.width,
+      //   'height: ',
+      //   textBox.height,
+      //   'top',
+      //   textBox.top,
+      //   'left: ',
+      //   textBox.left,
+      //   'fontSize: ',
+      //   textBox.fontSize,
+      //   'color: ',
+      //   textBox.fill,
+      //   'fontFamily: ',
+      //   textBox.fontFamily,
+      //   'opacity: ',
+      //   textBox.opacity,
+      //   'textAlign: ',
+      //   textBox.textAlign
+      // );
+    });
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
   };
 
   const addProductPrice = async () => {
-    if (priceCounter < quantity) {
-      const textBox = new fabric.Text(`Product Price ${priceCounter + 1} `, {
-        left: 100,
-        top: 150,
-        fontSize: 20,
-        fill: 'white',
-        borderColor: 'dark',
-        width: 200,
-        height: 200,
-        backgroundColor: getRandomColor()
-        // selectionBackgroundColor: 'black'
-      });
+    const textBox = new fabric.Text(`Product Price ${selectedRect.priceCounter} `, {
+      left: selectedRect.left + 20,
+      top: selectedRect.top + 20,
+      fontSize: 20,
+      fill: 'white',
+      borderColor: 'dark',
+      width: 200,
+      height: 200,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
 
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        mb: false, // midle bottom
-        ml: false, // middle left
-        mr: false // middle right
-      });
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      mb: false, // midle bottom
+      ml: false, // middle left
+      mr: false // middle right
+    });
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 5,
-        fontSize: textBox.fontSize,
-        fontStyle: getFontStyleValue(textBox.fontStyle),
-        alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    editor.canvas.add(textBox);
 
-      if (boxId) {
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 4, JSON.stringify(style));
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 4;
-        console.log('boxItemId: ', boxItemId);
-      }
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 5,
+      fontSize: textBox.fontSize,
+      fontStyle: getFontStyleValue(textBox.fontStyle),
+      alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-      textBox.on('mouseup', function () {
-        // setHeight(height.toFixed(1));
-        // setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
-
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-
-      textBox.on('modified', function () {
-        // console.log(
-        //   'boxItemId: ',
-        //   textBox.boxItemId,
-        //   'left',
-        //   textBox.left,
-        //   'top',
-        //   textBox.top,
-        //   'width',
-        //   textBox.width,
-        //   'height',
-        //   textBox.height
-        // );
-        // if (textBox.boxItemId) {
-        //   // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-        //   updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-        // }
-      });
-
-      editor.canvas.add(textBox);
-      setPriceCounter((prevCounter) => prevCounter + 1);
-
-      textBox.on('modified', function () {
-        // updateBoxItem(textBox.boxItemId, rect.left, rect.top, width, height, priceCounter + 1, JSON.stringify(style));
-      });
-
-      textBox.on('moving', function () {
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        // Get the rectangle boundaries
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'Can not add more prices',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+    if (boxId) {
+      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 4, JSON.stringify(style));
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 4;
+      console.log('boxItemId: ', boxItemId);
     }
+
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      // setPositionX(rect.left.toFixed(1));
+      // setPositionY(rect.top.toFixed(1));
+      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
+
+    textBox.on('modified', function () {
+      // console.log(
+      //   'boxItemId: ',
+      //   textBox.boxItemId,
+      //   'left',
+      //   textBox.left,
+      //   'top',
+      //   textBox.top,
+      //   'width',
+      //   textBox.width,
+      //   'height',
+      //   textBox.height
+      // );
+      // if (textBox.boxItemId) {
+      //   // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+      //   updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+      // }
+    });
+
+    setPriceCounter((prevCounter) => prevCounter + 1);
+
+    selectedRect.priceCounter += 1;
+
+    textBox.on('modified', function () {
+      // updateBoxItem(textBox.boxItemId, rect.left, rect.top, width, height, priceCounter + 1, JSON.stringify(style));
+    });
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
   };
 
   const addProductImage = async () => {
-    if (imageCounter < quantity) {
-      const textBox = new fabric.Text(`Product Image ${imageCounter + 1} `, {
-        left: 100,
-        top: 150,
-        fontSize: 20,
-        fill: color,
-        borderColor: 'dark',
-        width: 200,
-        height: 200,
-        backgroundColor: getRandomColor()
-        // selectionBackgroundColor: 'black'
-      });
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        // mb: false, // midle bottom
-        ml: false // middle left
-        // mr: false // middle right
-      });
+    const textBox = new fabric.Text(`Product Image ${selectedRect.imageCounter} `, {
+      left: selectedRect.left + 25,
+      top: selectedRect.top + 25,
+      fontSize: 20,
+      fill: color,
+      borderColor: 'dark',
+      width: 200,
+      height: 200,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false,
+      // mb: false, // midle bottom
+      ml: false // middle left
+      // mr: false // middle right
+    });
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 1,
-        fontSize: textBox.fontSize,
-        fontStyle: getFontStyleValue(textBox.fontStyle),
-        alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    editor.canvas.add(textBox);
 
-      if (boxId) {
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 5, JSON.stringify(style));
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 5;
-        console.log('boxItemId: ', boxItemId);
-      }
-      textBox.on('mouseup', function () {
-        // setHeight(height.toFixed(1));
-        // setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 1,
+      fontSize: textBox.fontSize,
+      fontStyle: getFontStyleValue(textBox.fontStyle),
+      alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-
-      editor.canvas.add(textBox);
-      setImageCounter((prevCounter) => prevCounter + 1);
-
-      textBox.on('modified', function () {
-        // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      });
-
-      textBox.on('moving', function () {
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        // Get the rectangle boundaries
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'Can not add more images',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+    if (boxId) {
+      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 5, JSON.stringify(style));
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 5;
+      console.log('boxItemId: ', boxItemId);
     }
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      // setPositionX(rect.left.toFixed(1));
+      // setPositionY(rect.top.toFixed(1));
+      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
+
+    setImageCounter((prevCounter) => prevCounter + 1);
+    selectedRect.imageCounter += 1;
+
+    textBox.on('modified', function () {
+      // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+    });
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
   };
 
   const addProductIcon = async () => {
-    if (iconCounter < quantity) {
-      const textBox = new fabric.Text(`Product Icon ${iconCounter + 1} `, {
-        left: 100,
-        top: 150,
-        fontSize: 20,
-        fill: color,
-        borderColor: 'dark',
-        width: 150,
-        height: 100,
-        backgroundColor: getRandomColor()
-        // selectionBackgroundColor: 'black'
-      });
+    const textBox = new fabric.Text(`Product Icon ${iconCounter} `, {
+      left: 100,
+      top: 150,
+      fontSize: 20,
+      fill: color,
+      borderColor: 'dark',
+      width: 150,
+      height: 100,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
 
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        mb: false, // midle bottom
-        ml: false, // middle left
-        mr: false // middle right
-      });
+    editor.canvas.add(textBox);
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      mb: false, // midle bottom
+      ml: false, // middle left
+      mr: false // middle right
+    });
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 1,
-        fontSize: textBox.fontSize,
-        fontStyle: getFontStyleValue(textBox.fontStyle),
-        alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 1,
+      fontSize: textBox.fontSize,
+      fontStyle: getFontStyleValue(textBox.fontStyle),
+      alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-      if (boxId) {
-        // const boxItemId = await createBoxItem(boxId, 2, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 6;
-        console.log('boxItemId: ', boxItemId);
-      }
-
-      editor.canvas.add(textBox);
-      setIconCounter((prevCounter) => prevCounter + 1);
-
-      textBox.on('mouseup', function () {
-        // setHeight(height.toFixed(1));
-        // setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
-
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-
-      textBox.on('modified', function () {
-        // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      });
-
-      textBox.on('moving', function () {
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        // Get the rectangle boundaries
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'Can not add more images',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+    if (boxId) {
+      // const boxItemId = await createBoxItem(boxId, 2, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
+      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 6;
+      console.log('boxItemId: ', boxItemId);
     }
+
+    setIconCounter((prevCounter) => prevCounter + 1);
+
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      setPositionX(rect.left.toFixed(1));
+      setPositionY(rect.top.toFixed(1));
+
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
+
+    textBox.on('modified', function () {
+      // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+    });
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = rect.left;
+      const rectTop = rect.top;
+      const rectRight = rect.left + rect.width;
+      const rectBottom = rect.top + rect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
   };
 
   const addProductHeader = async () => {
-    if (headerCounter < renderQuantity) {
-      const textBox = new fabric.Text('Header', {
-        left: 100,
-        top: 150,
-        fontSize: 20,
-        fill: color,
-        fontFamily: 'Arial',
-        fontStyle: 'normal', // fontStyle: 'normal', 'italic', or 'bold'
-        textAlign: 'center',
-        opacity: 1.0,
-        borderColor: 'dark',
-        width: 200,
-        height: 200,
-        backgroundColor: getRandomColor()
-        // selectionBackgroundColor: 'black'
-      });
+    const textBox = new fabric.Text('Header', {
+      left: selectedRect.left + 15,
+      top: selectedRect.top + 15,
+      fontSize: 20,
+      fill: color,
+      fontFamily: 'Arial',
+      fontStyle: 'normal', // fontStyle: 'normal', 'italic', or 'bold'
+      textAlign: 'center',
+      opacity: 1.0,
+      borderColor: 'dark',
+      width: 200,
+      height: 200,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
 
-      textBox.setControlsVisibility({
-        mtr: false,
-        mt: false, // middle top disable
-        mb: false, // midle bottom
-        ml: false, // middle left
-        mr: false // middle right
-      });
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      mb: false, // midle bottom
+      ml: false, // middle left
+      mr: false // middle right
+    });
 
-      let style = {
-        // textColor: textBox.fill,
-        textColor: '#ffffff',
-        bFontId: 1,
-        fontSize: textBox.fontSize,
-        fontStyle: getFontStyleValue(textBox.fontStyle),
-        alignment: getAlignmentValue(textBox.textAlign),
-        transparency: textBox.opacity,
-        uppercase: true
-      };
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 1,
+      fontSize: textBox.fontSize,
+      fontStyle: getFontStyleValue(textBox.fontStyle),
+      alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
 
-      if (boxId) {
-        const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 1, JSON.stringify(style));
-        textBox.boxItemId = boxItemId;
-        textBox.boxItemType = 1;
-        console.log('boxItemId: ', boxItemId);
-      }
-
-      textBox.on('mouseup', function () {
-        // setHeight(height.toFixed(1));
-        // setWidth(width.toFixed(1));
-        setPositionX(rect.left.toFixed(1));
-        setPositionY(rect.top.toFixed(1));
-
-        setIsHeaderVisible(true);
-        setSelectedTool('text');
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-          setSelectedTool(null);
-        }
-      });
-
-      textBox.on('modified', function () {
-        // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      });
-
-      editor.canvas.add(textBox);
-      setHeaderCounter((prevCounter) => prevCounter + 1);
-
-      textBox.on('moving', function () {
-        const textLeft = textBox.left;
-        const textTop = textBox.top;
-        const textWidth = textBox.width * textBox.scaleX; // consider scaling
-        const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-        // Get the rectangle boundaries
-        const rectLeft = rect.left;
-        const rectTop = rect.top;
-        const rectRight = rect.left + rect.width;
-        const rectBottom = rect.top + rect.height;
-
-        // Restrict text movement within the rectangle boundaries
-        if (textLeft < rectLeft) {
-          textBox.set('left', rectLeft);
-        }
-        if (textTop < rectTop) {
-          textBox.set('top', rectTop);
-        }
-        if (textLeft + textWidth > rectRight) {
-          textBox.set('left', rectRight - textWidth);
-        }
-        if (textTop + textHeight > rectBottom) {
-          textBox.set('top', rectBottom - textHeight);
-        }
-      });
-
-      textBox.on('mouseup', function () {
-        toggleHeaderVisibility();
-      });
-
-      editor.canvas.on('mouse:down', function (options) {
-        if (options.target !== textBox) {
-          setIsHeaderVisible(false);
-        }
-      });
-    } else {
-      Toastify({
-        text: 'You can only add header once for each render',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
+    if (selectedRect.boxId) {
+      const boxItemId = await createBoxItem(
+        selectedRect.boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        1,
+        JSON.stringify(style)
+      );
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 1;
+      console.log('boxItemId: ', boxItemId);
     }
+
+    textBox.on('mouseup', function () {
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
+      // setPositionX(rect.left.toFixed(1));
+      // setPositionY(rect.top.toFixed(1));
+      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+        setSelectedTool(null);
+      }
+    });
+
+    textBox.on('modified', function () {
+      // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
+    });
+
+    editor.canvas.add(textBox);
+    setHeaderCounter((prevCounter) => prevCounter + 1);
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+    });
+
+    textBox.on('mouseup', function () {
+      toggleHeaderVisibility();
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+      }
+    });
   };
 
   const getTextAlignIcon = () => {
@@ -2368,11 +2235,11 @@ function Template() {
   return (
     <div className="app">
       <header className="header">
-        {selectedTool == 'text' && (
+        {(selectedTool == 'text' || selectedTool == 'textBox') && (
           <>
             <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
-                <option key={font.bFontId} value={font.fontName}>
+                <option key={font.fontId} value={font.fontName}>
                   {font.fontName}
                 </option>
               ))}
@@ -2386,23 +2253,24 @@ function Template() {
               min="1" // Set minimum value if needed
               max="150" // Set maximum value if needed
             />
-            <input type="color" id="font-color" onChange={(e) => changeColor(e)} />
+            <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
             <button onClick={toggleBold}>B</button>
             <button onClick={toggleItalic}>I</button>
+            <button onClick={cycleTextAlign} className="align-button">
+              {getTextAlignIcon()}
+            </button>
           </>
         )}
 
         {selectedTool == 'rect' && (
           <>
             <label htmlFor="font-color">Background Color:</label>
-            <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} />
+            <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
             {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
           Position & Size
         </Button> */}
             <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
-            <button onClick={cycleTextAlign} className="align-button">
-              {getTextAlignIcon()}
-            </button>
+
             {/* <button onClick={toggleTextCase} className="case-button">
               Toggle Case
             </button> */}
@@ -2462,24 +2330,27 @@ function Template() {
                     <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
                     {/* </>
                     )} */}
+                    {selectedTool !== 'text' && (
+                      <>
+                        <label htmlFor="positionX">Position X:</label>
+                        <input
+                          type="number"
+                          id="positionX"
+                          value={positionX}
+                          onChange={(e) => handleDimensionChange(e, 'positionX')}
+                          min={-Infinity}
+                        />
 
-                    <label htmlFor="positionX">Position X:</label>
-                    <input
-                      type="number"
-                      id="positionX"
-                      value={positionX}
-                      onChange={(e) => handleDimensionChange(e, 'positionX')}
-                      min={-Infinity}
-                    />
-
-                    <label htmlFor="positionY">Position Y:</label>
-                    <input
-                      type="number"
-                      id="positionY"
-                      value={positionY}
-                      onChange={(e) => handleDimensionChange(e, 'positionY')}
-                      min={-Infinity}
-                    />
+                        <label htmlFor="positionY">Position Y:</label>
+                        <input
+                          type="number"
+                          id="positionY"
+                          value={positionY}
+                          onChange={(e) => handleDimensionChange(e, 'positionY')}
+                          min={-Infinity}
+                        />
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -2499,14 +2370,24 @@ function Template() {
                     </Button>
                     {/* <Button onClick={() => addProductIcon()} style={{ color: 'black' }}>
                       Add Icon
-                    </Button>
+                    </Button>*/}
                     <Button onClick={() => addProductHeader()} style={{ color: 'black' }}>
                       Add Header
-                    </Button> */}
-                    <label htmlFor="product-quantity" style={{ color: 'white' }}>
+                    </Button>
+                    {/* <label htmlFor="product-quantity" style={{ color: 'white' }}>
                       Quantity:
-                    </label>
-                    <input type="number" id="product-quantity" value={quantity} onChange={handleQuantityChange} />
+                    </label> */}
+                    {/* <input
+                      type="number"
+                      id="product-quantity"
+                      value={quantity}
+                      onChange={handleQuantityChange}
+                      onKeyDown={(e) => {
+                        if (e.key === '-' || e.key === '+') {
+                          e.preventDefault(); // Prevent input of '-' or '+'
+                        }
+                      }}
+                    /> */}
                   </div>
                 )}
               </div>
@@ -2524,28 +2405,12 @@ function Template() {
               <div className="tab">
                 <h4 style={{ color: 'white' }}>Background</h4>
                 <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
-                {/* <button
-                  disabled={isDisabled}
-                  className={`btn btn-primary ${isDisabled ? 'btn-disabled' : ''}`}
-                  type="button"
-                  onClick={uploadWidget}
-                >
-                  {isDisabled ? 'Opening Widget' : 'Upload Image'}
-                </button> */}
               </div>
             )}
             {activeTab === 'images' && (
               <div className="tab narrow-tab" style={{ width: '100%' }}>
                 <h4 style={{ color: 'white' }}>Image</h4>
                 <input type="file" accept="image/*" onChange={handleImageUpload} />
-                {/* <button
-                  disabled={isDisabled}
-                  className={`btn btn-primary ${isDisabled ? 'btn-disabled' : ''}`}
-                  type="button"
-                  onClick={uploadWidget}
-                >
-                  {isDisabled ? 'Đang mở ' : 'Tải ảnh lên'}
-                </button> */}
                 <div
                   className="custom-scrollbar"
                   style={{

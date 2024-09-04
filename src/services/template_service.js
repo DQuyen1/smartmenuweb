@@ -4,7 +4,7 @@ class templateService {
   async getTemplate(templateId) {
     try {
       const response = await axios.get(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?templateId=${templateId}&pageSize=10`
+        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?templateId=${templateId}&pageSize=10`
       );
 
       const result = response.data[0].templateImgPath;
@@ -27,7 +27,7 @@ class templateService {
     };
 
     try {
-      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates', reqBody);
+      const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates', reqBody);
       return response.data.templateId;
     } catch (error) {
       console.log('Error message: ' + error.message);
@@ -44,7 +44,7 @@ class templateService {
     };
 
     try {
-      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${templateId}`, reqBody);
+      const response = await axios.put(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${templateId}`, reqBody);
 
       console.log('Resposne message: ' + response.data);
     } catch (error) {
@@ -54,7 +54,7 @@ class templateService {
 
   deleteTemplate(id) {
     try {
-      const response = axios.delete('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Template?templateId=' + id);
+      const response = axios.delete('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Template?templateId=' + id);
       console.log('Api message: ' + response.data);
     } catch (error) {
       console.log('Error message: ' + error);
