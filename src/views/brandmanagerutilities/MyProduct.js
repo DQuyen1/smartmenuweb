@@ -116,7 +116,7 @@ const MyProduct = () => {
         setError(null);
 
         try {
-          const response = await axios.get('https://3.1.81.96/api/Products', {
+          const response = await axios.get('http://3.1.81.96/api/Products', {
             params: {
               pageNumber: 1,
               pageSize: 100, // Adjust pageSize as needed
@@ -182,8 +182,8 @@ const MyProduct = () => {
         productLogoPath: productLogoPath
       };
       console.log('payload:', payload);
-      await axios.post('https://3.1.81.96/api/Products', payload);
-      const response = await axios.get('https://3.1.81.96/api/Products', {
+      await axios.post('http://3.1.81.96/api/Products', payload);
+      const response = await axios.get('http://3.1.81.96/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
@@ -235,8 +235,8 @@ const MyProduct = () => {
         productImgPath: productImgPath,
         productLogoPath: productLogoPath
       };
-      await axios.put(`https://3.1.81.96/api/Products/${productToEdit.productId}`, payload);
-      const response = await axios.get('https://3.1.81.96/api/Products', {
+      await axios.put(`http://3.1.81.96/api/Products/${productToEdit.productId}`, payload);
+      const response = await axios.get('http://3.1.81.96/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
@@ -267,9 +267,9 @@ const MyProduct = () => {
 
   const handleDeleteProduct = async () => {
     try {
-      await axios.delete(`https://3.1.81.96/api/Products/${productToDelete}`);
+      await axios.delete(`http://3.1.81.96/api/Products/${productToDelete}`);
       // Fetch the updated list of products
-      const response = await axios.get('https://3.1.81.96/api/Products', {
+      const response = await axios.get('http://3.1.81.96/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
@@ -472,9 +472,11 @@ const MyProduct = () => {
               <TextField
                 margin="dense"
                 name="productDescription"
-                label="Description"
+                label="Product Description"
                 type="text"
                 fullWidth
+                multiline
+                rows={4}
                 variant="outlined"
                 value={newProduct.productDescription}
                 onChange={handleInputChange}
@@ -546,9 +548,11 @@ const MyProduct = () => {
               <TextField
                 margin="dense"
                 name="productDescription"
-                label="Description"
+                label="Product Description"
                 type="text"
                 fullWidth
+                multiline
+                rows={4}
                 variant="outlined"
                 value={productToEdit?.productDescription || ''}
                 onChange={handleEditInputChange}

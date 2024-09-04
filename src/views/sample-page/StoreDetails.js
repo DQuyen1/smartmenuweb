@@ -50,10 +50,10 @@ const StoreDetails = () => {
   useEffect(() => {
     const fetchStoreDetails = async () => {
       try {
-        const storeResponse = await axios.get(`https://3.1.81.96/api/Stores?storeId=${storeId}`);
+        const storeResponse = await axios.get(`http://3.1.81.96/api/Stores?storeId=${storeId}`);
         const storeDetails = storeResponse.data[0];
 
-        const brandResponse = await axios.get(`https://3.1.81.96/api/Brands?brandId=${storeDetails.brandId}`);
+        const brandResponse = await axios.get(`http://3.1.81.96/api/Brands?brandId=${storeDetails.brandId}`);
         const brandName = brandResponse.data.length > 0 ? brandResponse.data[0].brandName : 'Unknown Brand';
 
         setStoreData(storeDetails);
@@ -87,7 +87,7 @@ const StoreDetails = () => {
       return;
     }
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Stores/${editingStoreData.storeId}`, editingStoreData);
+      const response = await axios.put(`http://3.1.81.96/api/Stores/${editingStoreData.storeId}`, editingStoreData);
 
       if (response.status === 200) {
         setStoreData(editingStoreData); // Update display state only after successful save

@@ -87,7 +87,7 @@ const UtilitiesBrand = () => {
 
   const checkBrandNameExists = async (brandName) => {
     try {
-      const response = await axios.get(`https://3.1.81.96/api/Brands?searchString=${brandName}`);
+      const response = await axios.get(`http://3.1.81.96/api/Brands?searchString=${brandName}`);
       return response.data.length > 0; // Assuming the API returns a list of matching brands
     } catch (error) {
       console.error('Error checking brand name:', error);
@@ -119,7 +119,7 @@ const UtilitiesBrand = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('https://3.1.81.96/api/Brands', { ...newBrandData, brandImage: brandImage });
+      const response = await axios.post('http://3.1.81.96/api/Brands', { ...newBrandData, brandImage: brandImage });
       if (response.status === 201) {
         setNewBrandData({
           brandName: '',
@@ -167,8 +167,10 @@ const UtilitiesBrand = () => {
       return;
     }
     if (!selectedBrand) return;
+
+    setIsLoading(true);
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Brands/${selectedBrand.brandId}`, {
+      const response = await axios.put(`http://3.1.81.96/api/Brands/${selectedBrand.brandId}`, {
         ...updateBrandData,
         brandImage: brandImage
       });
@@ -205,6 +207,8 @@ const UtilitiesBrand = () => {
         position: 'right',
         backgroundColor: 'linear-gradient(to right, #ff0000, #ff6347)'
       }).showToast();
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -233,7 +237,7 @@ const UtilitiesBrand = () => {
   const handleDeleteBrand = async () => {
     if (!selectedBrand) return;
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Brands/${selectedBrand.brandId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Brands/${selectedBrand.brandId}`);
       if (response.status === 200) {
         setBrandData(brandData.filter((brand) => brand.brandId !== selectedBrand.brandId));
         Toastify({
@@ -295,7 +299,7 @@ const UtilitiesBrand = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('https://3.1.81.96/api/Brands', {
+      const response = await axios.get('http://3.1.81.96/api/Brands', {
         params: {
           pageSize: rowsPerPage,
           pageNumber: page
@@ -530,8 +534,8 @@ const UtilitiesBrand = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseUpdateBrandDialog}>Cancel</Button>
-          <Button onClick={handleUpdateBrand} variant="contained">
-            Update
+          <Button onClick={handleUpdateBrand} variant="contained" disabled={isLoading}>
+            <Typography color={'white'}>{isLoading ? 'Updating...' : 'Update'}</Typography>
           </Button>
         </DialogActions>
       </Dialog>

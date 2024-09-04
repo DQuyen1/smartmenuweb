@@ -29,7 +29,7 @@ const MenuDetails = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('https://3.1.81.96/api/Categories?pageNumber=1&pageSize=100'); // Replace with your API endpoint
+        const response = await axios.get('http://3.1.81.96/api/Categories?pageNumber=1&pageSize=100'); // Replace with your API endpoint
         setCategories(response.data); // Assuming response.data is an array of categories
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -43,7 +43,7 @@ const MenuDetails = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('https://3.1.81.96/api/Products?pageNumber=1&pageSize=100'); // Replace with your API endpoint
+        const response = await axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'); // Replace with your API endpoint
         setProducts(response.data); // Assuming response.data is an array of products
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -61,7 +61,7 @@ const MenuDetails = () => {
 
       try {
         // Fetch product group items for this menu
-        const productGroupResponse = await axios.get(`https://3.1.81.96/api/ProductGroup/GroupItem?menuId=${menuData.menuId}`);
+        const productGroupResponse = await axios.get(`http://3.1.81.96/api/ProductGroup/GroupItem?menuId=${menuData.menuId}`);
         setProductGroups(productGroupResponse.data);
         const productGroupItems = productGroupResponse.data;
         // Get unique product IDs from all product groups
@@ -73,7 +73,7 @@ const MenuDetails = () => {
         if (productIds.length > 0) {
           // Fetch product size prices for all unique product IDs
           const productResponses = await Promise.all(
-            productIds.map((id) => axios.get(`https://3.1.81.96/api/Products?productId=${id}`)) // Assuming query parameter
+            productIds.map((id) => axios.get(`http://3.1.81.96/api/Products?productId=${id}`)) // Assuming query parameter
           );
 
           const newProductMap = {};
@@ -86,7 +86,7 @@ const MenuDetails = () => {
           });
           setProductData(newProductMap);
           const productSizePromises = productIds.map(
-            (id) => axios.get(`https://3.1.81.96/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
+            (id) => axios.get(`http://3.1.81.96/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
           );
           const productSizeResponses = await Promise.all(productSizePromises);
 

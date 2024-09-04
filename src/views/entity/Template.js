@@ -53,7 +53,7 @@ const EntityTemplate = () => {
     templateName: '',
     templateDescription: '',
     templateOrientation: '',
-    templateImgPath: ''
+    templateType: 0
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [showEditTemplateDialog, setShowEditTemplateDialog] = useState(false);
@@ -79,9 +79,6 @@ const EntityTemplate = () => {
     if (!newTemplateData.templateOrientation) {
       errors.templateOrientation = 'Template orientation is required';
     }
-    if (!newTemplateData.templateImgPath.trim()) {
-      errors.templateImgPath = 'Template image path is required';
-    }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -103,7 +100,9 @@ const EntityTemplate = () => {
       return;
     }
     try {
-      const response = await axios.post('https://3.1.81.96/api/Templates', { ...newTemplateData, templateImgPath: templateImgPath });
+      const response = await axios.post('http://3.1.81.96/api/Templates', {
+        ...newTemplateData
+      });
       if (response.status === 201) {
         // Update template data locally (assuming server returns the created template data)
         fetchData();
@@ -112,8 +111,7 @@ const EntityTemplate = () => {
         setShowAddTemplateDialog(false);
 
         console.log('Template added successfully:', response.data);
-        // navigate('/pages/template', { state: { templateData: response.data.templateId } });
-        navigate(`/pages/template/${response.data.templateId}`);
+        navigate(`/pages/template/${response.data.templateId}`, { state: { templateType: response.data.templateType } });
       } else {
         console.error('Error creating template:', response);
         setError(`Error: ${response.statusText}`);
@@ -130,9 +128,8 @@ const EntityTemplate = () => {
     }
 
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
-        ...editTemplateData,
-        templateImgPath: templateImgPath
+      const response = await axios.put(`http://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
+        ...editTemplateData
       });
       if (response.status === 200) {
         fetchData();
@@ -156,8 +153,9 @@ const EntityTemplate = () => {
     if (name === 'templateOrientation') {
       setNewTemplateData((prevState) => ({
         ...prevState,
-        templateWidth: value === 'vertical' ? 900 : 1600,
-        templateHeight: value === 'vertical' ? 1600 : 900, // Correct the order for horizontal
+        templateWidth: value === 'vertical' ? 794 : 1080,
+        templateHeight: value === 'vertical' ? 1123 : 608, // Correct the order for horizontal
+        templateType: value === 'vertical' ? 0 : 1,
         [name]: value
       }));
     } else {
@@ -216,7 +214,7 @@ const EntityTemplate = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
       if (response.status === 200) {
         setTemplateData((prevData) => prevData.filter((item) => item.templateId !== selectedTemplate.templateId));
         setOpenSnackbar(true);
@@ -239,8 +237,8 @@ const EntityTemplate = () => {
 
     try {
       const [templateResponse, brandResponse] = await Promise.all([
-        axios.get('https://3.1.81.96/api/Templates?pageNumber=1&pageSize=1000'),
-        axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+        axios.get('http://3.1.81.96/api/Templates?pageNumber=1&pageSize=1000'),
+        axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
       ]);
 
       setTemplateData(templateResponse.data);
@@ -261,34 +259,34 @@ const EntityTemplate = () => {
     (template) =>
       template.templateName.toLowerCase().includes(filter.toLowerCase()) && (selectedBrand === '' || template.brandId === selectedBrand)
   );
-  const handleImageUpload = async (event) => {
-    const userId = 469;
-    const file = event.target.files[0];
-    const formData = new FormData();
-    const preset_key = 'xdm798lx';
-    const folder = `users/${userId}`;
-    const tags = `${userId}`;
-    if (file) {
-      // const url = URL.createObjectURL(file);
-      formData.append('file', file);
-      formData.append('upload_preset', preset_key);
-      formData.append('tags', tags);
-      formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const imageUrl = result.data.secure_url;
-        setTemplateImgPath(imageUrl);
-        setNewTemplateData((prevTemplateData) => ({
-          ...prevTemplateData,
-          templateImgPath: imageUrl
-        }));
-        setEditTemplateData((prevTemplateData) => ({
-          ...prevTemplateData,
-          templateImgPath: imageUrl
-        }));
-        console.log('Result hihi: ', result.data.secure_url);
-      });
-    }
-  };
+  // const handleImageUpload = async (event) => {
+  //   const userId = 469;
+  //   const file = event.target.files[0];
+  //   const formData = new FormData();
+  //   const preset_key = 'xdm798lx';
+  //   const folder = `users/${userId}`;
+  //   const tags = `${userId}`;
+  //   if (file) {
+  //     // const url = URL.createObjectURL(file);
+  //     formData.append('file', file);
+  //     formData.append('upload_preset', preset_key);
+  //     formData.append('tags', tags);
+  //     formData.append('folder', folder);
+  //     axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
+  //       const imageUrl = result.data.secure_url;
+  //       setTemplateImgPath(imageUrl);
+  //       setNewTemplateData((prevTemplateData) => ({
+  //         ...prevTemplateData,
+  //         templateImgPath: imageUrl
+  //       }));
+  //       setEditTemplateData((prevTemplateData) => ({
+  //         ...prevTemplateData,
+  //         templateImgPath: imageUrl
+  //       }));
+  //       console.log('Result hihi: ', result.data.secure_url);
+  //     });
+  //   }
+  // };
 
   const handleOpenEditDialog = (template) => {
     setEditTemplateData({
@@ -492,20 +490,9 @@ const EntityTemplate = () => {
             helperText={validationErrors.templateOrientation}
           >
             <option value="" disabled></option>
-            <option value="vertical">Vertical (900 x 1600)</option>
-            <option value="horizontal">Horizontal (1600 x 900)</option>
+            <option value="vertical">Vertical</option>
+            <option value="horizontal">Horizontal</option>
           </TextField>
-          <Input
-            type="file"
-            name="templateImgPath"
-            accept="image/*"
-            onChange={handleImageUpload}
-            fullWidth
-            margin="dense"
-            error={!!validationErrors.templateImgPath}
-            required
-          />
-          <FormHelperText error={!!validationErrors.templateImgPath}>{validationErrors.templateImgPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddTemplateDialog}>Cancel</Button>

@@ -64,7 +64,7 @@ const AuthResetPassword = () => {
     setToggleButton((prev) => !prev);
 
     axios
-      .post('https://3.1.81.96/api/Auth/ResetPassword', data, {
+      .post('http://3.1.81.96/api/Auth/ResetPassword', data, {
         headers: {
           'Content-Type': 'application/json'
         }
