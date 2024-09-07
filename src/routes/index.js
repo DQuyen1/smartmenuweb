@@ -63,7 +63,7 @@ const NotFound = () => {
           boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)'
         }}
       >
-        Go Back to Home
+        Go Back
       </Button>
     </Container>
   );

@@ -302,7 +302,7 @@ const MyTemplate = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Templates</Typography>}>
+          <MainCard title="Templates">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -486,7 +486,9 @@ const MyTemplate = () => {
           <FormHelperText error={!!validationErrors.templateImgPath}>{validationErrors.templateImgPath}</FormHelperText> */}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleAddTemplate}>
             Add Template
           </Button>
@@ -526,7 +528,9 @@ const MyTemplate = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleEditTemplate}>
             Save Changes
           </Button>

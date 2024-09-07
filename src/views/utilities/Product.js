@@ -328,7 +328,7 @@ const UtilitiesProduct = () => {
 
   return (
     <>
-      <MainCard title="Product Table">
+      <MainCard title="Products">
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Box sx={{ display: 'flex', gap: '16px' }}>
             <TextField
@@ -523,7 +523,9 @@ const UtilitiesProduct = () => {
           <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddProductDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddProductDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleAddProduct} color="success" variant="contained" disabled={isLoading}>
             <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
           </Button>
@@ -536,7 +538,9 @@ const UtilitiesProduct = () => {
           <DialogContentText>Are you sure you want to delete the product? This action cannot be undone.</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleCancelDelete} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
             Delete
           </Button>

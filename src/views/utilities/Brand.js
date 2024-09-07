@@ -23,8 +23,7 @@ import {
   DialogActions,
   CircularProgress,
   Input,
-  FormHelperText,
-  TablePagination
+  FormHelperText
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Edit, Delete } from '@mui/icons-material';
@@ -52,8 +51,6 @@ const UtilitiesBrand = () => {
   const [filter, setFilter] = useState('');
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [brandImage, setBrandImage] = useState(false);
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const validateNewBrandData = () => {
     const errors = {};
@@ -301,13 +298,13 @@ const UtilitiesBrand = () => {
     try {
       const response = await axios.get('http://3.1.81.96/api/Brands', {
         params: {
-          pageSize: rowsPerPage,
-          pageNumber: page
+          pageSize: 10,
+          pageNumber: 1
         }
       });
       const sortedData = response.data.sort((a, b) => new Date(b.brandId) - new Date(a.brandId));
       setBrandData(sortedData);
-      setPage(0);
+      // setPage(0);
     } catch (error) {
       console.error('Error fetching brand data:', error);
       setError(error.message);
@@ -349,18 +346,9 @@ const UtilitiesBrand = () => {
     }
   };
 
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
   return (
     <>
-      <MainCard title="Brand Table">
+      <MainCard title="Brands">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <TextField
             value={filter}
@@ -407,7 +395,6 @@ const UtilitiesBrand = () => {
                       brand.brandName.toLowerCase().includes(filter.toLowerCase()) ||
                       brand.brandContactEmail.toLowerCase().includes(filter.toLowerCase())
                   )
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((brand) => (
                     <TableRow key={brand.brandId}>
                       <TableCell>
@@ -429,15 +416,6 @@ const UtilitiesBrand = () => {
                   ))}
               </TableBody>
             </Table>
-            <TablePagination
-              component="div"
-              count={brandData.length}
-              onPageChange={handlePageChange}
-              onRowsPerPageChange={handleRowsPerPageChange}
-              page={page}
-              rowsPerPage={rowsPerPage}
-              rowsPerPageOptions={[3, 5, 10]}
-            />
           </TableContainer>
         )}
       </MainCard>
@@ -495,7 +473,9 @@ const UtilitiesBrand = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddBrandDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddBrandDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleAddBrand} disabled={isLoading} variant="contained" color="success">
             <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
           </Button>
@@ -533,7 +513,9 @@ const UtilitiesBrand = () => {
           <FormHelperText error={!!validationErrors.brandImage}>{validationErrors.brandImage}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseUpdateBrandDialog}>Cancel</Button>
+          <Button onClick={handleCloseUpdateBrandDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleUpdateBrand} variant="contained" disabled={isLoading}>
             <Typography color={'white'}>{isLoading ? 'Updating...' : 'Update'}</Typography>
           </Button>
@@ -546,7 +528,9 @@ const UtilitiesBrand = () => {
           <DialogContentText>Are you sure you want to delete this brand?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteConfirmDialog}>Cancel</Button>
+          <Button onClick={handleCloseDeleteConfirmDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleDeleteBrand} variant="contained" color="error">
             <Typography sx={{ fontWeight: 'bold' }}>Delete</Typography>
           </Button>

@@ -2,7 +2,19 @@ import React, { useState, useEffect } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, CircularProgress, Card, CardContent, CardMedia, TextField, InputAdornment } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardMedia,
+  TextField,
+  InputAdornment,
+  Divider,
+  Button
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 const AdminChooseTemplate = () => {
@@ -45,7 +57,7 @@ const AdminChooseTemplate = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Choose Template</Typography>}>
+          <MainCard title="Choose Template">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -99,6 +111,12 @@ const AdminChooseTemplate = () => {
                 ))}
               </Grid>
             )}
+            <Divider sx={{ mt: 3 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'start', mt: 3 }}>
+              <Button variant="contained" color="secondary" onClick={() => navigate(-1)}>
+                Back
+              </Button>
+            </Box>
           </MainCard>
         </Grid>
       </Grid>

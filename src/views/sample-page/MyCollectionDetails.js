@@ -350,7 +350,7 @@ const MyCollectionDetail = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Collection Details</Typography>}>
+    <MainCard title="Collection Details">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="subtitle1">Collection ID: {collectionData.collectionId}</Typography>
         <Typography variant="subtitle1">Brand ID: {collectionData.brandId}</Typography>
@@ -442,7 +442,7 @@ const MyCollectionDetail = () => {
             <DialogContentText>Are you sure you want to delete this product group item?</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowDeleteItemConfirmation(false)} color="primary">
+            <Button onClick={() => setShowDeleteItemConfirmation(false)} color="secondary">
               Cancel
             </Button>
             <Button onClick={confirmDeleteProductGroupItem} color="error">
@@ -481,7 +481,9 @@ const MyCollectionDetail = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowAddProductGroupItemDialog(false)}>Cancel</Button>
+            <Button onClick={() => setShowAddProductGroupItemDialog(false)} color="secondary">
+              Cancel
+            </Button>
             <Button onClick={handleSaveAddProductGroupItem} variant="contained">
               Add
             </Button>
@@ -529,7 +531,9 @@ const MyCollectionDetail = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddProductGroupDialog(false)}>Cancel</Button>
+          <Button onClick={() => setShowAddProductGroupDialog(false)} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleAddProductGroup} variant="contained">
             Add Product Group
           </Button>
@@ -577,7 +581,9 @@ const MyCollectionDetail = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditProductGroupDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditProductGroupDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleSaveEditProductGroup} variant="contained">
             Save
           </Button>
@@ -590,7 +596,7 @@ const MyCollectionDetail = () => {
           <DialogContentText>Are you sure you want to delete this product group? This action cannot be undone.</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDeleteConfirmation(false)} color="primary">
+          <Button onClick={() => setShowDeleteConfirmation(false)} color="secondary">
             Cancel
           </Button>
           <Button onClick={confirmDeleteProductGroup} color="error">

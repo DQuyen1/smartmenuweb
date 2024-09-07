@@ -79,7 +79,7 @@ const MyTemplateDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Template Details</Typography>}>
+    <MainCard title="Template Details">
       <Grid container spacing={2}>
         <Grid item xs={12} sm={4}>
           {/* Image Display */}
@@ -174,7 +174,9 @@ const MyTemplateDetails = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenEditDialog(false)} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleUpdateTemplate} color="success">
             Save Changes
           </Button>

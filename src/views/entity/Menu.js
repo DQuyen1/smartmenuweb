@@ -349,7 +349,9 @@ const EntityMenu = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseAddMenuDialog}>Cancel</Button>
+            <Button onClick={handleCloseAddMenuDialog} color="secondary">
+              Cancel
+            </Button>
             <Button onClick={handleAddMenu} variant="contained">
               Add Menu
             </Button>
@@ -403,7 +405,9 @@ const EntityMenu = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseEditMenuDialog}>Cancel</Button>
+            <Button onClick={handleCloseEditMenuDialog} color="secondary">
+              Cancel
+            </Button>
             <Button onClick={() => handleSaveEdit(editingMenu?.menuId)} variant="contained">
               Save
             </Button>

@@ -678,8 +678,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
               <DialogTitle variant="h4">Delete Product Group Item</DialogTitle>
               <DialogContent>Delete product group `{row.productGroupName}`</DialogContent>
               <DialogActions>
-                <Button onClick={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)}>Cancel</Button>
-
+                <Button onClick={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)} color="secondary">
+                  Cancel
+                </Button>
                 <Button onClick={(e) => handleSubmitDeleteProductGroup(e, row)}>OK</Button>
               </DialogActions>
             </Dialog>
@@ -739,7 +740,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                           </DialogContent>
 
                           <DialogActions>
-                            <Button onClick={() => setToggleAddProduct(false)}>Cancel</Button>
+                            <Button onClick={() => setToggleAddProduct(false)} color="secondary">
+                              Cancel
+                            </Button>
                             <Button onClick={(e) => handleSubmitAddProductGroupItem(e)}>OK</Button>
                           </DialogActions>
                         </Dialog>
@@ -809,8 +812,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                             <DialogTitle variant="h4">Delete Product Group Item</DialogTitle>
                             <DialogContent>Delete product group item `{groupItem.product.productName}`</DialogContent>
                             <DialogActions>
-                              <Button onClick={() => handleCloseDialog(groupItem.productGroupItemId)}>Cancel</Button>
-
+                              <Button onClick={() => handleCloseDialog(groupItem.productGroupItemId)} color="secondary">
+                                Cancel
+                              </Button>
                               <Button onClick={(e) => handleSubmitDeleteProductGroupItem(e, groupItem)}>OK</Button>
                             </DialogActions>
                           </Dialog>
@@ -890,7 +894,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                                         </DialogContent>
 
                                         <DialogActions>
-                                          <Button onClick={() => setToggleAddPrice(!toggleAddPrice)}>Cancel</Button>
+                                          <Button onClick={() => setToggleAddPrice(!toggleAddPrice)} color="secondary">
+                                            Cancel
+                                          </Button>
                                           <Button onClick={(e) => handleSubmitAddPrice(e, groupItem)}>OK</Button>
                                         </DialogActions>
                                       </Dialog>
@@ -955,7 +961,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                                             }}
                                           />
                                           <DialogActions>
-                                            <Button onClick={() => handleCloseDialog(size.productSizePriceId)}>Cancel</Button>
+                                            <Button onClick={() => handleCloseDialog(size.productSizePriceId)} color="secondary">
+                                              Cancel
+                                            </Button>
                                             <Button onClick={(e) => handleSubmitEditPrice(e, size)}>OK</Button>
                                           </DialogActions>
                                         </Dialog>
@@ -965,7 +973,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                                           <DialogTitle>Delete Price</DialogTitle>
                                           <DialogContent>Delete price of product id {groupItem.productId}</DialogContent>
                                           <DialogActions>
-                                            <Button onClick={() => setToggleDeletePrice(!toggleDeletePrice)}>Cancel</Button>
+                                            <Button onClick={() => setToggleDeletePrice(!toggleDeletePrice)} color="secondary">
+                                              Cancel
+                                            </Button>
 
                                             <Button onClick={(e) => handleSubmitDeletePrice(e, size)}>OK</Button>
                                           </DialogActions>
@@ -1108,7 +1118,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                   </DialogContent>
 
                   <DialogActions>
-                    <Button onClick={() => setToggleAddProductGroup(false)}>Cancel</Button>
+                    <Button onClick={() => setToggleAddProductGroup(false)} color="secondary">
+                      Cancel
+                    </Button>
                     <Button onClick={(e) => handleSubmitAddProductGroup(e)}>OK</Button>
                   </DialogActions>
                 </Dialog>

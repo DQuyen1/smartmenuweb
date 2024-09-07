@@ -196,7 +196,7 @@ const MyMenu = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Menu Table</Typography>}>
+          <MainCard title="Menus">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -353,7 +353,7 @@ const MyMenu = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddMenuDialog} color="primary">
+          <Button onClick={handleCloseAddMenuDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAddMenu} color="primary">
@@ -391,7 +391,7 @@ const MyMenu = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditMenuDialog} color="primary">
+          <Button onClick={handleCloseEditMenuDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleEditMenu} color="primary">

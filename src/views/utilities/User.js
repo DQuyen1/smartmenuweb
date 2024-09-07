@@ -342,7 +342,7 @@ const UtilitiesBrandStaff = () => {
     });
 
   return (
-    <MainCard title="Brand Staff Table">
+    <MainCard title="Brand Staffs">
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -478,7 +478,7 @@ const UtilitiesBrandStaff = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleSubmit} color="success" variant="contained" disabled={isLoading}>
@@ -542,7 +542,7 @@ const UtilitiesBrandStaff = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleAssignClose} color="primary">
+          <Button onClick={handleAssignClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAssignSubmit} color="success" variant="contained" disabled={isLoading}>
@@ -556,7 +556,9 @@ const UtilitiesBrandStaff = () => {
           <Typography>Are you sure you want to disable this user?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteClose}>Cancel</Button>
+          <Button onClick={handleDeleteClose} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleDeleteUser} color="error" variant="contained" disabled={isLoading}>
             {isLoading ? 'Disabling...' : 'Disable'}
           </Button>

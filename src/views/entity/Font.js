@@ -191,7 +191,9 @@ const EntityFont = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseUploadDialog}>Cancel</Button>
+          <Button onClick={handleCloseUploadDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleUploadFont} variant="contained">
             Upload
           </Button>

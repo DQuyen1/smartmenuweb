@@ -142,7 +142,9 @@ const StoreDetails = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography variant="h6">Status:</Typography>
-            <Typography variant="body1">{storeData.storeStatus ? 'True' : 'False'}</Typography>
+            <Typography variant="body1" style={{ color: storeData.storeStatus ? 'green' : 'red' }}>
+              {storeData.storeStatus ? 'Active' : 'Inactive'}
+            </Typography>
           </Grid>
         </Grid>
 
@@ -230,6 +232,7 @@ const StoreDetails = () => {
                 setOpenEditDialog(false);
                 setValidationErrors({});
               }}
+              color="secondary"
             >
               Cancel
             </Button>

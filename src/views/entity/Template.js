@@ -112,7 +112,6 @@ const EntityTemplate = () => {
 
         console.log('Template added successfully:', response.data);
 
-
         navigate(`/pages/template/${response.data.templateId}`, {
           state: {
             templateType: response.data.templateType,
@@ -120,7 +119,6 @@ const EntityTemplate = () => {
             templateHeight: response.data.templateHeight
           }
         });
-
       } else {
         console.error('Error creating template:', response);
         setError(`Error: ${response.statusText}`);
@@ -505,7 +503,9 @@ const EntityTemplate = () => {
           </TextField>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleAddTemplate}>
             Add Template
           </Button>
@@ -545,7 +545,9 @@ const EntityTemplate = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleEditTemplate}>
             Save Changes
           </Button>

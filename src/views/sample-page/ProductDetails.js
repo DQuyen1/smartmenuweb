@@ -349,7 +349,7 @@ const ProductDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Product Details</Typography>}>
+    <MainCard title="Product Details">
       <Stack spacing={2}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -556,7 +556,7 @@ const ProductDetails = () => {
             <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setIsEditing(false)} color="primary">
+            <Button onClick={() => setIsEditing(false)} color="secondary">
               Cancel
             </Button>
             <Button onClick={handleUpdateProduct} color="primary" variant="contained">
@@ -611,6 +611,7 @@ const ProductDetails = () => {
                 setShowAddSizePriceDialog(false);
                 setValidationErrors({});
               }}
+              color="secondary"
             >
               Cancel
             </Button>
