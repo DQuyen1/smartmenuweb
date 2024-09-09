@@ -160,10 +160,9 @@ const EntityTemplate = () => {
     if (name === 'templateOrientation') {
       setNewTemplateData((prevState) => ({
         ...prevState,
-
         templateWidth: value === 'vertical' ? 900 : 1080,
         templateHeight: value === 'vertical' ? 1600 : 608, // Correct the order for horizontal
-
+        templateType: value === 'vertical' ? 1 : 0, // Correct the order for horizontal
         [name]: value
       }));
     } else {

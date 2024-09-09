@@ -51,7 +51,7 @@ const MyTemplate = () => {
     templateName: '',
     templateDescription: '',
     templateOrientation: '',
-    templateType: 0
+    templateType: 1
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [templateImgPath, setTemplateImgPath] = useState(false);
@@ -152,7 +152,7 @@ const MyTemplate = () => {
         ...prevState,
         templateWidth: value === 'vertical' ? 794 : 1080,
         templateHeight: value === 'vertical' ? 1123 : 608,
-        templateType: value === 'vertical' ? 0 : 1, // Correct the order for horizontal
+        templateType: value === 'vertical' ? 1 : 0, // Correct the order for horizontal
         [name]: value
       }));
     } else {
