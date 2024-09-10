@@ -40,7 +40,7 @@ function Template() {
   // const [isDisabled, setIsDisabled] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [fonts, setFonts] = useState([]);
+
   const [backgroundColor, setBackgroundColor] = useState('green');
   const [assetImage, setAssetImage] = useState([]);
   const [width, setWidth] = useState(100);
@@ -55,7 +55,6 @@ function Template() {
   const [rect, setRect] = useState(null);
   const [boxId, setBoxId] = useState(null);
   const [textAlign, setTextAlign] = useState('left');
-  const [selectedFont, setSelectedFont] = useState('Be VietNam Pro Black');
 
   const [imageCounter, setImageCounter] = useState(0);
 
@@ -104,6 +103,11 @@ function Template() {
     displayWidth: defaultDisplayWidth,
     displayHeight: defaultDisplayHeight
   });
+
+  const fonts = ['Pacifico', 'Edoz', 'Open Sans', 'Times New Roman'];
+  const [fontLoaded, setFontLoaded] = useState(false);
+  const [selectedFont, setSelectedFont] = useState('Times New Roman');
+  //const [fonts, setFonts] = useState([]);
 
   const cycleTextAlign = () => {
     setTextAlign((prevAlign) => {
@@ -188,121 +192,247 @@ function Template() {
   //   }
   // };
 
+  // const handleDimensionChange = (e, type) => {
+  //   let value = parseFloat(e.target.value);
+  //   let element = editor.canvas.getActiveObject();
+
+  //   if(element.type === 'text') {
+
+  //     const renderLayerBounds = {
+  //       left: selectedRect.left, // Render layer's top-left X position
+  //       top: selectedRect.top, // Render layer's top-left Y position
+  //       right: selectedRect.left + selectedRect.width, // Render layer's width
+  //       bottom: selectedRect.top + selectedRect.height // Render layer's height
+  //     };
+
+  //     let newPositionX = element.left;
+  //     let newPositionY = element.top;
+  //     let newWidth = element.width;
+  //     let newHeight = element.height;
+
+  //     let isValid = true; // Flag to check if the input is valid
+
+  //     switch (type) {
+  //       case 'width':
+  //         newWidth = value;
+  //         if (newPositionX + newWidth > renderLayerBounds.right) {
+  //           Toastify({
+  //             text: 'Width exceeds the render layer bounds!',
+  //             className: 'info',
+  //             gravity: 'top',
+  //             position: 'right',
+  //             duration: 3000,
+  //             style: {
+  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //             }
+  //           }).showToast();
+  //           isValid = false;
+  //         }
+  //         break;
+
+  //       case 'height':
+  //         newHeight = value;
+  //         if (newPositionY + newHeight > renderLayerBounds.bottom) {
+  //           Toastify({
+  //             text: 'Height exceeds the render layer bounds!',
+  //             className: 'info',
+  //             gravity: 'top',
+  //             position: 'right',
+  //             duration: 3000,
+  //             style: {
+  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //             }
+  //           }).showToast();
+  //           isValid = false;
+  //         }
+  //         break;
+
+  //       case 'positionX':
+  //         newPositionX = value;
+  //         if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
+  //           Toastify({
+  //             text: 'X position exceeds the render layer bounds!',
+  //             className: 'info',
+  //             gravity: 'top',
+  //             position: 'right',
+  //             duration: 3000,
+  //             style: {
+  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //             }
+  //           }).showToast();
+  //           isValid = false;
+  //         }
+  //         break;
+
+  //       case 'positionY':
+  //         newPositionY = value;
+  //         if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
+  //           Toastify({
+  //             text: 'Y position exceeds the render layer bounds!',
+  //             className: 'info',
+  //             gravity: 'top',
+  //             position: 'right',
+  //             duration: 3000,
+  //             style: {
+  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //             }
+  //           }).showToast();
+  //           isValid = false;
+  //         }
+  //         break;
+
+  //       default:
+  //         break;
+  //     }
+
+  //   }
+
+  //   // Assuming renderLayer is an object with left, top, width, and height
+
+  //   // Update the UI input, but do not apply the change to the element if it's invalid
+  //   switch (type) {
+  //     case 'width':
+  //       setWidth(value);
+  //       if (isValid) element.set('width', value);
+  //       break;
+  //     case 'height':
+  //       setHeight(value);
+  //       if (isValid) element.set('height', value);
+  //       break;
+  //     case 'positionX':
+  //       setPositionX(value);
+  //       if (isValid) element.set('left', value);
+  //       break;
+  //     case 'positionY':
+  //       setPositionY(value);
+  //       if (isValid) element.set('top', value);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   editor.canvas.renderAll();
+  // };
+
   const handleDimensionChange = (e, type) => {
     let value = parseFloat(e.target.value);
     let element = editor.canvas.getActiveObject();
 
-    // Assuming renderLayer is an object with left, top, width, and height
-    const renderLayerBounds = {
-      left: selectedRect.left, // Render layer's top-left X position
-      top: selectedRect.top, // Render layer's top-left Y position
-      right: selectedRect.left + selectedRect.width, // Render layer's width
-      bottom: selectedRect.top + selectedRect.height // Render layer's height
-    };
+    if (!element) return; // Exit if no object is selected
 
-    let newPositionX = element.left;
-    let newPositionY = element.top;
-    let newWidth = element.width;
-    let newHeight = element.height;
+    // Apply constraints only if the selected element is of type 'text'
+    let isValid = true;
+    if (element.type === 'text') {
+      // Assuming renderLayer is an object with left, top, width, and height
+      const renderLayerBounds = {
+        left: selectedRect.left, // Render layer's top-left X position
+        top: selectedRect.top, // Render layer's top-left Y position
+        right: selectedRect.left + selectedRect.width, // Render layer's width
+        bottom: selectedRect.top + selectedRect.height // Render layer's height
+      };
 
-    let isValid = true; // Flag to check if the input is valid
+      let newPositionX = element.left;
+      let newPositionY = element.top;
+      let newWidth = element.width;
+      let newHeight = element.height;
 
-    switch (type) {
-      case 'width':
-        newWidth = value;
-        if (newPositionX + newWidth > renderLayerBounds.right) {
-          Toastify({
-            text: 'Width exceeds the render layer bounds!',
-            className: 'info',
-            gravity: 'top',
-            position: 'right',
-            duration: 3000,
-            style: {
-              background: 'linear-gradient(to right, #ff0000, #ff6347)'
-            }
-          }).showToast();
-          isValid = false;
-        }
-        break;
+      switch (type) {
+        case 'width':
+          newWidth = value;
+          if (newPositionX + newWidth > renderLayerBounds.right) {
+            Toastify({
+              text: 'Width exceeds the render layer bounds!',
+              className: 'info',
+              gravity: 'top',
+              position: 'right',
+              duration: 3000,
+              style: {
+                background: 'linear-gradient(to right, #ff0000, #ff6347)'
+              }
+            }).showToast();
+            isValid = false;
+          }
+          break;
 
-      case 'height':
-        newHeight = value;
-        if (newPositionY + newHeight > renderLayerBounds.bottom) {
-          Toastify({
-            text: 'Height exceeds the render layer bounds!',
-            className: 'info',
-            gravity: 'top',
-            position: 'right',
-            duration: 3000,
-            style: {
-              background: 'linear-gradient(to right, #ff0000, #ff6347)'
-            }
-          }).showToast();
-          isValid = false;
-        }
-        break;
+        case 'height':
+          newHeight = value;
+          if (newPositionY + newHeight > renderLayerBounds.bottom) {
+            Toastify({
+              text: 'Height exceeds the render layer bounds!',
+              className: 'info',
+              gravity: 'top',
+              position: 'right',
+              duration: 3000,
+              style: {
+                background: 'linear-gradient(to right, #ff0000, #ff6347)'
+              }
+            }).showToast();
+            isValid = false;
+          }
+          break;
 
-      case 'positionX':
-        newPositionX = value;
-        if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-          Toastify({
-            text: 'X position exceeds the render layer bounds!',
-            className: 'info',
-            gravity: 'top',
-            position: 'right',
-            duration: 3000,
-            style: {
-              background: 'linear-gradient(to right, #ff0000, #ff6347)'
-            }
-          }).showToast();
-          isValid = false;
-        }
-        break;
+        case 'positionX':
+          newPositionX = value;
+          if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
+            Toastify({
+              text: 'X position exceeds the render layer bounds!',
+              className: 'info',
+              gravity: 'top',
+              position: 'right',
+              duration: 3000,
+              style: {
+                background: 'linear-gradient(to right, #ff0000, #ff6347)'
+              }
+            }).showToast();
+            isValid = false;
+          }
+          break;
 
-      case 'positionY':
-        newPositionY = value;
-        if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-          Toastify({
-            text: 'Y position exceeds the render layer bounds!',
-            className: 'info',
-            gravity: 'top',
-            position: 'right',
-            duration: 3000,
-            style: {
-              background: 'linear-gradient(to right, #ff0000, #ff6347)'
-            }
-          }).showToast();
-          isValid = false;
-        }
-        break;
+        case 'positionY':
+          newPositionY = value;
+          if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
+            Toastify({
+              text: 'Y position exceeds the render layer bounds!',
+              className: 'info',
+              gravity: 'top',
+              position: 'right',
+              duration: 3000,
+              style: {
+                background: 'linear-gradient(to right, #ff0000, #ff6347)'
+              }
+            }).showToast();
+            isValid = false;
+          }
+          break;
 
-      default:
-        break;
+        default:
+          break;
+      }
     }
 
-    // Update the UI input, but do not apply the change to the element if it's invalid
+    // Update the UI input and object properties regardless of type
     switch (type) {
       case 'width':
         setWidth(value);
-        if (isValid) element.set('width', value);
+        if (isValid || element.type !== 'text') element.set('width', value); // Apply to all, but check constraints for 'text'
         break;
       case 'height':
         setHeight(value);
-        if (isValid) element.set('height', value);
+        if (isValid || element.type !== 'text') element.set('height', value); // Apply to all, but check constraints for 'text'
         break;
       case 'positionX':
         setPositionX(value);
-        if (isValid) element.set('left', value);
+        if (isValid || element.type !== 'text') element.set('left', value); // Apply to all, but check constraints for 'text'
         break;
       case 'positionY':
         setPositionY(value);
-        if (isValid) element.set('top', value);
+        if (isValid || element.type !== 'text') element.set('top', value); // Apply to all, but check constraints for 'text'
         break;
       default:
         break;
     }
 
-    editor.canvas.renderAll();
+    editor.canvas.renderAll(); // Re-render the canvas
   };
 
   const handleTabClick = (tab) => {
@@ -448,27 +578,7 @@ function Template() {
   // };
 
   useEffect(() => {
-    getAllFont();
-
-    if (fonts.length > 0) {
-      fonts.forEach((font) => {
-        const newFont = new FontFaceObserver(font.fontName);
-        newFont
-          .load()
-          .then(() => {
-            // Append the font to the document head for use in Fabric.js
-            const fontFaceStyle = document.createElement('style');
-            fontFaceStyle.innerHTML = `
-            @font-face {
-              font-family: '${font.fontName}';
-              src: url('${font.fontPath}');
-            }
-          `;
-            document.head.appendChild(fontFaceStyle);
-          })
-          .catch((e) => console.error(`Font loading failed: ${font.fontName}`, e));
-      });
-    }
+    //getAllFont();
 
     console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
 
@@ -703,6 +813,22 @@ function Template() {
 
     return canvas;
   };
+
+  useEffect(() => {
+    if (!editor) return;
+
+    // Preload all custom fonts
+    Promise.all(fonts.map((font) => new FontFaceObserver(font).load()))
+      .then(() => {
+        setFontLoaded(true); // Set state to indicate fonts are loaded
+        console.log('Fonts loaded successfully');
+      })
+      .catch((err) => {
+        console.error('Failed to load fonts:', err);
+      });
+
+    // Add a textbox to the canvas with default font
+  }, [editor]); // Trigge
 
   // function Copy() {
   //   // clone what are you copying since you
@@ -1121,7 +1247,7 @@ function Template() {
     if (o) {
       setIsBold((prev) => !prev);
       o.set('fontWeight', !isBold ? 'bold' : 'normal');
-      o.fire('modified');
+      //o.fire('modified');
       editor.canvas.renderAll();
     }
   };
@@ -1243,7 +1369,7 @@ function Template() {
       // textAlign: textAlign,
       //fontFamily: selectedFont,
 
-      fontFamily: 'Pacifico',
+      fontFamily: selectedFont,
       editable: true,
       angle: 0
     });
@@ -1285,7 +1411,6 @@ function Template() {
     });
 
     editor.canvas.on('mouse:down', function (options) {
-      // if (options.target !== rect) {
       setActiveTab(null);
 
       setSelectedTool(null);
@@ -1307,8 +1432,60 @@ function Template() {
       setRotationAngle(text.angle);
 
       setIsHeaderVisible(true);
-      setSelectedTool('textBox');
+
       setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      setSelectedTool('textBox');
+      //       var fonts = ['Pacifico', 'Edoz', 'Open Sans'];
+
+      //       const fontFaceRule = `
+      //   @font-face {
+      //     font-family: 'Edoz';
+      //     src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
+      //     font-display: swap;
+      //   }
+
+      //     @font-face {
+      //     font-family: 'Open Sans';
+      //     src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
+      //     font-display: swap;
+      //   }
+      // `;
+
+      //       const styleElement = document.createElement('style');
+      //       document.head.appendChild(styleElement);
+
+      //       styleElement.textContent = fontFaceRule;
+
+      //       var select = document.getElementById('font-family');
+      //       fonts.forEach(function (font) {
+      //         var option = document.createElement('option');
+      //         option.innerHTML = font;
+      //         option.value = font;
+      //         select.appendChild(option);
+      //       });
+
+      //       function loadAndUse(font) {
+      //         var myfont = new FontFaceObserver(font);
+      //         myfont
+      //           .load()
+      //           .then(function () {
+      //             // when font is loaded, use it.
+      //             editor.canvas.getActiveObject().set('fontFamily', font);
+      //             editor.canvas.requestRenderAll();
+      //           })
+      //           .catch(function (e) {
+      //             console.log(e);
+      //             alert('font loading failed ' + font);
+      //           });
+      //       }
+      //       document.getElementById('font-family').onchange = function () {
+      //         if (this.value !== 'Times New Roman') {
+      //           loadAndUse(this.value);
+      //         } else {
+      //           editor.canvas.getActiveObject().set('fontFamily', this.value);
+      //           editor.canvas.requestRenderAll();
+      //         }
+      //       };
     });
 
     editor.canvas.add(text);
@@ -2580,17 +2757,6 @@ function Template() {
     }
   };
 
-  const handleFontChange = (e) => {
-    const selectedFont = e.target.value;
-    setSelectedFont(selectedFont);
-
-    const activeObject = editor.canvas.getActiveObject();
-    if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
-      activeObject.set('fontFamily', selectedFont);
-      editor.canvas.renderAll();
-    }
-  };
-
   const toggleTextCase = () => {
     const o = editor.canvas.getActiveObject();
     if (o && o.type === 'textbox') {
@@ -2603,22 +2769,89 @@ function Template() {
     }
   };
 
-  const loadAndUseFont = (fontName) => {
-    const font = fonts.find((f) => f.fontName === fontName);
+  const fontFaceRule = `
+  @font-face {
+    font-family: 'Edoz';
+    src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
+    font-display: swap;
+  }
+  
+    @font-face {
+    font-family: 'Open Sans';
+    src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
+    font-display: swap;
+  }
+`;
 
-    if (font) {
-      const fontObserver = new FontFaceObserver(font.fontName);
-      fontObserver
-        .load(null, 10000)
-        .then(() => {
-          if (editor) {
-            editor.canvas.getActiveObject().set('fontFamily', fontName);
-            editor.canvas.renderAll();
-          }
-        })
-        .catch((err) => {
-          console.error(`Failed to load font: ${fontName}`, err);
-        });
+  const styleElement = document.createElement('style');
+  document.head.appendChild(styleElement);
+
+  styleElement.textContent = fontFaceRule;
+
+  function loadAndUse(font) {
+    var myfont = new FontFaceObserver(font);
+    myfont
+      .load()
+      .then(function () {
+        // when font is loaded, use it.
+        editor.canvas.getActiveObject().set('fontFamily', font);
+        editor.canvas.requestRenderAll();
+      })
+      .catch(function (e) {
+        console.log(e);
+        alert('font loading failed ' + font);
+      });
+  }
+
+  useEffect(() => {
+    const fontFaceRule = `
+    @font-face {
+      font-family: 'Edoz';
+      src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Open Sans';
+      src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
+      font-display: swap;
+    }
+  `;
+
+    const styleElement = document.createElement('style');
+    document.head.appendChild(styleElement);
+    styleElement.textContent = fontFaceRule;
+  }, []);
+
+  const loadAndUseFont = (fontName) => {
+    const myFont = new FontFaceObserver(fontName);
+    myFont
+      .load()
+      .then(() => {
+        // When the font is loaded, apply it to the active object
+        const activeObject = editor.canvas.getActiveObject();
+        if (activeObject) {
+          activeObject.set('fontFamily', fontName);
+          editor.canvas.requestRenderAll();
+        }
+      })
+      .catch((e) => {
+        console.error(`Font loading failed: ${fontName}`, e);
+        alert('Font loading failed: ' + fontName);
+      });
+  };
+
+  const handleFontChange = (event) => {
+    const selectedFont = event.target.value;
+    setSelectedFont(selectedFont); // Set selected font in state
+
+    if (selectedFont !== 'Times New Roman') {
+      loadAndUseFont(selectedFont); // Load and use the custom font
+    } else {
+      const activeObject = editor.canvas.getActiveObject();
+      if (activeObject) {
+        activeObject.set('fontFamily', 'Times New Roman');
+        editor.canvas.requestRenderAll(); // Re-render the canvas
+      }
     }
   };
 
@@ -2635,18 +2868,12 @@ function Template() {
               ))}
             </select> */}
 
-            <select
-              id="font-family"
-              value={selectedFont}
-              onChange={(e) => {
-                setSelectedFont(e.target.value);
-                loadAndUseFont(e.target.value);
-              }}
-            >
-              <option value="Times New Roman">Times New Roman</option>
+            {/* <select id="font-family"></select> */}
+
+            <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
-                <option key={font.bFontId} value={font.fontName}>
-                  {font.fontName}
+                <option key={font} value={font}>
+                  {font}
                 </option>
               ))}
             </select>
