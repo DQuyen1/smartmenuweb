@@ -1061,17 +1061,36 @@ function Template() {
     editor.canvas.renderAll();
   };
 
+  // const changeFontSize = (e) => {
+  //   const newFontSize = e.target.value;
+  //   setFontSize(newFontSize * 1.333);
+  //   console.log('FontSize: ', newFontSize);
+  //   const activeObject = editor.canvas.getActiveObject();
+  //   if (activeObject && activeObject.type === 'textbox') {
+  //     activeObject.set('fontSize', newFontSize);
+  //     activeObject.fire('modified');
+  //     editor.canvas.renderAll();
+  //   } else if (activeObject && activeObject.type === 'text') {
+  //     activeObject.set('fontSize', newFontSize);
+  //     activeObject.fire('modified');
+  //     editor.canvas.renderAll();
+  //   }
+  // };
+
   const changeFontSize = (e) => {
-    const newFontSize = e.target.value;
-    setFontSize(newFontSize);
-    console.log('FontSize: ', newFontSize);
+    const inputValue = e.target.value;
+    const newFontSize = inputValue;
+
+    // Set the state for the raw input value (if needed)
+    setFontSize(inputValue);
+
+    console.log('FontSize (converted): ', newFontSize);
     const activeObject = editor.canvas.getActiveObject();
-    if (activeObject && activeObject.type === 'textbox') {
-      activeObject.set('fontSize', newFontSize);
-      activeObject.fire('modified');
-      editor.canvas.renderAll();
-    } else if (activeObject && activeObject.type === 'text') {
-      activeObject.set('fontSize', newFontSize);
+
+    if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
+      activeObject.set('fontSize', newFontSize * 1.333);
+      console.log('real fontsize: ', activeObject.fontSize);
+
       activeObject.fire('modified');
       editor.canvas.renderAll();
     }
@@ -1356,6 +1375,9 @@ function Template() {
     return angle;
   };
 
+  const convertFabricFontSizeToCanvasFontSize = (fontSize) => {
+    return fontSize / 1.333;
+  };
   const addText = async () => {
     //setColor(color);
     let text = new fabric.Textbox('Text', {
@@ -1368,7 +1390,7 @@ function Template() {
       // fontWeight: isBold ? 'bold' : 'normal',
       // textAlign: textAlign,
       //fontFamily: selectedFont,
-
+      fontSize: fontSize,
       fontFamily: selectedFont,
       editable: true,
       angle: 0
@@ -1422,7 +1444,7 @@ function Template() {
 
       const scaledWidth = text.getScaledWidth();
       const scaledHeight = text.getScaledHeight();
-      setFontSize((text.fontSize * text.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(text.fontSize * text.scaleX).toFixed(1));
       setColor(text.fill);
 
       setHeight((scaledHeight * scaleX).toFixed(1));
@@ -2181,7 +2203,7 @@ function Template() {
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setColor(textBox.fill);
       setActiveTab('positionSize');
       setIsHeaderVisible(true);
@@ -2257,7 +2279,7 @@ function Template() {
       setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
-      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
       setActiveTab('positionSize');
       setSelectedTool('text');
@@ -2371,7 +2393,7 @@ function Template() {
       setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
-      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
       setActiveTab('positionSize');
       setSelectedTool('text');
@@ -2486,7 +2508,7 @@ function Template() {
       setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
-      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
       setSelectedTool('text');
       setActiveTab('positionSize');
@@ -2686,7 +2708,7 @@ function Template() {
       setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
-      setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
       setActiveTab('positionSize');
       setSelectedTool('text');
