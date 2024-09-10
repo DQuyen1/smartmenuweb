@@ -411,8 +411,10 @@ const EntityCollection = () => {
           <FormHelperText error>{validationErrors.collectionBackgroundImgPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddCollectionDialog}>Cancel</Button>
-          <Button onClick={handleAddCollection} variant="contained">
+          <Button onClick={handleCloseAddCollectionDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddCollection} variant="contained" color="success">
             Add Collection
           </Button>
         </DialogActions>
@@ -457,7 +459,9 @@ const EntityCollection = () => {
           <FormHelperText error>{validationErrors.collectionBackgroundImgPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditCollectionDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditCollectionDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleSaveEdit} variant="contained">
             Save
           </Button>

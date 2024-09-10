@@ -22,7 +22,7 @@ class displayService {
     };
 
     try {
-      const response = await axios.post(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Displays/V4`, reqBody);
+      const response = await axios.post(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Displays/V2`, reqBody);
       console.log('Response message: ' + JSON.stringify(response.data.templateId));
       return response.data;
     } catch (error) {

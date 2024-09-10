@@ -260,7 +260,7 @@ const MyCollection = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Collection Table</Typography>}>
+          <MainCard title="Collections">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -397,7 +397,7 @@ const MyCollection = () => {
           <FormHelperText error>{validationErrors.collectionBackgroundImgPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddCollectionDialog} color="primary">
+          <Button onClick={handleCloseAddCollectionDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAddCollection} color="primary">
@@ -450,7 +450,7 @@ const MyCollection = () => {
           <FormHelperText error>{validationErrors.collectionBackgroundImgPath}</FormHelperText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditCollectionDialog} color="primary">
+          <Button onClick={handleCloseEditCollectionDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleEditCollection} color="primary">

@@ -21,14 +21,13 @@ import {
   TextField,
   Typography,
   InputAdornment,
-  IconButton,
   CircularProgress,
   Box
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import { Add } from '@mui/icons-material';
+import { AddCircleOutlined } from '@mui/icons-material';
 
 const MyStore = () => {
   const [storeData, setStoreData] = useState([]);
@@ -181,19 +180,17 @@ const MyStore = () => {
 
   return (
     <div>
-      <MainCard title="Store Table">
+      <MainCard title="Stores">
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <TextField
             variant="outlined"
-            size="small"
             value={searchQuery}
             onChange={handleSearchChange}
+            sx={{ marginBottom: '16px' }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <IconButton disabled sx={{ p: 0 }}>
-                    <SearchIcon />
-                  </IconButton>
+                  <SearchIcon />
                 </InputAdornment>
               )
             }}
@@ -202,7 +199,7 @@ const MyStore = () => {
             variant="contained"
             onClick={() => setShowAddStoreDialog(true)}
             sx={{ mb: 2, color: 'white' }}
-            startIcon={<Add />}
+            startIcon={<AddCircleOutlined />}
             color="success"
           >
             Add Store
@@ -212,8 +209,6 @@ const MyStore = () => {
           <Typography variant="h6" color="textSecondary" sx={{ textAlign: 'center' }}>
             <CircularProgress />
           </Typography>
-        ) : error ? (
-          <p>{error}</p>
         ) : (
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }}>
@@ -233,7 +228,9 @@ const MyStore = () => {
                     <TableCell>{store.storeName}</TableCell>
                     <TableCell>{store.storeLocation}</TableCell>
                     <TableCell>
-                      <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>{store.storeStatus ? 'True' : 'False'}</Typography>
+                      <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>
+                        {store.storeStatus ? 'Active' : 'Inactive'}
+                      </Typography>
                     </TableCell>
                     <TableCell sx={{ display: 'flex', gap: 1 }}>
                       <Button
@@ -320,7 +317,9 @@ const MyStore = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseAddStoreDialog}>Cancel</Button>
+            <Button onClick={handleCloseAddStoreDialog} color="secondary">
+              Cancel
+            </Button>
             <Button variant="contained" onClick={handleAddStore}>
               Add Store
             </Button>
@@ -340,7 +339,9 @@ const MyStore = () => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowDeleteConfirmDialog(false)}>Cancel</Button>
+            <Button onClick={() => setShowDeleteConfirmDialog(false)} color="secondary">
+              Cancel
+            </Button>
             <Button variant="contained" color="error" onClick={handleDelete}>
               Delete
             </Button>

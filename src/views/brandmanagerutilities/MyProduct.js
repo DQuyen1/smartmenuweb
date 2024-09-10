@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import MainCard from 'ui-component/cards/MainCard';
 import {
   Table,
   TableBody,
@@ -19,9 +20,11 @@ import {
   DialogTitle,
   MenuItem,
   Input,
-  FormHelperText
+  FormHelperText,
+  InputAdornment
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 
 const MyProduct = () => {
@@ -31,6 +34,7 @@ const MyProduct = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('');
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
@@ -340,19 +344,31 @@ const MyProduct = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Button variant="contained" color="primary" startIcon={<Add />} onClick={handleOpenAddDialog} sx={{ mb: 2 }}>
-        Add Product
-      </Button>
-
-      {isLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-          <CircularProgress />
+    <>
+      <MainCard title="My Products">
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <TextField
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            variant="outlined"
+            sx={{ marginBottom: '16px' }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              )
+            }}
+          />
+          <Button variant="contained" color="primary" startIcon={<Add />} onClick={handleOpenAddDialog} sx={{ mb: 2 }}>
+            Add Product
+          </Button>
         </Box>
-      ) : error ? (
-        <p>{error}</p>
-      ) : (
-        <>
+        {isLoading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+            <CircularProgress />
+          </Box>
+        ) : (
           <TableContainer component={Paper}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
@@ -366,258 +382,266 @@ const MyProduct = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>{product.productName}</TableCell>
-                    <TableCell>{product.productDescription}</TableCell>
-                    <TableCell>
-                      {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      {product.productImgPath ? (
-                        <img
-                          src={product.productImgPath}
-                          alt={`${product.productName}`}
-                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        'No Image'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {product.productLogoPath ? (
-                        <img
-                          src={product.productLogoPath}
-                          alt={`${product.productName} logo`}
-                          style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        'No Logo'
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        startIcon={<Visibility />}
-                        onClick={() => handleViewDetails(product)}
-                        sx={{
-                          color: 'primary.main',
-                          borderColor: 'primary.main',
-                          '&:hover': {
-                            backgroundColor: 'primary.light'
-                          }
-                        }}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        startIcon={<Edit />}
-                        onClick={() => handleOpenEditDialog(product)}
-                        sx={{
-                          color: 'primary.main',
-                          borderColor: 'primary.main',
-                          '&:hover': {
-                            backgroundColor: 'primary.light'
-                          }
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        size="small"
-                        startIcon={<Delete />}
-                        onClick={() => handleOpenConfirmDialog(product.productId)}
-                        sx={{
-                          color: 'error.main',
-                          borderColor: 'error.main',
-                          '&:hover': {
-                            backgroundColor: 'error.light'
-                          }
-                        }}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {products
+                  .filter((product) => product.productName.toLowerCase().includes(filter.toLowerCase()))
+                  .map((product) => (
+                    <TableRow key={product.productId}>
+                      <TableCell>{product.productName}</TableCell>
+                      <TableCell>{product.productDescription}</TableCell>
+                      <TableCell>
+                        {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
+                      </TableCell>
+                      <TableCell>
+                        {product.productImgPath ? (
+                          <img
+                            src={product.productImgPath}
+                            alt={`${product.productName}`}
+                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          'No Image'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {product.productLogoPath ? (
+                          <img
+                            src={product.productLogoPath}
+                            alt={`${product.productName} logo`}
+                            style={{ width: '30px', height: '30px', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          'No Logo'
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          startIcon={<Visibility />}
+                          onClick={() => handleViewDetails(product)}
+                          sx={{
+                            color: 'primary.main',
+                            borderColor: 'primary.main',
+                            '&:hover': {
+                              backgroundColor: 'primary.light'
+                            }
+                          }}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="small"
+                          startIcon={<Edit />}
+                          onClick={() => handleOpenEditDialog(product)}
+                          sx={{
+                            color: 'primary.main',
+                            borderColor: 'primary.main',
+                            '&:hover': {
+                              backgroundColor: 'primary.light'
+                            }
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<Delete />}
+                          onClick={() => handleOpenConfirmDialog(product.productId)}
+                          sx={{
+                            color: 'error.main',
+                            borderColor: 'error.main',
+                            '&:hover': {
+                              backgroundColor: 'error.light'
+                            }
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>
+        )}
+      </MainCard>
 
-          <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
-            <DialogTitle>Add New Product</DialogTitle>
-            <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                name="productName"
-                label="Product Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={newProduct.productName}
-                onChange={handleInputChange}
-                sx={{ mb: 2 }}
-                required
-                error={!!validationErrors.productName}
-                helperText={validationErrors.productName}
-              />
-              <TextField
-                margin="dense"
-                name="productDescription"
-                label="Product Description"
-                type="text"
-                fullWidth
-                multiline
-                rows={4}
-                variant="outlined"
-                value={newProduct.productDescription}
-                onChange={handleInputChange}
-                required
-                error={!!validationErrors.productDescription}
-                helperText={validationErrors.productDescription}
-              />
-              <TextField
-                margin="dense"
-                id="productPriceCurrency"
-                name="productPriceCurrency"
-                label="Product Price Currency"
-                select
-                fullWidth
-                variant="outlined"
-                value={newProduct.productPriceCurrency}
-                onChange={handleInputChange}
-                required
-                error={!!validationErrors.productPriceCurrency}
-                helperText={validationErrors.productPriceCurrency}
-              >
-                <MenuItem value={0}>USD</MenuItem>
-                <MenuItem value={1}>VND</MenuItem>
-              </TextField>
-              <Input
-                type="file"
-                name="productImgPath"
-                accept="image/*"
-                onChange={handleImageUpload}
-                error={!!validationErrors.productImgPath}
-                fullWidth
-                margin="dense"
-              />
-              <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
-              <Input
-                type="file"
-                name="productLogoPath"
-                accept="image/*"
-                onChange={handleImageUploadLogo}
-                error={!!validationErrors.productLogoPath}
-                fullWidth
-                margin="dense"
-              />
-              <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseAddDialog}>Cancel</Button>
-              <Button onClick={handleAddProduct}>Add</Button>
-            </DialogActions>
-          </Dialog>
+      <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
+        <DialogTitle>Add New Product</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="productName"
+            label="Product Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={newProduct.productName}
+            onChange={handleInputChange}
+            sx={{ mb: 2 }}
+            required
+            error={!!validationErrors.productName}
+            helperText={validationErrors.productName}
+          />
+          <TextField
+            margin="dense"
+            name="productDescription"
+            label="Product Description"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={newProduct.productDescription}
+            onChange={handleInputChange}
+            required
+            error={!!validationErrors.productDescription}
+            helperText={validationErrors.productDescription}
+          />
+          <TextField
+            margin="dense"
+            id="productPriceCurrency"
+            name="productPriceCurrency"
+            label="Product Price Currency"
+            select
+            fullWidth
+            variant="outlined"
+            value={newProduct.productPriceCurrency}
+            onChange={handleInputChange}
+            required
+            error={!!validationErrors.productPriceCurrency}
+            helperText={validationErrors.productPriceCurrency}
+          >
+            <MenuItem value={0}>USD</MenuItem>
+            <MenuItem value={1}>VND</MenuItem>
+          </TextField>
+          <Input
+            type="file"
+            name="productImgPath"
+            accept="image/*"
+            onChange={handleImageUpload}
+            error={!!validationErrors.productImgPath}
+            fullWidth
+            margin="dense"
+          />
+          <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
+          <Input
+            type="file"
+            name="productLogoPath"
+            accept="image/*"
+            onChange={handleImageUploadLogo}
+            error={!!validationErrors.productLogoPath}
+            fullWidth
+            margin="dense"
+          />
+          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleAddProduct}>Add</Button>
+        </DialogActions>
+      </Dialog>
 
-          <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-            <DialogTitle>Edit Product</DialogTitle>
-            <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                name="productName"
-                label="Product Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={productToEdit?.productName || ''}
-                onChange={handleEditInputChange}
-                required
-                error={!!validationErrors.productName}
-                helperText={validationErrors.productName}
-              />
-              <TextField
-                margin="dense"
-                name="productDescription"
-                label="Product Description"
-                type="text"
-                fullWidth
-                multiline
-                rows={4}
-                variant="outlined"
-                value={productToEdit?.productDescription || ''}
-                onChange={handleEditInputChange}
-                required
-                error={!!validationErrors.productDescription}
-                helperText={validationErrors.productDescription}
-              />
-              <TextField
-                margin="dense"
-                name="productPriceCurrency"
-                label="Product Price Currency"
-                select
-                fullWidth
-                variant="outlined"
-                value={productToEdit?.productPriceCurrency || ''}
-                onChange={handleEditInputChange}
-                required
-                error={!!validationErrors.productPriceCurrency}
-                helperText={validationErrors.productPriceCurrency}
-              >
-                <MenuItem value={0}>USD</MenuItem>
-                <MenuItem value={1}>VND</MenuItem>
-              </TextField>
-              <Input
-                type="file"
-                name="productImgFile"
-                accept="image/*"
-                onChange={handleImageUpload}
-                error={!!validationErrors.productImgPath}
-                fullWidth
-                margin="dense"
-              />
-              <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
-              <Input
-                type="file"
-                name="productLogoFile"
-                accept="image/*"
-                onChange={handleImageUploadLogo}
-                error={!!validationErrors.productLogoPath}
-                fullWidth
-                margin="dense"
-              />
-              <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseEditDialog}>Cancel</Button>
-              <Button onClick={handleUpdateProduct}>Update</Button>
-            </DialogActions>
-          </Dialog>
+      <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+        <DialogTitle>Edit Product</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            name="productName"
+            label="Product Name"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={productToEdit?.productName || ''}
+            onChange={handleEditInputChange}
+            required
+            error={!!validationErrors.productName}
+            helperText={validationErrors.productName}
+          />
+          <TextField
+            margin="dense"
+            name="productDescription"
+            label="Product Description"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={productToEdit?.productDescription || ''}
+            onChange={handleEditInputChange}
+            required
+            error={!!validationErrors.productDescription}
+            helperText={validationErrors.productDescription}
+          />
+          <TextField
+            margin="dense"
+            name="productPriceCurrency"
+            label="Product Price Currency"
+            select
+            fullWidth
+            variant="outlined"
+            value={productToEdit?.productPriceCurrency || ''}
+            onChange={handleEditInputChange}
+            required
+            error={!!validationErrors.productPriceCurrency}
+            helperText={validationErrors.productPriceCurrency}
+          >
+            <MenuItem value={0}>USD</MenuItem>
+            <MenuItem value={1}>VND</MenuItem>
+          </TextField>
+          <Input
+            type="file"
+            name="productImgFile"
+            accept="image/*"
+            onChange={handleImageUpload}
+            error={!!validationErrors.productImgPath}
+            fullWidth
+            margin="dense"
+          />
+          <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
+          <Input
+            type="file"
+            name="productLogoFile"
+            accept="image/*"
+            onChange={handleImageUploadLogo}
+            error={!!validationErrors.productLogoPath}
+            fullWidth
+            margin="dense"
+          />
+          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEditDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleUpdateProduct}>Update</Button>
+        </DialogActions>
+      </Dialog>
 
-          <Dialog open={openConfirmDialog} onClose={handleCloseConfirmDialog}>
-            <DialogTitle>Confirm Delete</DialogTitle>
-            <DialogContent>
-              <p>Are you sure you want to delete this product?</p>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseConfirmDialog}>Cancel</Button>
-              <Button onClick={handleDeleteProduct} color="error">
-                Delete
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </>
-      )}
-    </Box>
+      <Dialog open={openConfirmDialog} onClose={handleCloseConfirmDialog}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <p>Are you sure you want to delete this product?</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirmDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteProduct} color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

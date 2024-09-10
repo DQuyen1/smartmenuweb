@@ -28,6 +28,7 @@ const MyMenuDetails = Loadable(lazy(() => import('views/sample-page/MyMenuDetail
 const MyProductDetails = Loadable(lazy(() => import('views/sample-page/MyProductDetails')));
 const MyCollectionDetails = Loadable(lazy(() => import('views/sample-page/MyCollectionDetails')));
 const StaffDetails = Loadable(lazy(() => import('views/sample-page/StaffDetails')));
+const UserProfile = Loadable(lazy(() => import('views/sample-page/UserProfile')));
 
 const BrandManagerRoutes = {
   path: '/',
@@ -176,6 +177,10 @@ const BrandManagerRoutes = {
     {
       path: 'staff-details',
       element: <StaffDetails />
+    },
+    {
+      path: 'user-profile',
+      element: <UserProfile />
     }
   ]
 };

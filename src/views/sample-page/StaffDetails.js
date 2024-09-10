@@ -198,7 +198,7 @@ const BrandStaffDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">User Details</Typography>}>
+    <MainCard title="User Details">
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <CircularProgress />

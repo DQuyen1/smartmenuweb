@@ -41,7 +41,7 @@ const TemplateDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Template Details</Typography>}>
+    <MainCard title="Template Details">
       {!isEditing ? (
         <Grid container spacing={2}>
           {' '}

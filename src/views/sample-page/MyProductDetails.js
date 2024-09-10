@@ -203,7 +203,7 @@ const MyProductDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Product Details</Typography>}>
+    <MainCard title="Product Details">
       <Stack spacing={2}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -328,6 +328,7 @@ const MyProductDetails = () => {
                 setShowAddSizePriceDialog(false);
                 setValidationErrors({});
               }}
+              color="secondary"
             >
               Cancel
             </Button>

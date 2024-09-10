@@ -2,15 +2,32 @@ import React, { useState, useEffect } from 'react';
 import MainCard from 'ui-component/cards/MainCard';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, CircularProgress, Card, CardContent, CardMedia, TextField, InputAdornment } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardMedia,
+  TextField,
+  InputAdornment,
+  Divider,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
 const AdminChooseTemplate = () => {
   const [templateData, setTemplateData] = useState([]);
-  const [, setBrandData] = useState([]);
+  const [brandData, setBrandData] = useState([]); // Keep track of brand data
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState(''); // New state for search filter
+  const [filter, setFilter] = useState(''); // State for search filter
+  const [selectedBrand, setSelectedBrand] = useState(''); // State for brand filter
   const navigate = useNavigate();
 
   const handleViewDetails = (template) => {
@@ -39,13 +56,17 @@ const AdminChooseTemplate = () => {
     fetchData();
   }, []);
 
-  const filteredTemplates = templateData.filter((template) => template.templateName.toLowerCase().includes(filter.toLowerCase()));
+  // Filter templates based on search filter and selected brand
+  const filteredTemplates = templateData.filter(
+    (template) =>
+      template.templateName.toLowerCase().includes(filter.toLowerCase()) && (selectedBrand === '' || template.brandId === selectedBrand)
+  );
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Choose Template</Typography>}>
+          <MainCard title="Choose Template">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -60,13 +81,32 @@ const AdminChooseTemplate = () => {
                 }}
                 sx={{
                   width: '500px',
-                  mr: 60, // Set a fixed width (adjust as needed)
+                  mr: 5, // Adjusted margin-right to fit brand filter
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                     paddingRight: 1
                   }
                 }}
               />
+              <FormControl variant="outlined" sx={{ minWidth: 200 }}>
+                <InputLabel id="brand-filter-label">Brand</InputLabel>
+                <Select
+                  labelId="brand-filter-label"
+                  id="brand-filter"
+                  value={selectedBrand}
+                  onChange={(e) => setSelectedBrand(e.target.value)}
+                  label="Brand"
+                >
+                  <MenuItem value="">
+                    <em>All Brands</em>
+                  </MenuItem>
+                  {brandData.map((brand) => (
+                    <MenuItem key={brand.brandId} value={brand.brandId}>
+                      {brand.brandName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Box>
 
             {isLoading ? (
@@ -99,6 +139,12 @@ const AdminChooseTemplate = () => {
                 ))}
               </Grid>
             )}
+            <Divider sx={{ mt: 3 }} />
+            <Box sx={{ display: 'flex', justifyContent: 'start', mt: 3 }}>
+              <Button variant="contained" color="secondary" onClick={() => navigate('/dashboard/default')}>
+                Back
+              </Button>
+            </Box>
           </MainCard>
         </Grid>
       </Grid>

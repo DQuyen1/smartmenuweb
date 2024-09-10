@@ -241,7 +241,7 @@ const MyCategory = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Category Table</Typography>}>
+          <MainCard title="Categories">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -392,7 +392,9 @@ const MyCategory = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddCategoryDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddCategoryDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleAddCategory}>
             Add Category
           </Button>
@@ -423,7 +425,9 @@ const MyCategory = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditCategoryDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditCategoryDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleEditCategory}>
             Save Changes
           </Button>

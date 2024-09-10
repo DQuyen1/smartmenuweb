@@ -262,7 +262,7 @@ const Staff = () => {
   );
 
   return (
-    <MainCard title={<Typography variant="h5">Brand Staff Table</Typography>}>
+    <MainCard title="Brand Staffs">
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -349,7 +349,7 @@ const Staff = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleSubmit} color="primary">
@@ -388,7 +388,7 @@ const Staff = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleAssignClose} color="primary">
+          <Button onClick={handleAssignClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAssignSubmit} color="primary">
