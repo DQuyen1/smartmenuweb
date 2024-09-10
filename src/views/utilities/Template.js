@@ -9,6 +9,7 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { FormatAlignLeft, FormatAlignCenter, FormatAlignRight } from '@mui/icons-material';
 import ImageIcon from '@mui/icons-material/Image';
 import CldImage from 'ui-component/CldImage';
+import FontFaceObserver from 'fontfaceobserver';
 
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import html2canvas from 'html2canvas';
@@ -54,7 +55,7 @@ function Template() {
   const [rect, setRect] = useState(null);
   const [boxId, setBoxId] = useState(null);
   const [textAlign, setTextAlign] = useState('left');
-  const [selectedFont, setSelectedFont] = useState('');
+  const [selectedFont, setSelectedFont] = useState('Be VietNam Pro Black');
 
   const [imageCounter, setImageCounter] = useState(0);
 
@@ -64,7 +65,8 @@ function Template() {
   const [isBold, setIsBold] = useState(false);
   const [isItalic, setIsItalic] = useState(false);
   const [selectedTool, setSelectedTool] = useState(null);
-  const [selectedRect, setSelectedRect] = useState(null); // Add this state to track selected rectangle
+  const [selectedRect, setSelectedRect] = useState(null);
+  const [rotationAngle, setRotationAngle] = useState(0); // Add this state to track selected rectangle
 
   const box_service = new boxService();
   const layer_service = new layerService();
@@ -81,18 +83,20 @@ function Template() {
 
   // const cloudName = 'dchov8fes';
   // const uploadPreset = 'ml_default';
-  // const templateType = location.state.templateType;
+  const templateType = location.state.templateType;
 
   // const userId = localStorage.getItem('userId');
   const canvasWidth = location.state.templateWidth;
   const canvasHeight = location.state.templateHeight;
-  const displayWidth = canvasWidth;
-  const displayHeight = canvasHeight;
+  const displayWidth = templateType === 0 ? canvasWidth : 608;
+  const displayHeight = templateType === 0 ? canvasHeight : 800;
 
   const defaultCanvasWidth = 608;
   const defaultCanvasHeight = 1080;
   const defaultDisplayWidth = 608;
   const defaultDisplayHeight = 800;
+
+  const lowestZIndex = 1;
 
   const [canvasDimensions, setCanvasDimensions] = useState({
     canvasWidth: defaultCanvasWidth,
@@ -133,6 +137,10 @@ function Template() {
     setActiveSubtab(subtab);
   };
 
+  const deleteBoxItem = (boxItemId) => {
+    box_item_service.deleteBoxItem(boxItemId);
+  };
+
   const deleteText = (layerId) => {
     layer_service.deleteLayer(layerId);
   };
@@ -149,35 +157,152 @@ function Template() {
     box_item_service.deleteBoxItem(boxItemId);
   };
 
+  // const handleDimensionChange = (e, type) => {
+  //   let value = parseFloat(e.target.value);
+  //   let element = editor.canvas.getActiveObject();
+
+  //   switch (type) {
+  //     case 'width':
+  //       setWidth(value);
+  //       element.set('width', value);
+  //       console.log('height');
+  //       editor.canvas.renderAll();
+  //       break;
+  //     case 'height':
+  //       setHeight(value);
+  //       element.set('height', value);
+  //       editor.canvas.renderAll();
+  //       break;
+  //     case 'positionX':
+  //       setPositionX(value);
+  //       element.set('left', value);
+  //       editor.canvas.renderAll();
+  //       break;
+  //     case 'positionY':
+  //       setPositionY(value);
+  //       element.set('top', value);
+  //       editor.canvas.renderAll();
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  // };
+
   const handleDimensionChange = (e, type) => {
     let value = parseFloat(e.target.value);
     let element = editor.canvas.getActiveObject();
 
+    // Assuming renderLayer is an object with left, top, width, and height
+    const renderLayerBounds = {
+      left: selectedRect.left, // Render layer's top-left X position
+      top: selectedRect.top, // Render layer's top-left Y position
+      right: selectedRect.left + selectedRect.width, // Render layer's width
+      bottom: selectedRect.top + selectedRect.height // Render layer's height
+    };
+
+    let newPositionX = element.left;
+    let newPositionY = element.top;
+    let newWidth = element.width;
+    let newHeight = element.height;
+
+    let isValid = true; // Flag to check if the input is valid
+
+    switch (type) {
+      case 'width':
+        newWidth = value;
+        if (newPositionX + newWidth > renderLayerBounds.right) {
+          Toastify({
+            text: 'Width exceeds the render layer bounds!',
+            className: 'info',
+            gravity: 'top',
+            position: 'right',
+            duration: 3000,
+            style: {
+              background: 'linear-gradient(to right, #ff0000, #ff6347)'
+            }
+          }).showToast();
+          isValid = false;
+        }
+        break;
+
+      case 'height':
+        newHeight = value;
+        if (newPositionY + newHeight > renderLayerBounds.bottom) {
+          Toastify({
+            text: 'Height exceeds the render layer bounds!',
+            className: 'info',
+            gravity: 'top',
+            position: 'right',
+            duration: 3000,
+            style: {
+              background: 'linear-gradient(to right, #ff0000, #ff6347)'
+            }
+          }).showToast();
+          isValid = false;
+        }
+        break;
+
+      case 'positionX':
+        newPositionX = value;
+        if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
+          Toastify({
+            text: 'X position exceeds the render layer bounds!',
+            className: 'info',
+            gravity: 'top',
+            position: 'right',
+            duration: 3000,
+            style: {
+              background: 'linear-gradient(to right, #ff0000, #ff6347)'
+            }
+          }).showToast();
+          isValid = false;
+        }
+        break;
+
+      case 'positionY':
+        newPositionY = value;
+        if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
+          Toastify({
+            text: 'Y position exceeds the render layer bounds!',
+            className: 'info',
+            gravity: 'top',
+            position: 'right',
+            duration: 3000,
+            style: {
+              background: 'linear-gradient(to right, #ff0000, #ff6347)'
+            }
+          }).showToast();
+          isValid = false;
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    // Update the UI input, but do not apply the change to the element if it's invalid
     switch (type) {
       case 'width':
         setWidth(value);
-        element.set('width', value);
-        console.log('height');
-        editor.canvas.renderAll();
+        if (isValid) element.set('width', value);
         break;
       case 'height':
         setHeight(value);
-        element.set('height', value);
-        editor.canvas.renderAll();
+        if (isValid) element.set('height', value);
         break;
       case 'positionX':
         setPositionX(value);
-        element.set('left', value);
-        editor.canvas.renderAll();
+        if (isValid) element.set('left', value);
         break;
       case 'positionY':
         setPositionY(value);
-        element.set('top', value);
-        editor.canvas.renderAll();
+        if (isValid) element.set('top', value);
         break;
       default:
         break;
     }
+
+    editor.canvas.renderAll();
   };
 
   const handleTabClick = (tab) => {
@@ -243,8 +368,8 @@ function Template() {
 
   const createLayer = async (templateId, layerType) => {
     try {
-      const id = await layer_service.createLayer(templateId, layerType);
-      return id;
+      const { layerId, zIndex } = await layer_service.createLayer(templateId, layerType);
+      return { layerId, zIndex };
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
@@ -280,15 +405,15 @@ function Template() {
     }
   };
 
-  // const updateLayerItem = async (layerItemId, layerItemValue) => {
-  //   try {
-  //     const response = await layer_item_service.updateLayerItem(layerItemId, layerItemValue);
+  const updateLayer = async (layerId, zIndex) => {
+    try {
+      const response = await layer_service.updateLayer(layerId, zIndex);
 
-  //     console.log('Response: ', JSON.stringify(response));
-  //   } catch (error) {
-  //     console.log('Error message: ' + error.message);
-  //   }
-  // };f
+      console.log('Response: ', JSON.stringify(response));
+    } catch (error) {
+      console.log('Error message: ' + error.message);
+    }
+  };
 
   const updateBox = async (boxId, boxPositionX, boxPositionY, boxWidth, boxHeight, maxProductItem) => {
     try {
@@ -324,6 +449,26 @@ function Template() {
 
   useEffect(() => {
     getAllFont();
+
+    if (fonts.length > 0) {
+      fonts.forEach((font) => {
+        const newFont = new FontFaceObserver(font.fontName);
+        newFont
+          .load()
+          .then(() => {
+            // Append the font to the document head for use in Fabric.js
+            const fontFaceStyle = document.createElement('style');
+            fontFaceStyle.innerHTML = `
+            @font-face {
+              font-family: '${font.fontName}';
+              src: url('${font.fontPath}');
+            }
+          `;
+            document.head.appendChild(fontFaceStyle);
+          })
+          .catch((e) => console.error(`Font loading failed: ${font.fontName}`, e));
+      });
+    }
 
     console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
 
@@ -391,44 +536,73 @@ function Template() {
     });
   }, [editor, redoStack]);
 
+  // const removeSelectedObject = useCallback(() => {
+  //   if (editor && editor.canvas) {
+  //     const activeObject = editor.canvas.getActiveObject();
+
+  //     if (!activeObject) {
+  //       // console.log('No active object selected, doing nothing.');
+  //       return; // Early return if no object is selected
+  //     }
+
+  //     const activeObjectType = activeObject.type;
+
+  //     if (activeObjectType === 'textbox') {
+  //       editor.canvas.remove(activeObject);
+  //       const layerId = activeObject.layerId;
+
+  //       deleteText(layerId);
+  //     } else if (activeObjectType === 'rect') {
+  //       editor.canvas.remove(activeObject);
+  //       const layerId = activeObject.layerId;
+  //       deleteRenderLayer(layerId);
+  //     } else if (activeObjectType === 'image') {
+  //       editor.canvas.remove(activeObject);
+  //       const layerId = activeObject.layerId;
+  //       deleteImage(layerId);
+  //     } else if (activeObject === 'text') {
+  //       editor.canvas.remove(activeObject);
+  //       const boxItemId = activeObject.boxItemId;
+  //       deleteBoxItem(boxItemId);
+  //     }
+
+  //     console.log('activeObject: ', activeObjectType);
+  //   }
+  // }, [editor]);
   const removeSelectedObject = useCallback(() => {
     if (editor && editor.canvas) {
-      const activeObject = editor.canvas.getActiveObject().type;
+      const activeObject = editor.canvas.getActiveObject();
 
-      if (activeObject === 'text') {
-        const boxItemId = editor.canvas.getActiveObject().boxItemId;
-        if (boxItemId) {
-          //console.log('box item');
-
-          editor.canvas.remove(editor.canvas.getActiveObject());
-          //console.log('activeObject: ', editor.canvas.getActiveObject());
-          deleteProductElement(boxItemId);
-        } else {
-          const layerId = editor.canvas.getActiveObject().layerId;
-          //console.log('layerId: ', layerId);
-          //console.log('layer');
-
-          editor.canvas.remove(editor.canvas.getActiveObject());
-          deleteText(layerId);
-        }
-      } else if (activeObject === 'rect') {
-        const layerId = editor.canvas.getActiveObject().layerId;
-        // console.log('layerId: ', layerId);
-        // console.log('activeObject: ', editor.canvas.getActiveObject());
-        editor.canvas.remove(editor.canvas.getActiveObject());
-        deleteRenderLayer(layerId);
-      } else if (activeObject === 'image') {
-        const layerId = editor.canvas.getActiveObject().layerId;
-        console.log(editor.canvas.getActiveObject());
-
-        // editor.canvas.remove(editor.canvas.getActiveObject());
-        deleteImage(layerId);
+      if (!activeObject) {
+        return; // Early return if no object is selected
       }
-      console.log('activeObject: ', activeObject);
 
-      // editor.canvas.remove(editor.canvas.getActiveObject());
+      const activeObjectType = activeObject.type;
+
+      // Remove the object from the canvas immediately
+      editor.canvas.remove(activeObject);
+
+      // Set a 7-second delay before calling the delete functions
+      setTimeout(() => {
+        if (activeObjectType === 'textbox') {
+          const layerId = activeObject.layerId;
+          deleteText(layerId);
+        } else if (activeObjectType === 'rect') {
+          const layerId = activeObject.layerId;
+          deleteRenderLayer(layerId);
+        } else if (activeObjectType === 'image') {
+          const layerId = activeObject.layerId;
+          deleteImage(layerId);
+        } else if (activeObjectType === 'text') {
+          const boxItemId = activeObject.boxItemId;
+          deleteBoxItem(boxItemId);
+        }
+
+        console.log('Deleted after 7 seconds: ', activeObjectType);
+      }, 7000); // Delay of 7 seconds (7000 milliseconds)
     }
   }, [editor]);
+
   const handleBackspace = useCallback(() => {
     if (editor && editor.canvas) {
       const activeObject = editor.canvas.getActiveObject();
@@ -602,26 +776,25 @@ function Template() {
     if (!editor || !fabric) {
       return;
     }
-    // editor.canvas.setHeight('100%');
-    // editor.canvas.setWidth('100%');
 
     editor.canvas.setHeight(canvasHeight);
     editor.canvas.setWidth(canvasWidth);
+
     editor.canvas.preserveObjectStacking = true;
 
     //loadCanvas();
-    console.log('render');
 
     editor.canvas.renderAll();
-    console.log('done');
-
-    // if (editor.canvas) {
-    //   console.log('Addingsa');
-
-    // }
-
-    // createUserTemplate();
   }, []);
+
+  useEffect(() => {
+    if (editor) {
+      // Set preserveObjectStacking to true
+      editor.canvas.preserveObjectStacking = true;
+
+      // Add a rectangle to the canvas
+    }
+  }, [editor]);
 
   // const addBackgroundImage = (file) => {
   //   const reader = new FileReader();
@@ -684,7 +857,7 @@ function Template() {
         formData.append('folder', folder);
         axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
           const layerItemValue = result.data.secure_url;
-          const layerId = await createLayer(templateId, 1);
+          const { layerId, zIndex } = await createLayer(templateId, 1);
           const layerItemId = await createLayerItem(layerId, layerItemValue);
 
           const public_id = result.data.public_id;
@@ -693,6 +866,8 @@ function Template() {
 
           console.log('Result hihi: ', result);
           console.log('layerId: ', layerId);
+          console.log('zIndex: ', zIndex);
+
           console.log('layerItemId: ', layerItemId);
 
           const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
@@ -712,6 +887,7 @@ function Template() {
 
           myImg.boxId = boxId;
           myImg.boxItemId = boxItemId;
+          myImg.layerId = layerId;
 
           // console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
         });
@@ -739,20 +915,6 @@ function Template() {
 
     reader.readAsDataURL(file);
   };
-
-  // function bindImageEvents(imageObject) {
-  //   imageObject.on('mousedown', function () {
-  //     // console.log('width: ', imageObject.width, 'height: ', imageObject.height);
-  //     // console.log('left: ', imageObject.left, 'top: ', imageObject.top);
-  //   });
-
-  //   imageObject.on('modified', function () {
-  //     console.log('Left: ' + imageObject.left + ' Top: ' + imageObject.top);
-  //     console.log('Width: ' + imageObject.getScaledWidth() + ' Height: ' + imageObject.getScaledHeight());
-  //     updateBox();
-
-  //   });
-  // }
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
@@ -795,27 +957,164 @@ function Template() {
     setColor(newColor);
 
     const activeObject = editor.canvas.getActiveObject(); // Get the active object
-    if (activeObject && activeObject.type === 'textbox') {
+    if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
       // Ensure it's a text object
       activeObject.set('fill', newColor); // Set the new color
       editor.canvas.renderAll(); // Re-render the canvas
     }
-
-    // const o = editor.canvas.getActiveObject();
-    // o.set('fill', color);
-    // editor?.setStrokeColor(color);
-    //editor.canvas.renderAll();
   };
 
-  // const isBold = () => {
-  //   const o = editor.canvas.getActiveObject();
-  //   if (o) {
-  //     const currentFontWeight = o.get('fontWeight');
-  //     o.set('fontWeight', currentFontWeight === 'bold' ? 'normal' : 'bold');
-  //     o.fire('modified');
-  //     editor.canvas.renderAll();
+  const updateCanvas = () => {
+    requestAnimationFrame(() => {
+      editor.canvas.renderAll(); // Ensure the canvas is re-rendered immediately
+    });
+  };
+
+  // const changeZIndex = (action) => {
+  //   const activeObject = editor.canvas.getActiveObject();
+  //   const layerId = activeObject.layerId; // Get the active object
+  //   if (activeObject) {
+  //     switch (action) {
+  //       case 'sendBackward':
+  //         editor.canvas.sendBackwards(activeObject);
+  //         updateCanvas(); // Send one step back
+  //         break;
+  //       case 'sendToBack':
+  //         editor.canvas.sendToBack(activeObject);
+  //         activeObject.set('zIndex', 1);
+  //         updateLayer(layerId, 1);
+  //         updateCanvas(); // Send to back
+  //         break;
+  //       case 'bringForward':
+  //         editor.canvas.bringForward(activeObject);
+  //         updateCanvas(); // Bring one step forward
+  //         break;
+  //       case 'bringToFront':
+  //         editor.canvas.bringToFront(activeObject);
+  //         activeObject.set('zIndex', 10);
+  //         updateLayer(layerId, 10);
+  //         updateCanvas(); // Bring to front
+  //         break;
+  //       default:
+  //         return;
+  //     }
+  //     editor.canvas.renderAll(); // Re-render the canvas after the action
   //   }
   // };
+
+  const changeZIndex = (action) => {
+    const activeObject = editor.canvas.getActiveObject();
+    if (!activeObject || !activeObject.layerId) return;
+
+    const layerId = activeObject.layerId; // Get the active object's layerId
+    let currentZIndex = activeObject.zIndex; // Track the current zIndex
+
+    const maxZIndex = 10;
+    if (activeObject) {
+      switch (action) {
+        case 'sendBackward':
+          editor.canvas.sendBackwards(activeObject);
+          currentZIndex = Math.max(currentZIndex - 1, 1); // Decrement zIndex but ensure it doesn't go below 1
+          activeObject.set('zIndex', currentZIndex);
+          updateLayer(layerId, currentZIndex); // Update zIndex in the backend
+          updateCanvas(); // Send one step back
+          break;
+
+        case 'sendToBack':
+          editor.canvas.sendToBack(activeObject);
+          activeObject.set('zIndex', 1); // Set zIndex to 1 (the lowest)
+          updateLayer(layerId, 1); // Update backend with zIndex 1
+          updateCanvas(); // Send to back
+          break;
+
+        case 'bringForward':
+          editor.canvas.bringForward(activeObject);
+          currentZIndex += 1; // Increment zIndex
+          activeObject.set('zIndex', currentZIndex);
+          updateLayer(layerId, currentZIndex); // Update zIndex in the backend
+          updateCanvas(); // Bring one step forward
+          break;
+
+        case 'bringToFront':
+          editor.canvas.bringToFront(activeObject);
+          // Set the maximum zIndex (can adjust according to your logic)
+          activeObject.set('zIndex', maxZIndex);
+          updateLayer(layerId, maxZIndex); // Update backend with the highest zIndex
+          updateCanvas(); // Bring to front
+          break;
+
+        default:
+          return;
+      }
+
+      editor.canvas.renderAll(); // Re-render the canvas after the action
+    }
+  };
+
+  const handleRotationChange = (e) => {
+    const inputValue = e.target.value;
+    const newAngle = parseFloat(inputValue);
+    const element = editor.canvas.getActiveObject();
+
+    // Check if the input is invalid (empty or NaN)
+    if (inputValue === '' || isNaN(newAngle)) {
+      Toastify({
+        text: 'Please enter a valid number. Resetting to 0.',
+        className: 'info',
+        gravity: 'top',
+        position: 'right',
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(to right, #ff0000, #ff6347)'
+        }
+      }).showToast();
+
+      // Automatically reset to 0
+      setRotationAngle(0);
+      if (element) {
+        element.set('angle', 0);
+        editor.canvas.renderAll();
+      }
+      return;
+    }
+
+    // Check if the new angle is within the allowed range (0-360)
+    if (newAngle < 0 || newAngle > 360) {
+      Toastify({
+        text: 'The angle must be between 0 and 360',
+        className: 'info',
+        gravity: 'top',
+        position: 'right',
+        duration: 3000,
+        style: {
+          background: 'linear-gradient(to right, #ff0000, #ff6347)'
+        }
+      }).showToast();
+      return;
+    }
+
+    // Update the UI input and the element's rotation if valid
+    setRotationAngle(newAngle);
+    if (element) {
+      element.set('angle', newAngle);
+      editor.canvas.renderAll();
+    }
+  };
+
+  const toggleItalic = () => {
+    let element = editor.canvas.getActiveObject();
+
+    if (element && (element.type === 'text' || element.type === 'textbox')) {
+      const currentFontStyle = element.fontStyle;
+
+      // Toggle between 'italic' and 'normal'
+      const newFontStyle = currentFontStyle === 'italic' ? 'normal' : 'italic';
+      element.set('fontStyle', newFontStyle);
+
+      // Re-render the canvas to apply the change
+      editor.canvas.renderAll();
+    }
+  };
 
   const toggleBold = () => {
     const o = editor.canvas.getActiveObject();
@@ -827,15 +1126,50 @@ function Template() {
     }
   };
 
-  const toggleItalic = () => {
-    const o = editor.canvas.getActiveObject();
-    if ((o && o.type === 'textbox') || o.type === 'text') {
-      setIsItalic((prev) => !prev);
-      o.set('fontStyle', !isItalic ? 'italic' : 'normal');
-      o.fire('modified');
-      editor.canvas.renderAll();
+  const updateRotation = (angle) => {
+    const activeObject = editor.canvas.getActiveObject();
+    if (activeObject) {
+      activeObject.set('angle', parseFloat(angle));
+      editor.canvas.renderAll(); // Re-render the canvas to reflect changes
     }
   };
+
+  // const handleRotationChange = (e) => {
+  //   const newAngle = parseFloat(e.target.value);
+
+  //   if (isNaN(newAngle)) {
+  //     Toastify({
+  //       text: 'Vui lòng nhập số hợp lệ',
+  //       className: 'info',
+  //       gravity: 'top',
+  //       position: 'right',
+
+  //       duration: 3000,
+  //       style: {
+  //         background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //       }
+  //     }).showToast();
+  //     return;
+  //   }
+
+  //   if (newAngle < 0 || newAngle > 360) {
+  //     Toastify({
+  //       text: 'Số phải nằm từ 0 đến 360',
+  //       className: 'info',
+  //       gravity: 'top',
+  //       position: 'right',
+
+  //       duration: 3000,
+  //       style: {
+  //         background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //       }
+  //     }).showToast();
+  //     return;
+  //   }
+
+  //   setRotationAngle(newAngle);
+  //   updateRotation(newAngle);
+  // };
 
   // const updateStyle = (style, object) => {
   //   // style = {
@@ -901,12 +1235,15 @@ function Template() {
     let text = new fabric.Textbox('Text', {
       top: 300,
       left: 300,
-      fill: 'black',
+      fill: '#000000',
       // zIndex: 1,
       backgroundColor: 'transparent',
-      // fontStyle: isItalic ? 'italic' : 'normal',
+      //fontStyle: isItalic ? 'italic' : 'normal',
       // fontWeight: isBold ? 'bold' : 'normal',
       // textAlign: textAlign,
+      //fontFamily: selectedFont,
+
+      fontFamily: 'Pacifico',
       editable: true,
       angle: 0
     });
@@ -967,6 +1304,7 @@ function Template() {
       setWidth((scaledWidth * scaleY).toFixed(1));
       setPositionX((text.left * scaleX).toFixed(1));
       setPositionY((text.top * scaleY).toFixed(1));
+      setRotationAngle(text.angle);
 
       setIsHeaderVisible(true);
       setSelectedTool('textBox');
@@ -985,7 +1323,7 @@ function Template() {
       uppercase: false
     };
 
-    const layerId = await createLayer(templateId, 2);
+    const { layerId, zIndex } = await createLayer(templateId, 2);
     const layerItemId = await createLayerItem(layerId, 'Text');
     const boxId = await createBox(layerId, text.left, text.top, text.width, text.height, 0);
     const boxItemId = await createBoxItem(boxId, 5, text.left, text.top, text.width, text.height, 0, JSON.stringify(style));
@@ -994,6 +1332,7 @@ function Template() {
     text.layerId = layerId;
     text.boxItemId = boxItemId;
     text.boxId = boxId;
+    text.zIndex = zIndex;
 
     // text.fire('modified');
 
@@ -1001,6 +1340,7 @@ function Template() {
     console.log('layer item id: ', layerItemId);
     console.log('Box id: ', boxId);
     console.log('Box item id: ', boxItemId);
+    console.log('zIndex: ', zIndex);
 
     text.on('modified', function () {
       // console.log('color: ', text.fill);
@@ -1010,7 +1350,7 @@ function Template() {
 
     text.on('editing:exited', function () {
       console.log('Text editing exited, new text: ', text.text);
-      updateLayerItem(text.layerItemIdId, 2, text.text);
+      updateLayerItem(text.layerItemId, 2, text.text);
     });
 
     editor.canvas.renderAll();
@@ -1020,11 +1360,11 @@ function Template() {
     let rect = new fabric.Rect({
       left: 100,
       top: 150,
-      fill: 'green',
+      fill: '#228B22',
       borderColor: 'dark',
       width: 200,
       height: 200,
-      opacity: 0.3
+      opacity: 1
     });
 
     editor.canvas.add(rect);
@@ -1070,6 +1410,9 @@ function Template() {
       setWidth((scaledWidth * scaleY).toFixed(1));
       setPositionX((rect.left * scaleX).toFixed(1));
       setPositionY((rect.top * scaleY).toFixed(1));
+      // let object = event.target;
+      editor.canvas.sendToBack(rect);
+      console.log('ok');
     });
 
     editor.canvas.on('mouse:down', function (options) {
@@ -1082,7 +1425,7 @@ function Template() {
     //setRect(rect);
     setRenderQuantity((prevCounter) => prevCounter + 1);
 
-    const layerId = await createLayer(templateId, 3);
+    const { layerId, zIndex } = await createLayer(templateId, 3);
     const boxId = await createBox(layerId, rect.left, rect.top, rect.width, rect.height, 0);
     setBoxId(boxId);
     rect.layerId = layerId;
@@ -1092,6 +1435,10 @@ function Template() {
     console.log('Box id: ', boxId);
 
     rect.on('modified', function () {});
+
+    rect.on('object:order', function () {
+      console.log('change zindex');
+    });
 
     rect.on('scaling', function () {
       const newWidth = rect.width * rect.scaleX;
@@ -1150,129 +1497,124 @@ function Template() {
     });
   };
 
+  // const addBackgroundImage = (file) => {
+  //   const reader = new FileReader();
+
+  //   reader.onload = (e) => {
+  //     fabric.Image.fromURL(e.target.result, (img) => {
+  //       img.scale(0.75);
+  //       img.scaleX = editor.canvas.width / img.width;
+  //       img.scaleY = editor.canvas.height / img.height;
+
+  //       img.set({
+  //         selectable: true,
+  //         hasControls: true,
+  //         evented: true, // Allow interaction
+  //         lockMovementX: false, // If you want to allow movement
+  //         lockMovementY: false
+  //       });
+
+  //       //editor.canvas.add(img);
+  //       editor.canvas.setBackgroundImage(img, editor.canvas.renderAll.bind(editor.canvas), {
+  //         scaleX: editor.canvas.width / img.width, // Scale to canvas width
+  //         scaleY: editor.canvas.height / img.height
+  //         // selectable: true,
+  //         // selectionBackgroundColor: 'black',
+  //         // hasControls: true
+  //         // Scale to canvas height
+  //       });
+
+  //       img.on('mouseup', () => {
+  //         console.log('Background image mouse:up event triggered');
+  //         // Perform any additional logic when mouse is released
+  //       });
+
+  //       editor.canvas.renderAll();
+  //     });
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
+
   const addBackgroundImage = (file) => {
     const reader = new FileReader();
-
-    reader.onload = (e) => {
-      fabric.Image.fromURL(e.target.result, (img) => {
-        img.scale(0.75);
-        img.scaleX = editor.canvas.width / img.width;
-        img.scaleY = editor.canvas.height / img.height;
-        img.set({
-          selectable: false,
-          evented: true, // Allows the image to fire events (e.g., selection)
-          hasControls: true // Ensure control handles are visible for resizing and moving
-          // lockMovementX: true, // Allow movement in X direction
-          // lockMovementY: true, // Allow movement in Y direction
-          // lockScalingX: true, // Allow scaling in X direction
-          // lockScalingY: true, // Allow scaling in Y direction
-          // lockRotation: true, // Allow rotation
-          // lockSkewingX: true, // Allow skewing in X direction
-          // lockSkewingY: true // Allow skewing in Y dire
-        });
-
-        editor.canvas.add(img);
-        img.setControlsVisibility({
-          mtr: false,
-          mt: false, // middle top disable
-          mb: false, // midle bottom
-          ml: false, // middle left
-          mr: false // middle right
-        });
-
-        editor.canvas.renderAll();
-      });
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleBackgroundImageUpload = async (event) => {
     const userId = 469;
-    const file = event.target.files[0];
     const formData = new FormData();
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
-    if (file) {
-      addBackgroundImage(file);
-      formData.append('file', file);
-      formData.append('upload_preset', preset_key);
-      formData.append('tags', tags);
-      formData.append('folder', folder);
+    reader.onload = (e) => {
+      fabric.Image.fromURL(e.target.result, async (img) => {
+        // Scale the image to fit the canvas dimensions
+        img.scaleX = editor.canvas.width / img.width;
+        img.scaleY = editor.canvas.height / img.height;
 
-      try {
-        const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
-          method: 'POST',
-          body: formData
+        // Set the image properties
+        img.set({
+          selectable: true, // Make it selectable
+          hasControls: true, // Disable controls if you don't want to resize it
+          evented: true, // Allow interaction
+          lockMovementX: true, // Lock horizontal movement
+          lockMovementY: true, // Lock vertical movement
+          lockScalingX: true, // Lock scaling horizontally
+          lockScalingY: true, // Lock scaling vertically
+          lockRotation: true, // Lock rotation
+          hasBorders: true // Hide borders
         });
 
-        const result = await response.json();
-        const layerItemValue = result.secure_url;
+        // Add the image to the canvas
+        editor.canvas.add(img);
 
-        const layerId = await createLayer(templateId, 0);
-        const layerItemId = await createLayerItem(layerId, layerItemValue);
+        // Ensure the background image is always at the lowest z-index
+        editor.canvas.sendToBack(img);
 
-        console.log('layerId: ', layerId);
-        console.log('layerItemId: ', layerItemId);
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      }
+        // Attach the 'mouseup' event to the image
+        // img.on('mouseup', () => {
+        //   console.log('Background image mouse:up event triggered');
+        //   // Additional logic for mouse:up event
+        // });
+        img.on('object:selected', () => {
+          editor.canvas.sendToBack(img); // Send back on selection
+        });
+        // Render the canvas
+        editor.canvas.renderAll();
 
-      // axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-      //   const layerItemValue = result.data.secure_url;
-      //   const layerId = await createLayer(templateId, 0);
-      //   const layerItemId = await createLayerItem(layerId, layerItemValue);
+        formData.append('file', file);
+        formData.append('upload_preset', preset_key);
+        formData.append('tags', tags);
+        formData.append('folder', folder);
 
-      //   console.log('layerId: ', layerId);
-      //   console.log('layerItemId: ', layerItemId);
-      // });
-    }
+        try {
+          const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+          const layerItemValue = result.secure_url;
+
+          const { layerId, zIndex } = await createLayer(templateId, 0);
+          const layerItemId = await createLayerItem(layerId, layerItemValue);
+
+          img.layerId = layerId;
+
+          console.log('layerId: ', layerId);
+          console.log('layerItemId: ', layerItemId);
+        } catch (error) {
+          console.error('Error uploading image:', error);
+        }
+      });
+    };
+
+    reader.readAsDataURL(file);
   };
 
-  // const processResults = async (error, result) => {
-  //   if (result.event === 'close') {
-  //     setIsDisabled(false);
-  //   }
-  //   if (result && result.event === 'success') {
-  //     const layerId = await createLayer(templateId, 'BackGroundImage', 0);
-  //     const layerItemId = await createLayerItem(layerId, result.info.secure_url);
-  //     const boxId = await createBox(layerId, 200, 200, 300, 300, 0, 100);
+  const handleBackgroundImageUpload = async (event) => {
+    const file = event.target.files[0];
 
-  //     console.log('layerId: ', layerId);
-  //     console.log('layerItemId: ', layerItemId);
-  //     console.log('boxId: ', boxId);
-  //     console.log('success');
-
-  //     setIsDisabled(false);
-  //   }
-  //   if (error) {
-  //     setIsDisabled(false);
-  //   }
-  // };
-
-  // const uploadWidget = () => {
-  //   // handleBackgroundImageUpload();
-  //   setIsDisabled(true);
-  //   window.cloudinary.openUploadWidget(
-  //     {
-  //       cloudName,
-  //       uploadPreset,
-  //       sources: ['local', 'url'],
-  //       // tags: ['myphotoalbum-react'],
-  //       clientAllowedFormats: ['image'],
-  //       resourceType: 'image'
-  //     },
-  //     processResults
-  //   );
-  // };
-
-  // const hanlderFontChange = (e) => {
-  //   const value = e.target.value;
-
-  //   setFonts(value);
-
-  //   console.log(value);
-  // };
+    if (file) {
+      addBackgroundImage(file);
+    }
+  };
 
   const clickToImage = async (photo) => {
     const public_id = photo.public_id;
@@ -1408,7 +1750,13 @@ function Template() {
                 bFontId: 5,
                 // fontSize: getFontSizeV2(obj),
                 fontSize: obj.fontSize * obj.scaleX,
-                fontStyle: getFontStyleValue(obj.fontStyle),
+                fontStyle:
+                  obj.fontStyle && obj.fontStyle !== 'normal'
+                    ? getFontStyleValue(obj.fontStyle)
+                    : obj.fontWeight === 'bold' || obj.fontWeight === 'italic'
+                      ? getFontStyleValue(obj.fontWeight)
+                      : 0,
+
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
                 uppercase: false,
@@ -1512,9 +1860,9 @@ function Template() {
     switch (alignment.toLowerCase()) {
       case 'left':
         return 0;
-      case 'right':
-        return 1;
       case 'center':
+        return 1;
+      case 'right':
         return 2;
       default:
         return -1; // Return a default value or handle the unexpected input
@@ -1525,9 +1873,9 @@ function Template() {
     switch (fontStyle.toLowerCase()) {
       case 'normal':
         return 0;
-      case 'italic':
-        return 1;
       case 'bold':
+        return 1;
+      case 'italic':
         return 2;
       default:
         return -1; // Return a default value or handle the unexpected input
@@ -1615,8 +1963,8 @@ function Template() {
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
 
-      // setPositionX((textBox.left * scaleX).toFixed(1));
-      // setPositionY((textBox.top * scaleY).toFixed(1));
+      setPositionX((textBox.left * scaleX).toFixed(1));
+      setPositionY((textBox.top * scaleY).toFixed(1));
       // console.log('moving');
 
       const scaledWidth = textBox.getScaledWidth();
@@ -1651,16 +1999,17 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      // setHeight(height.toFixed(1));
-      // setWidth(width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
-      // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
       setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
       setColor(textBox.fill);
-      //setActiveTab('positionSize');
+      setActiveTab('positionSize');
       setIsHeaderVisible(true);
       setSelectedTool('text');
+      console.log('selectedRect: ', selectedRect);
     });
 
     textBox.on('mousemove', function () {
@@ -1723,14 +2072,17 @@ function Template() {
       textBox.boxItemType = 2;
       console.log('boxItemId: ', boxItemId);
     }
+    let height = textBox.height;
+    let width = textBox.width;
 
     textBox.on('mouseup', function () {
-      // setHeight(height.toFixed(1));
-      // setWidth(width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
       setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
+      setActiveTab('positionSize');
       setSelectedTool('text');
     });
 
@@ -1834,13 +2186,17 @@ function Template() {
       console.log('boxItemId: ', boxItemId);
     }
 
+    let height = textBox.height;
+    let width = textBox.width;
+
     textBox.on('mouseup', function () {
-      // setHeight(height.toFixed(1));
-      // setWidth(width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
       setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
+      setActiveTab('positionSize');
       setSelectedTool('text');
     });
 
@@ -1928,6 +2284,9 @@ function Template() {
 
     editor.canvas.add(textBox);
 
+    let height = textBox.height;
+    let width = textBox.width;
+
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
@@ -1946,13 +2305,14 @@ function Template() {
       console.log('boxItemId: ', boxItemId);
     }
     textBox.on('mouseup', function () {
-      // setHeight(height.toFixed(1));
-      // setWidth(width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
       setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
       setSelectedTool('text');
+      setActiveTab('positionSize');
     });
 
     editor.canvas.on('mouse:down', function (options) {
@@ -2141,13 +2501,17 @@ function Template() {
       console.log('boxItemId: ', boxItemId);
     }
 
+    let height = textBox.height;
+    let width = textBox.width;
+
     textBox.on('mouseup', function () {
-      // setHeight(height.toFixed(1));
-      // setWidth(width.toFixed(1));
-      // setPositionX(rect.left.toFixed(1));
-      // setPositionY(rect.top.toFixed(1));
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
       setFontSize((textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
+      setActiveTab('positionSize');
       setSelectedTool('text');
     });
 
@@ -2217,7 +2581,14 @@ function Template() {
   };
 
   const handleFontChange = (e) => {
-    setSelectedFont(e.target.value);
+    const selectedFont = e.target.value;
+    setSelectedFont(selectedFont);
+
+    const activeObject = editor.canvas.getActiveObject();
+    if (activeObject && (activeObject.type === 'text' || activeObject.type === 'textbox')) {
+      activeObject.set('fontFamily', selectedFont);
+      editor.canvas.renderAll();
+    }
   };
 
   const toggleTextCase = () => {
@@ -2232,14 +2603,49 @@ function Template() {
     }
   };
 
+  const loadAndUseFont = (fontName) => {
+    const font = fonts.find((f) => f.fontName === fontName);
+
+    if (font) {
+      const fontObserver = new FontFaceObserver(font.fontName);
+      fontObserver
+        .load(null, 10000)
+        .then(() => {
+          if (editor) {
+            editor.canvas.getActiveObject().set('fontFamily', fontName);
+            editor.canvas.renderAll();
+          }
+        })
+        .catch((err) => {
+          console.error(`Failed to load font: ${fontName}`, err);
+        });
+    }
+  };
+
   return (
     <div className="app">
       <header className="header">
         {(selectedTool == 'text' || selectedTool == 'textBox') && (
           <>
-            <select value={selectedFont} onChange={handleFontChange}>
+            {/* <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
                 <option key={font.fontId} value={font.fontName}>
+                  {font.fontName}
+                </option>
+              ))}
+            </select> */}
+
+            <select
+              id="font-family"
+              value={selectedFont}
+              onChange={(e) => {
+                setSelectedFont(e.target.value);
+                loadAndUseFont(e.target.value);
+              }}
+            >
+              <option value="Times New Roman">Times New Roman</option>
+              {fonts.map((font) => (
+                <option key={font.bFontId} value={font.fontName}>
                   {font.fontName}
                 </option>
               ))}
@@ -2259,6 +2665,14 @@ function Template() {
             <button onClick={cycleTextAlign} className="align-button">
               {getTextAlignIcon()}
             </button>
+            <input
+              type="number"
+              value={rotationAngle}
+              placeholder="Enter rotation angle"
+              onChange={handleRotationChange}
+              min="0"
+              max="360"
+            />
           </>
         )}
 
@@ -2330,27 +2744,35 @@ function Template() {
                     <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
                     {/* </>
                     )} */}
-                    {selectedTool !== 'text' && (
-                      <>
-                        <label htmlFor="positionX">Position X:</label>
-                        <input
-                          type="number"
-                          id="positionX"
-                          value={positionX}
-                          onChange={(e) => handleDimensionChange(e, 'positionX')}
-                          min={-Infinity}
-                        />
+                    {/* {selectedTool !== 'text' && (
+                      <> */}
+                    <label htmlFor="positionX">Position X:</label>
+                    <input
+                      type="number"
+                      id="positionX"
+                      value={positionX}
+                      onChange={(e) => handleDimensionChange(e, 'positionX')}
+                      min={-Infinity}
+                    />
 
-                        <label htmlFor="positionY">Position Y:</label>
-                        <input
-                          type="number"
-                          id="positionY"
-                          value={positionY}
-                          onChange={(e) => handleDimensionChange(e, 'positionY')}
-                          min={-Infinity}
-                        />
-                      </>
-                    )}
+                    <label htmlFor="positionY">Position Y:</label>
+                    <input
+                      type="number"
+                      id="positionY"
+                      value={positionY}
+                      onChange={(e) => handleDimensionChange(e, 'positionY')}
+                      min={-Infinity}
+                    />
+                    <div className="button-row">
+                      <button onClick={() => changeZIndex('sendBackward')}>Send Backwards</button>
+                      <button onClick={() => changeZIndex('sendToBack')}>Send to Back</button>
+                    </div>
+                    <div className="button-row">
+                      <button onClick={() => changeZIndex('bringForward')}>Bring Forward</button>
+                      <button onClick={() => changeZIndex('bringToFront')}>Bring to Front</button>
+                    </div>
+                    {/* </>
+                    )} */}
                   </div>
                 )}
 

@@ -208,6 +208,12 @@
   
 }
 
+.button-row {
+  display: flex;
+  gap: 10px; /* Add some space between buttons */
+  margin-bottom: 10px; /* Space between rows */
+}
+
 
 
 .tab-container.open {
