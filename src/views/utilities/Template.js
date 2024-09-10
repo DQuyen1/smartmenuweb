@@ -104,10 +104,10 @@ function Template() {
     displayHeight: defaultDisplayHeight
   });
 
-  const fonts = ['Pacifico', 'Edoz', 'Open Sans', 'Times New Roman'];
+  // const fonts = ['Pacifico', 'Edoz', 'Open Sans'];
   const [fontLoaded, setFontLoaded] = useState(false);
   const [selectedFont, setSelectedFont] = useState('Times New Roman');
-  //const [fonts, setFonts] = useState([]);
+  const [fonts, setFonts] = useState([]);
 
   const cycleTextAlign = () => {
     setTextAlign((prevAlign) => {
@@ -478,10 +478,9 @@ function Template() {
 
   const getAllFont = async () => {
     try {
-      await font_service.getAll().then((value) => {
-        setFonts(value);
-        console.log('value: ', value);
-      });
+      const value = await font_service.getAll();
+      setFonts(value); // Update fonts state with the fetched value
+      // console.log('Updated fonts: ', value);
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
@@ -578,8 +577,6 @@ function Template() {
   // };
 
   useEffect(() => {
-    //getAllFont();
-
     console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
 
     getAssetImages('asset/images');
@@ -814,21 +811,21 @@ function Template() {
     return canvas;
   };
 
-  useEffect(() => {
-    if (!editor) return;
+  // useEffect(() => {
+  //   if (!editor) return;
 
-    // Preload all custom fonts
-    Promise.all(fonts.map((font) => new FontFaceObserver(font).load()))
-      .then(() => {
-        setFontLoaded(true); // Set state to indicate fonts are loaded
-        console.log('Fonts loaded successfully');
-      })
-      .catch((err) => {
-        console.error('Failed to load fonts:', err);
-      });
+  //   // Preload all custom fonts
+  //   Promise.all(fonts.map((font) => new FontFaceObserver(font).load()))
+  //     .then(() => {
+  //       setFontLoaded(true); // Set state to indicate fonts are loaded
+  //       console.log('Fonts loaded successfully');
+  //     })
+  //     .catch((err) => {
+  //       console.error('Failed to load fonts:', err);
+  //     });
 
-    // Add a textbox to the canvas with default font
-  }, [editor]); // Trigge
+  //   // Add a textbox to the canvas with default font
+  // }, [editor]); // Trigge
 
   // function Copy() {
   //   // clone what are you copying since you
@@ -1196,54 +1193,107 @@ function Template() {
     }
   };
 
+  // const handleRotationChange = (e) => {
+  //   const inputValue = e.target.value;
+  //   const newAngle = parseFloat(inputValue);
+  //   const element = editor.canvas.getActiveObject();
+
+  //   // Check if the input is invalid (empty or NaN)
+  //   if (inputValue === '' || isNaN(newAngle)) {
+  //     Toastify({
+  //       text: 'Please enter a valid number. Resetting to 0.',
+  //       className: 'info',
+  //       gravity: 'top',
+  //       position: 'right',
+  //       duration: 3000,
+  //       style: {
+  //         background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //       }
+  //     }).showToast();
+
+  //     // Automatically reset to 0
+  //     setRotationAngle(0);
+  //     if (element) {
+  //       element.set('angle', 0);
+  //       editor.canvas.renderAll();
+  //     }
+  //     return;
+  //   }
+
+  //   // Check if the new angle is within the allowed range (0-360)
+  //   if (newAngle < 0 || newAngle > 360) {
+  //     Toastify({
+  //       text: 'The angle must be between 0 and 360',
+  //       className: 'info',
+  //       gravity: 'top',
+  //       position: 'right',
+  //       duration: 3000,
+  //       style: {
+  //         background: 'linear-gradient(to right, #ff0000, #ff6347)'
+  //       }
+  //     }).showToast();
+  //     return;
+  //   }
+
+  //   // Update the UI input and the element's rotation if valid
+  //   setRotationAngle(newAngle);
+  //   if (element) {
+  //     element.set('angle', newAngle);
+  //     editor.canvas.renderAll();
+  //   }
+  // };
+
   const handleRotationChange = (e) => {
+    // Handle input change event
     const inputValue = e.target.value;
-    const newAngle = parseFloat(inputValue);
-    const element = editor.canvas.getActiveObject();
+    setRotationAngle(inputValue); // Update state with current input
 
-    // Check if the input is invalid (empty or NaN)
-    if (inputValue === '' || isNaN(newAngle)) {
-      Toastify({
-        text: 'Please enter a valid number. Resetting to 0.',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
+    // Handle keydown event to check for Enter key
+    const handleKeyDown = (event) => {
+      if (event.key === 'Enter') {
+        const newAngle = parseFloat(inputValue);
+        const element = editor.canvas.getActiveObject();
+
+        // Check if the input is invalid (empty or NaN)
+        if (inputValue === '' || isNaN(newAngle)) {
+          // Reset to 0 and show a Toastify notification
+
+          setRotationAngle(0);
+          if (element) {
+            element.set('angle', 0);
+            editor.canvas.renderAll();
+          }
+          return;
         }
-      }).showToast();
 
-      // Automatically reset to 0
-      setRotationAngle(0);
-      if (element) {
-        element.set('angle', 0);
-        editor.canvas.renderAll();
+        // Check if the new angle is within the allowed range (-180 to 180)
+        if (newAngle < -180 || newAngle > 180) {
+          // Reset to 0 and show a Toastify notification
+
+          setRotationAngle(0);
+          if (element) {
+            element.set('angle', 0);
+            editor.canvas.renderAll();
+          }
+          return;
+        }
+
+        // Update the UI input and the element's rotation if valid
+        if (element) {
+          setRotationAngle(newAngle);
+          element.set('angle', newAngle);
+          editor.canvas.renderAll();
+        }
       }
-      return;
-    }
+    };
 
-    // Check if the new angle is within the allowed range (0-360)
-    if (newAngle < 0 || newAngle > 360) {
-      Toastify({
-        text: 'The angle must be between 0 and 360',
-        className: 'info',
-        gravity: 'top',
-        position: 'right',
-        duration: 3000,
-        style: {
-          background: 'linear-gradient(to right, #ff0000, #ff6347)'
-        }
-      }).showToast();
-      return;
-    }
+    // Add the keydown event listener for Enter key
+    document.addEventListener('keydown', handleKeyDown);
 
-    // Update the UI input and the element's rotation if valid
-    setRotationAngle(newAngle);
-    if (element) {
-      element.set('angle', newAngle);
-      editor.canvas.renderAll();
-    }
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   };
 
   const toggleItalic = () => {
@@ -1457,57 +1507,7 @@ function Template() {
 
       setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
       setSelectedTool('textBox');
-      //       var fonts = ['Pacifico', 'Edoz', 'Open Sans'];
-
-      //       const fontFaceRule = `
-      //   @font-face {
-      //     font-family: 'Edoz';
-      //     src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
-      //     font-display: swap;
-      //   }
-
-      //     @font-face {
-      //     font-family: 'Open Sans';
-      //     src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
-      //     font-display: swap;
-      //   }
-      // `;
-
-      //       const styleElement = document.createElement('style');
-      //       document.head.appendChild(styleElement);
-
-      //       styleElement.textContent = fontFaceRule;
-
-      //       var select = document.getElementById('font-family');
-      //       fonts.forEach(function (font) {
-      //         var option = document.createElement('option');
-      //         option.innerHTML = font;
-      //         option.value = font;
-      //         select.appendChild(option);
-      //       });
-
-      //       function loadAndUse(font) {
-      //         var myfont = new FontFaceObserver(font);
-      //         myfont
-      //           .load()
-      //           .then(function () {
-      //             // when font is loaded, use it.
-      //             editor.canvas.getActiveObject().set('fontFamily', font);
-      //             editor.canvas.requestRenderAll();
-      //           })
-      //           .catch(function (e) {
-      //             console.log(e);
-      //             alert('font loading failed ' + font);
-      //           });
-      //       }
-      //       document.getElementById('font-family').onchange = function () {
-      //         if (this.value !== 'Times New Roman') {
-      //           loadAndUse(this.value);
-      //         } else {
-      //           editor.canvas.getActiveObject().set('fontFamily', this.value);
-      //           editor.canvas.requestRenderAll();
-      //         }
-      //       };
+      console.log('fontSize: ', text.fontSize);
     });
 
     editor.canvas.add(text);
@@ -2791,65 +2791,39 @@ function Template() {
     }
   };
 
-  const fontFaceRule = `
-  @font-face {
-    font-family: 'Edoz';
-    src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
-    font-display: swap;
-  }
-  
-    @font-face {
-    font-family: 'Open Sans';
-    src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
-    font-display: swap;
-  }
-`;
-
-  const styleElement = document.createElement('style');
-  document.head.appendChild(styleElement);
-
-  styleElement.textContent = fontFaceRule;
-
-  function loadAndUse(font) {
-    var myfont = new FontFaceObserver(font);
-    myfont
-      .load()
-      .then(function () {
-        // when font is loaded, use it.
-        editor.canvas.getActiveObject().set('fontFamily', font);
-        editor.canvas.requestRenderAll();
-      })
-      .catch(function (e) {
-        console.log(e);
-        alert('font loading failed ' + font);
-      });
-  }
+  const generateFontFaceRule = (fonts) => {
+    return fonts
+      .map(
+        (font) => `
+      @font-face {
+        font-family: '${font.fontName}';
+        src: url('${font.fontPath}');
+        font-display: swap;
+      }
+    `
+      )
+      .join('');
+  };
 
   useEffect(() => {
-    const fontFaceRule = `
-    @font-face {
-      font-family: 'Edoz';
-      src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1723621070/fonts/edosz.ttf');
-      font-display: swap;
-    }
-    @font-face {
-      font-family: 'Open Sans';
-      src: url('https://res.cloudinary.com/dchov8fes/raw/upload/v1721531764/fonts/OpenSans-VariableFont_wdth%2Cwght.ttf');
-      font-display: swap;
-    }
-  `;
+    getAllFont();
 
-    const styleElement = document.createElement('style');
-    document.head.appendChild(styleElement);
-    styleElement.textContent = fontFaceRule;
-  }, []);
+    // Apply dynamic font-face rules when fonts are updated
+    if (fonts.length > 0) {
+      const fontFaceRule = generateFontFaceRule(fonts);
+      const styleElement = document.createElement('style');
+      document.head.appendChild(styleElement);
+      styleElement.textContent = fontFaceRule;
+    }
+  }, [fonts]);
 
+  // Load the font dynamically and apply it to the canvas
   const loadAndUseFont = (fontName) => {
     const myFont = new FontFaceObserver(fontName);
+
     myFont
       .load()
       .then(() => {
-        // When the font is loaded, apply it to the active object
         const activeObject = editor.canvas.getActiveObject();
         if (activeObject) {
           activeObject.set('fontFamily', fontName);
@@ -2858,44 +2832,44 @@ function Template() {
       })
       .catch((e) => {
         console.error(`Font loading failed: ${fontName}`, e);
-        alert('Font loading failed: ' + fontName);
+        alert(`Font loading failed: ${fontName}. Please check the font URL or try again later.`);
       });
   };
 
+  // Handle font change from the select input
   const handleFontChange = (event) => {
     const selectedFont = event.target.value;
-    setSelectedFont(selectedFont); // Set selected font in state
+    setSelectedFont(selectedFont);
 
     if (selectedFont !== 'Times New Roman') {
-      loadAndUseFont(selectedFont); // Load and use the custom font
+      loadAndUseFont(selectedFont);
     } else {
       const activeObject = editor.canvas.getActiveObject();
       if (activeObject) {
         activeObject.set('fontFamily', 'Times New Roman');
-        editor.canvas.requestRenderAll(); // Re-render the canvas
+        editor.canvas.requestRenderAll();
       }
     }
   };
-
   return (
     <div className="app">
       <header className="header">
         {(selectedTool == 'text' || selectedTool == 'textBox') && (
           <>
+            {/* <select id="font-family"></select> */}
+
             {/* <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
-                <option key={font.fontId} value={font.fontName}>
-                  {font.fontName}
+                <option key={font} value={font}>
+                  {font}
                 </option>
               ))}
             </select> */}
 
-            {/* <select id="font-family"></select> */}
-
             <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
-                <option key={font} value={font}>
-                  {font}
+                <option key={font.fontId} value={font.fontName}>
+                  {font.fontName}
                 </option>
               ))}
             </select>
@@ -2914,14 +2888,6 @@ function Template() {
             <button onClick={cycleTextAlign} className="align-button">
               {getTextAlignIcon()}
             </button>
-            <input
-              type="number"
-              value={rotationAngle}
-              placeholder="Enter rotation angle"
-              onChange={handleRotationChange}
-              min="0"
-              max="360"
-            />
           </>
         )}
 
@@ -3020,6 +2986,15 @@ function Template() {
                       <button onClick={() => changeZIndex('bringForward')}>Bring Forward</button>
                       <button onClick={() => changeZIndex('bringToFront')}>Bring to Front</button>
                     </div>
+                    <label htmlFor="rotationAngle">Rotation Angle:</label>
+                    <input
+                      type="number"
+                      value={rotationAngle}
+                      placeholder="Enter rotation angle"
+                      onChange={handleRotationChange}
+                      min="-180"
+                      max="180"
+                    />
                     {/* </>
                     )} */}
                   </div>
