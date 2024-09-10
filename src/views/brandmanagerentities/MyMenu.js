@@ -57,7 +57,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.post('https://3.1.81.96/api/Menus', {
+      const response = await axios.post('http://3.1.81.96/api/Menus', {
         ...newMenuData,
         brandId: brandId // Set brandId fetched from localStorage
       });
@@ -89,7 +89,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.put(`https://3.1.81.96/api/Menus/${editMenuData.menuId}`, {
+      const response = await axios.put(`http://3.1.81.96/api/Menus/${editMenuData.menuId}`, {
         ...editMenuData,
         brandId: brandId // Ensure brandId is included in the update payload
       });
@@ -140,7 +140,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.get('https://3.1.81.96/api/Menus', {
+      const response = await axios.get('http://3.1.81.96/api/Menus', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -166,7 +166,7 @@ const MyMenu = () => {
 
   const handleDelete = async (menuId) => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Menus/${menuId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Menus/${menuId}`);
       if (response.status === 200) {
         // Successfully deleted menu
         setMenuData(menuData.filter((menu) => menu.menuId !== menuId));
@@ -196,7 +196,7 @@ const MyMenu = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Menu Table</Typography>}>
+          <MainCard title="Menus">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -345,13 +345,15 @@ const MyMenu = () => {
             label="Menu Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="standard"
             value={newMenuData.menuDescription}
             onChange={handleChange}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddMenuDialog} color="primary">
+          <Button onClick={handleCloseAddMenuDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAddMenu} color="primary">
@@ -381,13 +383,15 @@ const MyMenu = () => {
             label="Menu Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="standard"
             value={editMenuData.menuDescription}
             onChange={handleEditChange}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditMenuDialog} color="primary">
+          <Button onClick={handleCloseEditMenuDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleEditMenu} color="primary">

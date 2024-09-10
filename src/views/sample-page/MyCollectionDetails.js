@@ -70,7 +70,7 @@ const MyCollectionDetail = () => {
 
   const confirmDeleteProductGroupItem = async () => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/ProductGroupItem/${itemToDelete}`);
+      const response = await axios.delete(`http://3.1.81.96/api/ProductGroupItem/${itemToDelete}`);
       if (response.status === 200) {
         // Update productGroupItemsData
         setProductGroupItemsData((prevData) => {
@@ -106,7 +106,7 @@ const MyCollectionDetail = () => {
         productGroupId: parseInt(newProductGroupItemData.productGroupId, 10),
         productId: parseInt(newProductGroupItemData.productId, 10)
       };
-      const response = await axios.post(`https://3.1.81.96/api/ProductGroupItem`, dataToSend);
+      const response = await axios.post(`http://3.1.81.96/api/ProductGroupItem`, dataToSend);
       if (response.status === 201) {
         const newItem = response.data;
 
@@ -158,7 +158,7 @@ const MyCollectionDetail = () => {
         haveNormalPrice: editingProductGroup.haveNormalPrice,
         productGroupMaxCapacity: parseInt(editingProductGroup.productGroupMaxCapacity, 10) || 0
       };
-      const response = await axios.put(`https://3.1.81.96/api/ProductGroup/${editingProductGroup.productGroupId}`, updatedGroupData);
+      const response = await axios.put(`http://3.1.81.96/api/ProductGroup/${editingProductGroup.productGroupId}`, updatedGroupData);
 
       if (response.status === 200) {
         setCollectionData((prevCollectionData) => ({
@@ -197,7 +197,7 @@ const MyCollectionDetail = () => {
 
   const confirmDeleteProductGroup = async () => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/ProductGroup/${productGroupToDelete}`);
+      const response = await axios.delete(`http://3.1.81.96/api/ProductGroup/${productGroupToDelete}`);
       if (response.status === 200) {
         setCollectionData((prevCollectionData) => ({
           ...prevCollectionData,
@@ -248,7 +248,7 @@ const MyCollectionDetail = () => {
         productGroupMaxCapacity: parseInt(newProductGroupData.productGroupMaxCapacity, 10) || 0, // Parse to int or default to 0
         haveNormalPrice: newProductGroupData.haveNormalPrice
       };
-      const response = await axios.post('https://3.1.81.96/api/ProductGroup', dataToSend);
+      const response = await axios.post('http://3.1.81.96/api/ProductGroup', dataToSend);
       if (response.status === 201) {
         setCollectionData((prevCollectionData) => {
           const updatedProductGroups = [...(prevCollectionData.productGroups || []), response.data];
@@ -280,7 +280,7 @@ const MyCollectionDetail = () => {
 
       try {
         const productGroupResponse = await axios.get(
-          `https://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionData.collectionId}`
+          `http://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionData.collectionId}`
         );
         const productGroupItems = productGroupResponse.data;
         const productIds =
@@ -289,7 +289,7 @@ const MyCollectionDetail = () => {
             : [];
 
         if (productIds.length > 0) {
-          const productResponse = await Promise.all(productIds.map((id) => axios.get(`https://3.1.81.96/api/Products?productId=${id}`)));
+          const productResponse = await Promise.all(productIds.map((id) => axios.get(`http://3.1.81.96/api/Products?productId=${id}`)));
 
           const newProductMap = {};
           productResponse.forEach((response) => {
@@ -301,7 +301,7 @@ const MyCollectionDetail = () => {
           });
           setProductData(newProductMap);
           const productSizePromises = productIds.map(
-            (id) => axios.get(`https://3.1.81.96/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
+            (id) => axios.get(`http://3.1.81.96/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
           );
           const productSizeResponses = await Promise.all(productSizePromises);
 
@@ -350,7 +350,7 @@ const MyCollectionDetail = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Collection Details</Typography>}>
+    <MainCard title="Collection Details">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="subtitle1">Collection ID: {collectionData.collectionId}</Typography>
         <Typography variant="subtitle1">Brand ID: {collectionData.brandId}</Typography>
@@ -442,7 +442,7 @@ const MyCollectionDetail = () => {
             <DialogContentText>Are you sure you want to delete this product group item?</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowDeleteItemConfirmation(false)} color="primary">
+            <Button onClick={() => setShowDeleteItemConfirmation(false)} color="secondary">
               Cancel
             </Button>
             <Button onClick={confirmDeleteProductGroupItem} color="error">
@@ -481,7 +481,9 @@ const MyCollectionDetail = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowAddProductGroupItemDialog(false)}>Cancel</Button>
+            <Button onClick={() => setShowAddProductGroupItemDialog(false)} color="secondary">
+              Cancel
+            </Button>
             <Button onClick={handleSaveAddProductGroupItem} variant="contained">
               Add
             </Button>
@@ -529,7 +531,9 @@ const MyCollectionDetail = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddProductGroupDialog(false)}>Cancel</Button>
+          <Button onClick={() => setShowAddProductGroupDialog(false)} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleAddProductGroup} variant="contained">
             Add Product Group
           </Button>
@@ -577,7 +581,9 @@ const MyCollectionDetail = () => {
           </FormGroup>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditProductGroupDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditProductGroupDialog} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleSaveEditProductGroup} variant="contained">
             Save
           </Button>
@@ -590,7 +596,7 @@ const MyCollectionDetail = () => {
           <DialogContentText>Are you sure you want to delete this product group? This action cannot be undone.</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowDeleteConfirmation(false)} color="primary">
+          <Button onClick={() => setShowDeleteConfirmation(false)} color="secondary">
             Cancel
           </Button>
           <Button onClick={confirmDeleteProductGroup} color="error">

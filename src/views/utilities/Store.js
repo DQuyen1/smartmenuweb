@@ -26,7 +26,8 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import Toastify from 'toastify-js';
@@ -56,6 +57,8 @@ const UtilitiesShadow = () => {
     storeStatus: true
   });
   const [validationErrors, setValidationErrors] = useState({});
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const validateNewStoreData = () => {
     const errors = {};
@@ -85,7 +88,7 @@ const UtilitiesShadow = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('https://3.1.81.96/api/Stores', newStoreData);
+      const response = await axios.post('http://3.1.81.96/api/Stores', newStoreData);
       if (response.status === 201) {
         setNewStoreData({
           brandId: '',
@@ -127,12 +130,26 @@ const UtilitiesShadow = () => {
     setValidationErrors({});
   };
 
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   const fetchStoreData = async () => {
     setIsLoading(true);
     try {
       const [storeResponse, brandResponse] = await Promise.all([
-        axios.get('https://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000'),
-        axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+        axios.get('http://3.1.81.96/api/Stores', {
+          params: {
+            pageNumber: page,
+            pageSize: rowsPerPage
+          }
+        }),
+        axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
       ]);
 
       const storeDataWithBrandNames = storeResponse.data.map((store) => ({
@@ -141,6 +158,7 @@ const UtilitiesShadow = () => {
       }));
       setStoreData(storeDataWithBrandNames);
       setBrandData(brandResponse.data);
+      setPage(0);
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(error.message);
@@ -156,7 +174,7 @@ const UtilitiesShadow = () => {
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Stores/${storeToDelete.storeId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Stores/${storeToDelete.storeId}`);
 
       if (response.status === 200) {
         setStoreData(storeData.filter((store) => store.storeId !== storeToDelete.storeId));
@@ -225,7 +243,7 @@ const UtilitiesShadow = () => {
 
   return (
     <div>
-      <MainCard title="Store Table">
+      <MainCard title="Stores">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', gap: '16px' }}>
             <TextField
@@ -290,13 +308,15 @@ const UtilitiesShadow = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredStoreData.map((store) => (
+                {filteredStoreData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((store) => (
                   <TableRow key={store.storeId}>
                     <TableCell>{store.storeCode}</TableCell>
                     <TableCell>{store.storeName}</TableCell>
                     <TableCell>{store.brandName}</TableCell>
                     <TableCell>
-                      <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>{store.storeStatus ? 'True' : 'False'}</Typography>
+                      <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>
+                        {store.storeStatus ? 'Active' : 'Inactive'}
+                      </Typography>
                     </TableCell>
                     <TableCell sx={{ display: 'flex', gap: 1 }}>
                       <Button variant="contained" onClick={() => handleViewDetails(store)}>
@@ -317,6 +337,15 @@ const UtilitiesShadow = () => {
                 ))}
               </TableBody>
             </Table>
+            <TablePagination
+              component="div"
+              count={filteredStoreData.length}
+              onPageChange={handlePageChange}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[3, 5, 10]}
+            />
           </TableContainer>
         )}
         <Dialog
@@ -407,7 +436,9 @@ const UtilitiesShadow = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseAddStoreDialog}>Cancel</Button>
+            <Button onClick={handleCloseAddStoreDialog} color="secondary">
+              Cancel
+            </Button>
             <Button variant="contained" onClick={handleAddStore} disabled={isLoading} color="success">
               <Typography color={'white'}>{isLoading ? 'Adding...' : 'Add'}</Typography>
             </Button>
@@ -427,7 +458,9 @@ const UtilitiesShadow = () => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowDeleteConfirmDialog(false)}>Cancel</Button>
+            <Button onClick={() => setShowDeleteConfirmDialog(false)} color="secondary">
+              Cancel
+            </Button>
             <Button variant="contained" color="error" onClick={handleDelete} disabled={isLoading}>
               {isLoading ? 'Deleting...' : 'Delete'}
             </Button>

@@ -49,7 +49,7 @@ const StoreDetails = () => {
   useEffect(() => {
     const fetchStoreDetails = async () => {
       try {
-        const storeResponse = await axios.get(`https://3.1.81.96/api/Stores?storeId=${storeId}`);
+        const storeResponse = await axios.get(`http://3.1.81.96/api/Stores?storeId=${storeId}`);
         setStoreData(storeResponse.data[0]);
         setEditingStoreData(storeResponse.data[0]);
       } catch (error) {
@@ -80,7 +80,7 @@ const StoreDetails = () => {
       return;
     }
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Stores/${editingStoreData.storeId}`, editingStoreData);
+      const response = await axios.put(`http://3.1.81.96/api/Stores/${editingStoreData.storeId}`, editingStoreData);
 
       if (response.status === 200) {
         setStoreData(editingStoreData); // Update display state only after successful save
@@ -142,7 +142,9 @@ const StoreDetails = () => {
           </Grid>
           <Grid item xs={12} md={6}>
             <Typography variant="h6">Status:</Typography>
-            <Typography variant="body1">{storeData.storeStatus ? 'True' : 'False'}</Typography>
+            <Typography variant="body1" style={{ color: storeData.storeStatus ? 'green' : 'red' }}>
+              {storeData.storeStatus ? 'Active' : 'Inactive'}
+            </Typography>
           </Grid>
         </Grid>
 
@@ -230,6 +232,7 @@ const StoreDetails = () => {
                 setOpenEditDialog(false);
                 setValidationErrors({});
               }}
+              color="secondary"
             >
               Cancel
             </Button>

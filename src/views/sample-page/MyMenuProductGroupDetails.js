@@ -48,7 +48,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://3.1.81.96/api/ProductGroup/GroupItem?menuId=${menuDataId}&pageNumber=1&pageSize=10`);
+      const response = await axios.get(`http://3.1.81.96/api/ProductGroup/GroupItem?menuId=${menuDataId}&pageNumber=1&pageSize=10`);
       console.log('Data fetched:', response.data);
       setProductGroups(response.data);
     } catch (error) {
@@ -63,7 +63,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
     setIsLoading(true);
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.get(`https://3.1.81.96/api/Categories?brandId=${brandId}&&pageNumber=1&pageSize=1000`);
+      const response = await axios.get(`http://3.1.81.96/api/Categories?brandId=${brandId}&&pageNumber=1&pageSize=1000`);
       console.log('Data fetched:', response.data);
       setCategories(response.data);
     } catch (error) {
@@ -77,7 +77,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
   const fetchProductData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://3.1.81.96/api/Products?pageNumber=1&pageSize=1000`);
+      const response = await axios.get(`http://3.1.81.96/api/Products?pageNumber=1&pageSize=1000`);
       console.log('Data fetched:', response.data);
       setProducts(response.data);
     } catch (error) {
@@ -204,7 +204,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       console.log(productGroupCreate);
       // console.log(productPriceCreate, groupItem.productId);
 
-      const response = await fetch(`https://3.1.81.96/api/ProductGroup`, {
+      const response = await fetch(`http://3.1.81.96/api/ProductGroup`, {
         method: 'POST', // Or PATCH, depending on your API
         headers: {
           'Content-Type': 'application/json'
@@ -418,7 +418,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         console.log(productGroupItemCreate);
         // console.log(productPriceCreate, groupItem.productId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroupItem`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductGroupItem`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -466,7 +466,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         });
         // console.log(productPriceCreate, groupItem.productId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductSizePrices/`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -507,7 +507,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
     const handleSubmitEditPrice = async (e, size) => {
       try {
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
           method: 'PUT', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -544,7 +544,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
         // console.log(groupItem.productGroupItemId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroup/${row.productGroupId}`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductGroup/${row.productGroupId}`, {
           method: 'DELETE', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -583,7 +583,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
         // console.log(groupItem.productGroupItemId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroupItem/${groupItem.productGroupItemId}`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductGroupItem/${groupItem.productGroupItemId}`, {
           method: 'DELETE', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -617,7 +617,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
     };
     const handleSubmitDeletePrice = async (e, size) => {
       try {
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
+        const response = await fetch(`http://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
           method: 'Delete', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -676,7 +676,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
               <DialogTitle variant="h4">Delete Product Group Item</DialogTitle>
               <DialogContent>Delete product group `{row.productGroupName}`</DialogContent>
               <DialogActions>
-                <Button onClick={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)}>Cancel</Button>
+                <Button onClick={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)} color="secondary">
+                  Cancel
+                </Button>
 
                 <Button onClick={(e) => handleSubmitDeleteProductGroup(e, row)}>OK</Button>
               </DialogActions>
@@ -695,7 +697,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                       <TableCell />
                       {/* Product group */}
 
-                      <TableCell style={{ fontWeight: 'bold' }}>Product Id</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Image</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Name</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Description</TableCell>
@@ -737,7 +738,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                           </DialogContent>
 
                           <DialogActions>
-                            <Button onClick={() => setToggleAddProduct(false)}>Cancel</Button>
+                            <Button onClick={() => setToggleAddProduct(false)} color="secondary">
+                              Cancel
+                            </Button>
                             <Button onClick={(e) => handleSubmitAddProductGroupItem(e)}>OK</Button>
                           </DialogActions>
                         </Dialog>
@@ -761,7 +764,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                           </IconButton>
                         </TableCell>
 
-                        <TableCell>{groupItem.product.productId}</TableCell>
                         <TableCell>
                           {groupItem.product.productImgPath !== null ? (
                             <img
@@ -807,7 +809,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                             <DialogTitle variant="h4">Delete Product Group Item</DialogTitle>
                             <DialogContent>Delete product group item `{groupItem.product.productName}`</DialogContent>
                             <DialogActions>
-                              <Button onClick={() => handleCloseDialog(groupItem.productGroupItemId)}>Cancel</Button>
+                              <Button onClick={() => handleCloseDialog(groupItem.productGroupItemId)} color="secondary">
+                                Cancel
+                              </Button>
 
                               <Button onClick={(e) => handleSubmitDeleteProductGroupItem(e, groupItem)}>OK</Button>
                             </DialogActions>
@@ -888,7 +892,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                         </DialogContent>
 
                                         <DialogActions>
-                                          <Button onClick={() => setToggleAddPrice(!toggleAddPrice)}>Cancel</Button>
+                                          <Button onClick={() => setToggleAddPrice(!toggleAddPrice)} color="secondary">
+                                            Cancel
+                                          </Button>
                                           <Button onClick={(e) => handleSubmitAddPrice(e, groupItem)}>OK</Button>
                                         </DialogActions>
                                       </Dialog>
@@ -953,7 +959,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                             }}
                                           />
                                           <DialogActions>
-                                            <Button onClick={() => handleCloseDialog(size.productSizePriceId)}>Cancel</Button>
+                                            <Button onClick={() => handleCloseDialog(size.productSizePriceId)} color="secondary">
+                                              Cancel
+                                            </Button>
                                             <Button onClick={(e) => handleSubmitEditPrice(e, size)}>OK</Button>
                                           </DialogActions>
                                         </Dialog>
@@ -963,7 +971,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                           <DialogTitle>Delete Price</DialogTitle>
                                           <DialogContent>Delete price of product id {groupItem.productId}</DialogContent>
                                           <DialogActions>
-                                            <Button onClick={() => setToggleDeletePrice(!toggleDeletePrice)}>Cancel</Button>
+                                            <Button onClick={() => setToggleDeletePrice(!toggleDeletePrice)} color="secondary">
+                                              Cancel
+                                            </Button>
 
                                             <Button onClick={(e) => handleSubmitDeletePrice(e, size)}>OK</Button>
                                           </DialogActions>
@@ -1106,7 +1116,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                   </DialogContent>
 
                   <DialogActions>
-                    <Button onClick={() => setToggleAddProductGroup(false)}>Cancel</Button>
+                    <Button onClick={() => setToggleAddProductGroup(false)} color="secondary">
+                      Cancel
+                    </Button>
                     <Button onClick={(e) => handleSubmitAddProductGroup(e)}>OK</Button>
                   </DialogActions>
                 </Dialog>

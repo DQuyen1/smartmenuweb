@@ -13,16 +13,10 @@ const MenuDetails = () => {
   const [snackbarMessage] = useState('');
 
   return (
-    <MainCard title={<Typography variant="h2">Menu Details</Typography>}>
+    <MainCard title="Menu Details">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="h4" style={{ fontWeight: 'normal' }}>
-          Menu ID: {menuData.menuId}
-        </Typography>
-        <Typography variant="h4" style={{ fontWeight: 'normal' }}>
-          Brand ID: {menuData.brandId}
-        </Typography>
-        <Typography variant="h4" style={{ fontWeight: 'normal' }}>
-          Name: {menuData.menuName}
+          Menu Name: {menuData.menuName}
         </Typography>
         <Typography variant="h4" style={{ fontWeight: 'normal' }}>
           Description: {menuData.menuDescription}

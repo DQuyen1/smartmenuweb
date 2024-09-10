@@ -75,7 +75,7 @@ const MyCategory = () => {
     try {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.post('https://3.1.81.96/api/Categories', {
+      const response = await axios.post('http://3.1.81.96/api/Categories', {
         ...newCategoryData,
         brandId: brandId // Set brandId fetched from localStorage
       });
@@ -106,7 +106,7 @@ const MyCategory = () => {
     try {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.put(`https://3.1.81.96/api/Categories/${editCategoryData.categoryId}`, {
+      const response = await axios.put(`http://3.1.81.96/api/Categories/${editCategoryData.categoryId}`, {
         ...editCategoryData,
         brandId: brandId // Ensure brandId is included in the update payload
       });
@@ -158,7 +158,7 @@ const MyCategory = () => {
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.get('https://3.1.81.96/api/Categories', {
+      const response = await axios.get('http://3.1.81.96/api/Categories', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -185,7 +185,7 @@ const MyCategory = () => {
       try {
         const brandId = localStorage.getItem('brandId');
 
-        const response = await axios.get('https://3.1.81.96/api/Categories', {
+        const response = await axios.get('http://3.1.81.96/api/Categories', {
           params: {
             brandId: brandId,
             pageNumber: 1,
@@ -212,7 +212,7 @@ const MyCategory = () => {
 
   const handleDelete = async (categoryId) => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Categories/${categoryId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Categories/${categoryId}`);
       if (response.status === 200) {
         // Successfully deleted category
         setCategoryData(categoryData.filter((category) => category.categoryId !== categoryId));
@@ -241,7 +241,7 @@ const MyCategory = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Category Table</Typography>}>
+          <MainCard title="Categories">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -392,7 +392,9 @@ const MyCategory = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddCategoryDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddCategoryDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleAddCategory}>
             Add Category
           </Button>
@@ -423,7 +425,9 @@ const MyCategory = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditCategoryDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditCategoryDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleEditCategory}>
             Save Changes
           </Button>

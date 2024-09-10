@@ -51,8 +51,7 @@ const MyTemplate = () => {
     templateName: '',
     templateDescription: '',
     templateOrientation: '',
-    templateImgPath: '',
-    templateType: 0
+    templateType: 1
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [templateImgPath, setTemplateImgPath] = useState(false);
@@ -68,9 +67,6 @@ const MyTemplate = () => {
     }
     if (!newTemplateData.templateOrientation) {
       errors.templateOrientation = 'Template orientation is required';
-    }
-    if (!newTemplateData.templateImgPath.trim()) {
-      errors.templateImgPath = 'Template image path is required';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -92,13 +88,16 @@ const MyTemplate = () => {
     if (!validateNewTemplateData()) {
       return;
     }
-
+    const payload = {
+      ...newTemplateData,
+      brandId: brandId,
+      templateImgPath:
+        newTemplateData.templateImgPath ||
+        'https://png.pngtree.com/thumb_back/fh260/background/20200821/pngtree-pure-white-minimalist-background-wallpaper-image_396581.jpg'
+    };
+    console.log('Payload:', payload); // Log the payload being sent
     try {
-      const response = await axios.post('https://3.1.81.96/api/Templates', {
-        ...newTemplateData,
-        brandId: brandId,
-        templateImgPath: templateImgPath
-      });
+      const response = await axios.post('http://3.1.81.96/api/Templates', payload);
       if (response.status === 201) {
         // Update template data locally (assuming server returns the created template data)
         fetchData();
@@ -107,8 +106,6 @@ const MyTemplate = () => {
         setShowAddTemplateDialog(false);
 
         console.log('Template added successfully:', response.data);
-        // navigate('/pages/template', { state: { templateData: response.data.templateId } });
-        // navigate(`/pages/template/${response.data.templateId}`);
         navigate(`/pages/template/${response.data.templateId}`, { state: { templateType: response.data.templateType } });
       } else {
         console.error('Error creating template:', response);
@@ -126,9 +123,11 @@ const MyTemplate = () => {
     }
 
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
+      const response = await axios.put(`http://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
         ...editTemplateData,
-        templateImgPath: templateImgPath
+        templateImgPath:
+          editTemplateData.templateImgPath ||
+          'https://png.pngtree.com/thumb_back/fh260/background/20200821/pngtree-pure-white-minimalist-background-wallpaper-image_396581.jpg'
       });
       if (response.status === 200) {
         fetchData();
@@ -153,7 +152,7 @@ const MyTemplate = () => {
         ...prevState,
         templateWidth: value === 'vertical' ? 794 : 1080,
         templateHeight: value === 'vertical' ? 1123 : 608,
-        templateType: value === 'vertical' ? 0 : 1, // Correct the order for horizontal
+        templateType: value === 'vertical' ? 1 : 0, // Correct the order for horizontal
         [name]: value
       }));
     } else {
@@ -212,7 +211,7 @@ const MyTemplate = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`https://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
+      const response = await axios.delete(`http://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
       if (response.status === 200) {
         setTemplateData((prevData) => prevData.filter((item) => item.templateId !== selectedTemplate.templateId));
         setOpenSnackbar(true);
@@ -235,7 +234,7 @@ const MyTemplate = () => {
 
     try {
       const brandId = localStorage.getItem('brandId');
-      const templateResponse = await axios.get('https://3.1.81.96/api/Templates', {
+      const templateResponse = await axios.get('http://3.1.81.96/api/Templates', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -303,7 +302,7 @@ const MyTemplate = () => {
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <MainCard title={<Typography variant="h5">Templates</Typography>}>
+          <MainCard title="Templates">
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <TextField
                 value={filter}
@@ -445,6 +444,8 @@ const MyTemplate = () => {
             label="Template Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={newTemplateData.templateDescription}
             onChange={handleAddTemplateChange}
@@ -472,7 +473,7 @@ const MyTemplate = () => {
             <option value="vertical">Vertical</option>
             <option value="horizontal">Horizontal</option>
           </TextField>
-          <Input
+          {/* <Input
             type="file"
             name="templateImgPath"
             accept="image/*"
@@ -482,10 +483,12 @@ const MyTemplate = () => {
             error={!!validationErrors.templateImgPath}
             required
           />
-          <FormHelperText error={!!validationErrors.templateImgPath}>{validationErrors.templateImgPath}</FormHelperText>
+          <FormHelperText error={!!validationErrors.templateImgPath}>{validationErrors.templateImgPath}</FormHelperText> */}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseAddTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleAddTemplate}>
             Add Template
           </Button>
@@ -514,6 +517,8 @@ const MyTemplate = () => {
             label="Template Description"
             type="text"
             fullWidth
+            multiline
+            rows={4}
             variant="outlined"
             value={editTemplateData.templateDescription}
             onChange={handleEditTemplateChange}
@@ -523,7 +528,9 @@ const MyTemplate = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditTemplateDialog}>Cancel</Button>
+          <Button onClick={handleCloseEditTemplateDialog} color="secondary">
+            Cancel
+          </Button>
           <Button variant="contained" onClick={handleEditTemplate}>
             Save Changes
           </Button>

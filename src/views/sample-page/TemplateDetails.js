@@ -24,7 +24,7 @@ const TemplateDetails = () => {
 
   const handleUpdateTemplate = async () => {
     try {
-      const response = await axios.put(`https://3.1.81.96/api/Templates?templateId=${updatedTemplateData.templateId}`, updatedTemplateData);
+      const response = await axios.put(`http://3.1.81.96/api/Templates?templateId=${updatedTemplateData.templateId}`, updatedTemplateData);
       if (response.status === 200) {
         // Update storeData in location state (optional, but recommended)
         location.state.templateData = response.data;
@@ -41,7 +41,7 @@ const TemplateDetails = () => {
   };
 
   return (
-    <MainCard title={<Typography variant="h5">Template Details</Typography>}>
+    <MainCard title="Template Details">
       {!isEditing ? (
         <Grid container spacing={2}>
           {' '}
@@ -82,6 +82,8 @@ const TemplateDetails = () => {
             value={updatedTemplateData.templateDescription}
             onChange={handleChange}
             fullWidth
+            multiline
+            rows={4}
           />
           {/* Add more details as needed (width, height, image, etc.) */}
           <Button variant="contained" onClick={handleUpdateTemplate}>

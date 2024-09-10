@@ -96,10 +96,10 @@ const UtilitiesBrandStaff = () => {
 
     try {
       const [userResponse, brandResponse, allBrandsResponse, allStoresResponse] = await Promise.all([
-        axios.get('https://3.1.81.96/api/Users?pageNumber=1&pageSize=1000&isDeleted=true'),
-        axios.get('https://3.1.81.96/api/Brands/BrandStaff?pageNumber=1&pageSize=1000'),
-        axios.get('https://3.1.81.96/api/Brands?pageNumber=1&pageSize=1000'),
-        axios.get('https://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000') // Fetch stores
+        axios.get('http://3.1.81.96/api/Users?pageNumber=1&pageSize=1000&isDeleted=true'),
+        axios.get('http://3.1.81.96/api/Brands/BrandStaff?pageNumber=1&pageSize=1000'),
+        axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=1000'),
+        axios.get('http://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000') // Fetch stores
       ]);
 
       const filteredUsers = userResponse.data.filter((user) => user.role !== 0);
@@ -220,7 +220,7 @@ const UtilitiesBrandStaff = () => {
 
     if (name === 'brandId') {
       try {
-        const response = await axios.get(`https://3.1.81.96/api/Stores?brandId=${value}`);
+        const response = await axios.get(`http://3.1.81.96/api/Stores?brandId=${value}`);
         setFilteredStores(response.data);
       } catch (err) {
         setError('Error fetching stores for selected brand');
@@ -234,7 +234,7 @@ const UtilitiesBrandStaff = () => {
     }
     setIsLoading(true);
     try {
-      await axios.post('https://3.1.81.96/api/Auth/Register', newUser);
+      await axios.post('http://3.1.81.96/api/Auth/Register', newUser);
       Toastify({
         text: 'User created successfully!',
         duration: 3000,
@@ -254,7 +254,7 @@ const UtilitiesBrandStaff = () => {
 
   const checkExistingAssignment = async () => {
     try {
-      const response = await axios.get(`https://3.1.81.96/api/BrandStaffs?brandId=${assignData.brandId}`);
+      const response = await axios.get(`http://3.1.81.96/api/BrandStaffs?brandId=${assignData.brandId}`);
       const existingStoreManagers = response.data.filter((staff) => staff.storeId !== null && staff.storeId === assignData.storeId);
       return existingStoreManagers.length > 0; // If there are any store managers, it means an assignment exists
     } catch (err) {
@@ -275,7 +275,7 @@ const UtilitiesBrandStaff = () => {
       }
     }
     try {
-      await axios.post('https://3.1.81.96/api/BrandStaffs', assignData);
+      await axios.post('http://3.1.81.96/api/BrandStaffs', assignData);
       Toastify({
         text: 'Assigned successfully!',
         duration: 3000,
@@ -296,7 +296,7 @@ const UtilitiesBrandStaff = () => {
   const handleDeleteUser = async () => {
     setIsLoading(true);
     try {
-      await axios.delete(`https://3.1.81.96/api/Users/${userToDelete.userId}`);
+      await axios.delete(`http://3.1.81.96/api/Users/${userToDelete.userId}`);
       Toastify({
         text: 'User disabled successfully!',
         duration: 3000,
@@ -342,7 +342,7 @@ const UtilitiesBrandStaff = () => {
     });
 
   return (
-    <MainCard title="Brand Staff Table">
+    <MainCard title="Brand Staffs">
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -478,7 +478,7 @@ const UtilitiesBrandStaff = () => {
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleSubmit} color="success" variant="contained" disabled={isLoading}>
@@ -542,7 +542,7 @@ const UtilitiesBrandStaff = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleAssignClose} color="primary">
+          <Button onClick={handleAssignClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleAssignSubmit} color="success" variant="contained" disabled={isLoading}>
@@ -556,7 +556,9 @@ const UtilitiesBrandStaff = () => {
           <Typography>Are you sure you want to disable this user?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteClose}>Cancel</Button>
+          <Button onClick={handleDeleteClose} color="secondary">
+            Cancel
+          </Button>
           <Button onClick={handleDeleteUser} color="error" variant="contained" disabled={isLoading}>
             {isLoading ? 'Disabling...' : 'Disable'}
           </Button>
