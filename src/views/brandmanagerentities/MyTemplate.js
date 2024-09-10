@@ -473,17 +473,6 @@ const MyTemplate = () => {
             <option value="vertical">Vertical</option>
             <option value="horizontal">Horizontal</option>
           </TextField>
-          {/* <Input
-            type="file"
-            name="templateImgPath"
-            accept="image/*"
-            onChange={handleImageUpload}
-            fullWidth
-            margin="dense"
-            error={!!validationErrors.templateImgPath}
-            required
-          />
-          <FormHelperText error={!!validationErrors.templateImgPath}>{validationErrors.templateImgPath}</FormHelperText> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddTemplateDialog} color="secondary">

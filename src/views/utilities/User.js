@@ -21,7 +21,8 @@ import {
   FormControl,
   InputLabel,
   InputAdornment,
-  TablePagination
+  TablePagination,
+  CircularProgress
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
@@ -390,44 +391,50 @@ const UtilitiesBrandStaff = () => {
               Add User
             </Button>
           </Box>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>User Name</TableCell>
-                  <TableCell>Role</TableCell>
-                  <TableCell>Brand Name</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredBrandData.map((staff) => (
-                  <TableRow key={staff.userId} hover>
-                    <TableCell>{staff.userName}</TableCell>
-                    <TableCell>{getRoleName(staff.role)}</TableCell>
-                    <TableCell>{staff.brandName}</TableCell>
-                    <TableCell sx={{ color: staff.isDeleted ? 'red' : 'green' }}>{staff.isDeleted ? 'Inactive' : 'Active'}</TableCell>
-                    <TableCell sx={{ display: 'flex', gap: 1 }}>
-                      <Button size="small" color="primary" onClick={() => handleViewDetails(staff)} variant="contained">
-                        View Details
-                      </Button>
-                      {staff.brandName === 'Unassigned' && staff.isDeleted === false && (
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button size="small" color="success" onClick={() => handleAssignOpen(staff)} variant="contained">
-                            <Typography sx={{ color: 'white' }}>Assign</Typography>
-                          </Button>
-                          <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
-                            Disable
-                          </Button>
-                        </Box>
-                      )}
-                    </TableCell>
+          {isLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>User Name</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Brand Name</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {filteredBrandData.map((staff) => (
+                    <TableRow key={staff.userId} hover>
+                      <TableCell>{staff.userName}</TableCell>
+                      <TableCell>{getRoleName(staff.role)}</TableCell>
+                      <TableCell>{staff.brandName}</TableCell>
+                      <TableCell sx={{ color: staff.isDeleted ? 'red' : 'green' }}>{staff.isDeleted ? 'Inactive' : 'Active'}</TableCell>
+                      <TableCell sx={{ display: 'flex', gap: 1 }}>
+                        <Button size="small" color="primary" onClick={() => handleViewDetails(staff)} variant="contained">
+                          View Details
+                        </Button>
+                        {staff.brandName === 'Unassigned' && staff.isDeleted === false && (
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button size="small" color="success" onClick={() => handleAssignOpen(staff)} variant="contained">
+                              <Typography sx={{ color: 'white' }}>Assign</Typography>
+                            </Button>
+                            <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
+                              Disable
+                            </Button>
+                          </Box>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Grid>
       </Grid>
       <Dialog open={open} onClose={handleClose}>
