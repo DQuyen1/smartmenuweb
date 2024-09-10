@@ -31,6 +31,7 @@
     "dotenv": "^16.4.5",
     "fabric": "^5.3.0",
     "fabricjs-react": "^1.2.2",
+    "fontfaceobserver": "^2.3.0",
     "formik": "^2.4.5",
     "framer-motion": "^11.0.3",
     "html2canvas": "^1.4.1",

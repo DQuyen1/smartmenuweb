@@ -183,7 +183,6 @@ class layerService {
   async createLayer(templateId, layerType) {
     const reqBody = {
       templateId: templateId,
-
       layerType: layerType
     };
 
@@ -191,16 +190,17 @@ class layerService {
       const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers', reqBody);
 
       const layerId = response.data.layerId;
+      const zIndex = response.data.zIndex;
 
-      return layerId;
+      return { layerId, zIndex };
     } catch (error) {
       console.log('Error message: ' + JSON.stringify(error));
     }
   }
 
-  async updateLayer(layerName, layerId) {
+  async updateLayer(layerId, zIndex) {
     const reqBody = {
-      layerName: layerName
+      zIndex: zIndex
     };
 
     try {
@@ -214,8 +214,9 @@ class layerService {
 
   deleteLayer(id) {
     try {
-      const response = axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${id}`);
-      console.log('Api message: ' + response.data);
+      axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${id}`).then(() => {
+        console.log('success');
+      });
     } catch (error) {
       console.log('Error message: ' + error);
     }
