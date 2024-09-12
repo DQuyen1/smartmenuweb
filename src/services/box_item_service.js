@@ -31,9 +31,11 @@ class boxItemService {
       const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem', reqBody);
 
       console.log('response create box item: ' + JSON.stringify(response.data));
-      const result = response.data.boxItemId;
+      const boxItemId = response.data.boxItemId;
+      const style = JSON.parse(response.data.style);
+      const bFontId = style.bFontId;
 
-      return result;
+      return { boxItemId, bFontId };
     } catch (error) {
       console.log('Error message: ' + JSON.stringify(error));
     }

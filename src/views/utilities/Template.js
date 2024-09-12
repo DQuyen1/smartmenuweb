@@ -524,11 +524,20 @@ function Template() {
     }
   };
 
-  const createBoxItem = async (boxId, bFontId, boxItemX, boxItemY, boxItemWidth, boxItemHeight, boxItemType, style) => {
+  const createBoxItem = async (boxId, fontId, boxItemX, boxItemY, boxItemWidth, boxItemHeight, boxItemType, style) => {
     try {
-      const id = await box_item_service.createBoxItem(boxId, bFontId, boxItemX, boxItemY, boxItemWidth, boxItemHeight, boxItemType, style);
+      const { boxItemId, bFontId } = await box_item_service.createBoxItem(
+        boxId,
+        fontId,
+        boxItemX,
+        boxItemY,
+        boxItemWidth,
+        boxItemHeight,
+        boxItemType,
+        style
+      );
 
-      return id;
+      return { boxItemId, bFontId };
     } catch (error) {
       console.log('Error message: ' + JSON.stringify(error.message));
     }
@@ -995,7 +1004,7 @@ function Template() {
 
           const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
 
-          const boxItemId = await createBoxItem(
+          const { boxItemId, bFontId } = await createBoxItem(
             boxId,
             5,
             positionX,
@@ -1011,6 +1020,8 @@ function Template() {
           myImg.boxId = boxId;
           myImg.boxItemId = boxItemId;
           myImg.layerId = layerId;
+
+          myImg.bFontId = bFontId;
 
           // console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
         });
@@ -1489,19 +1500,25 @@ function Template() {
     });
 
     text.on('mouseup', function () {
+      let adjustedAngle = text.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
 
       const scaledWidth = text.getScaledWidth();
       const scaledHeight = text.getScaledHeight();
-      setFontSize(convertFabricFontSizeToCanvasFontSize(text.fontSize * text.scaleX).toFixed(1));
+      setFontSize((text.fontSize * text.scaleX).toFixed(1));
       setColor(text.fill);
 
       setHeight((scaledHeight * scaleX).toFixed(1));
       setWidth((scaledWidth * scaleY).toFixed(1));
       setPositionX((text.left * scaleX).toFixed(1));
       setPositionY((text.top * scaleY).toFixed(1));
-      setRotationAngle(text.angle);
+      setRotationAngle(adjustedAngle);
 
       setIsHeaderVisible(true);
 
@@ -1525,7 +1542,7 @@ function Template() {
     const { layerId, zIndex } = await createLayer(templateId, 2);
     const layerItemId = await createLayerItem(layerId, 'Text');
     const boxId = await createBox(layerId, text.left, text.top, text.width, text.height, 0);
-    const boxItemId = await createBoxItem(boxId, 5, text.left, text.top, text.width, text.height, 0, JSON.stringify(style));
+    const { boxItemId, bFontId } = await createBoxItem(boxId, 5, text.left, text.top, text.width, text.height, 0, JSON.stringify(style));
 
     text.layerItemId = layerItemId;
     text.layerId = layerId;
@@ -1541,11 +1558,7 @@ function Template() {
     console.log('Box item id: ', boxItemId);
     console.log('zIndex: ', zIndex);
 
-    text.on('modified', function () {
-      // console.log('color: ', text.fill);
-      // console.log('alignemnt: ', text.textAlign);
-      // console.log('Angle: ', convertAngleToDegree(text.angle));
-    });
+    text.on('modified', function () {});
 
     text.on('editing:exited', function () {
       console.log('Text editing exited, new text: ', text.text);
@@ -1660,40 +1673,6 @@ function Template() {
     });
 
     // editor.canvas.renderAll();
-  };
-
-  const addMenuCollection = async () => {
-    const rect = new fabric.Rect({
-      left: 100,
-      top: 100,
-      fill: '#FFC5CB',
-      borderColor: 'dark',
-      width: 200,
-      height: 200,
-      selectionBackgroundColor: 'black'
-    });
-
-    let width = rect.width;
-    let height = rect.height;
-
-    editor.canvas.add(rect);
-
-    rect.on('modified', function () {
-      updateBox(boxId, rect.left, rect.top, width, height, 100);
-    });
-
-    const layerId = await createLayer(4);
-    const boxId = await createBox(layerId, 1);
-
-    const boxItemId = await createBoxItem(boxId, 1, 0);
-    console.log('Layer id: ', layerId);
-    console.log('Box id: ', boxId);
-    console.log('Box item id: ', boxItemId);
-
-    rect.on('scaling', function () {
-      width = rect.width * rect.scaleX;
-      height = rect.height * rect.scaleY;
-    });
   };
 
   // const addBackgroundImage = (file) => {
@@ -1844,7 +1823,7 @@ function Template() {
 
       const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
 
-      const boxItemId = await createBoxItem(
+      const { boxItemId, bFontId } = await createBoxItem(
         boxId,
         5,
         positionX,
@@ -1938,7 +1917,7 @@ function Template() {
             updateBox(obj.boxId, obj.left * scaleX, obj.top * scaleY, obj.getScaledWidth() * scaleX, obj.getScaledHeight() * scaleY, 1);
             updateBoxItem(
               obj.boxItemId,
-              5,
+              obj.bFontId ? obj.bFontId : 5,
               obj.left * scaleX,
               obj.top * scaleY,
               obj.getScaledWidth() * scaleX,
@@ -1966,7 +1945,7 @@ function Template() {
           } else if (obj.boxItemId) {
             updateBoxItem(
               obj.boxItemId,
-              5,
+              obj.bFontId ? obj.bFontId : 5,
               obj.left * scaleX,
               obj.top * scaleY,
               obj.getScaledWidth() * scaleX,
@@ -2133,10 +2112,20 @@ function Template() {
     };
 
     if (boxId) {
-      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 3, JSON.stringify(style));
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        3,
+        JSON.stringify(style)
+      );
 
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 3;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
 
@@ -2266,9 +2255,19 @@ function Template() {
     selectedRect.nameCounter += 1;
 
     if (boxId) {
-      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 2, JSON.stringify(style));
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        2,
+        JSON.stringify(style)
+      );
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 2;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
     let height = textBox.height;
@@ -2379,9 +2378,19 @@ function Template() {
     };
 
     if (boxId) {
-      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 4, JSON.stringify(style));
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        4,
+        JSON.stringify(style)
+      );
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 4;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
 
@@ -2498,9 +2507,19 @@ function Template() {
     };
 
     if (boxId) {
-      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 5, JSON.stringify(style));
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        5,
+        JSON.stringify(style)
+      );
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 5;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
     textBox.on('mouseup', function () {
@@ -2591,9 +2610,19 @@ function Template() {
 
     if (boxId) {
       // const boxItemId = await createBoxItem(boxId, 2, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
-      const boxItemId = await createBoxItem(boxId, 5, textBox.left, textBox.top, textBox.width, textBox.height, 6, JSON.stringify(style));
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        6,
+        JSON.stringify(style)
+      );
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 6;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
 
@@ -2685,7 +2714,7 @@ function Template() {
     };
 
     if (selectedRect.boxId) {
-      const boxItemId = await createBoxItem(
+      const { boxItemId, bFontId } = await createBoxItem(
         selectedRect.boxId,
         5,
         textBox.left,
@@ -2697,6 +2726,7 @@ function Template() {
       );
       textBox.boxItemId = boxItemId;
       textBox.boxItemType = 1;
+      textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
 
@@ -2837,35 +2867,56 @@ function Template() {
   };
 
   // Handle font change from the select input
+  // const handleFontChange = (event) => {
+  //   const selectedFont = event.target.value;
+  //   setSelectedFont(selectedFont);
+
+  //   const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
+  //   const bFontId = selectedFontData ? selectedFontData.fontId : null;
+  //   console.log('bFontId: ', bFontId);
+
+  //   if (selectedFont !== 'Times New Roman') {
+  //     loadAndUseFont(selectedFont);
+  //   } else {
+  //     const activeObject = editor.canvas.getActiveObject();
+  //     if (activeObject) {
+  //       activeObject.set('fontFamily', 'Times New Roman');
+  //       activeObject.set('bFontId', bFontId);
+  //       activeObject.fire('modified');
+  //       editor.canvas.requestRenderAll();
+  //     }
+  //   }
+  // };
   const handleFontChange = (event) => {
     const selectedFont = event.target.value;
     setSelectedFont(selectedFont);
 
-    if (selectedFont !== 'Times New Roman') {
-      loadAndUseFont(selectedFont);
+    const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
+    const bFontId = selectedFontData ? selectedFontData.fontId : null;
+    console.log('Selected Font:', selectedFont);
+    console.log('Selected Font bFontId:', bFontId);
+
+    const activeObject = editor.canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'textbox') {
+      activeObject.set({
+        fontFamily: selectedFont,
+        bFontId: bFontId
+      });
+      activeObject.fire('modified');
+      editor.canvas.requestRenderAll();
     } else {
-      const activeObject = editor.canvas.getActiveObject();
-      if (activeObject) {
-        activeObject.set('fontFamily', 'Times New Roman');
-        editor.canvas.requestRenderAll();
+      // Load and use the font if it's not 'Times New Roman'
+      if (selectedFont !== 'Times New Roman') {
+        loadAndUseFont(selectedFont);
       }
     }
   };
+
   return (
     <div className="app">
       <header className="header">
         {(selectedTool == 'text' || selectedTool == 'textBox') && (
           <>
-            {/* <select id="font-family"></select> */}
-
-            {/* <select value={selectedFont} onChange={handleFontChange}>
-              {fonts.map((font) => (
-                <option key={font} value={font}>
-                  {font}
-                </option>
-              ))}
-            </select> */}
-
             <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
                 <option key={font.fontId} value={font.fontName}>
