@@ -1070,35 +1070,45 @@ function Template() {
   };
 
   // const changeFontSize = (e) => {
-  //   const newFontSize = e.target.value;
-  //   setFontSize(newFontSize * 1.333);
-  //   console.log('FontSize: ', newFontSize);
+  //   const inputValue = e.target.value;
+  //   const newFontSize = inputValue;
+
+  //   // Set the state for the raw input value (if needed)
+  //   setFontSize(inputValue);
+
+  //   console.log('FontSize (converted): ', newFontSize);
   //   const activeObject = editor.canvas.getActiveObject();
-  //   if (activeObject && activeObject.type === 'textbox') {
-  //     activeObject.set('fontSize', newFontSize);
-  //     activeObject.fire('modified');
-  //     editor.canvas.renderAll();
-  //   } else if (activeObject && activeObject.type === 'text') {
-  //     activeObject.set('fontSize', newFontSize);
+
+  //   if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
+  //     activeObject.set('fontSize', newFontSize * 1.333);
+  //     console.log('real fontsize: ', activeObject.fontSize);
+
   //     activeObject.fire('modified');
   //     editor.canvas.renderAll();
   //   }
   // };
 
   const changeFontSize = (e) => {
-    const inputValue = e.target.value;
-    const newFontSize = inputValue;
+    const inputValue = e.target.value; // Font size from the input
+    const canvasFontSize = parseFloat(inputValue); // Parse the input as a number
 
-    // Set the state for the raw input value (if needed)
+    // Set the state for the raw input value
     setFontSize(inputValue);
 
-    console.log('FontSize (converted): ', newFontSize);
     const activeObject = editor.canvas.getActiveObject();
 
     if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
-      activeObject.set('fontSize', newFontSize * 1.333);
-      console.log('real fontsize: ', activeObject.fontSize);
+      // Convert canvas font size to Fabric.js font size
+      let fabricFontSize = canvasFontSize * 1.333;
 
+      // Set the converted font size in Fabric.js
+      activeObject.set('fontSize', fabricFontSize);
+
+      // Log the actual font size being set
+      console.log('Canvas Font Size: ', canvasFontSize);
+      console.log('FabricJS Font Size (converted): ', fabricFontSize);
+
+      // Trigger the 'modified' event and re-render the canvas
       activeObject.fire('modified');
       editor.canvas.renderAll();
     }
@@ -1123,85 +1133,75 @@ function Template() {
     });
   };
 
-  // const changeZIndex = (action) => {
-  //   const activeObject = editor.canvas.getActiveObject();
-  //   const layerId = activeObject.layerId; // Get the active object
-  //   if (activeObject) {
-  //     switch (action) {
-  //       case 'sendBackward':
-  //         editor.canvas.sendBackwards(activeObject);
-  //         updateCanvas(); // Send one step back
-  //         break;
-  //       case 'sendToBack':
-  //         editor.canvas.sendToBack(activeObject);
-  //         activeObject.set('zIndex', 1);
-  //         updateLayer(layerId, 1);
-  //         updateCanvas(); // Send to back
-  //         break;
-  //       case 'bringForward':
-  //         editor.canvas.bringForward(activeObject);
-  //         updateCanvas(); // Bring one step forward
-  //         break;
-  //       case 'bringToFront':
-  //         editor.canvas.bringToFront(activeObject);
-  //         activeObject.set('zIndex', 10);
-  //         updateLayer(layerId, 10);
-  //         updateCanvas(); // Bring to front
-  //         break;
-  //       default:
-  //         return;
-  //     }
-  //     editor.canvas.renderAll(); // Re-render the canvas after the action
-  //   }
-  // };
-
   const changeZIndex = (action) => {
     const activeObject = editor.canvas.getActiveObject();
-    if (!activeObject || !activeObject.layerId) return;
+    if (!activeObject || !activeObject.layerId) return; // Ensure the active object is valid
 
-    const layerId = activeObject.layerId; // Get the active object's layerId
-    let currentZIndex = activeObject.zIndex; // Track the current zIndex
+    const elements = editor.canvas.getObjects(); // Get all objects on the canvas
+    const currentZIndex = activeObject.zIndex; // Get the current zIndex of the active object
+    const maxZIndex = Math.max(...elements.map((el) => el.zIndex)); // Get the highest zIndex among objects
+    const minZIndex = Math.min(...elements.map((el) => el.zIndex)); // Get the lowest zIndex among objects
 
-    const maxZIndex = 10;
-    if (activeObject) {
-      switch (action) {
-        case 'sendBackward':
-          editor.canvas.sendBackwards(activeObject);
-          currentZIndex = Math.max(currentZIndex - 1, 1); // Decrement zIndex but ensure it doesn't go below 1
-          activeObject.set('zIndex', currentZIndex);
-          updateLayer(layerId, currentZIndex); // Update zIndex in the backend
-          updateCanvas(); // Send one step back
-          break;
+    switch (action) {
+      case 'sendBackward': {
+        // Move active object one step back in canvas and swap zIndex with the element behind
+        editor.canvas.sendBackwards(activeObject);
 
-        case 'sendToBack':
-          editor.canvas.sendToBack(activeObject);
-          activeObject.set('zIndex', 1); // Set zIndex to 1 (the lowest)
-          updateLayer(layerId, 1); // Update backend with zIndex 1
-          updateCanvas(); // Send to back
-          break;
-
-        case 'bringForward':
-          editor.canvas.bringForward(activeObject);
-          currentZIndex += 1; // Increment zIndex
-          activeObject.set('zIndex', currentZIndex);
-          updateLayer(layerId, currentZIndex); // Update zIndex in the backend
-          updateCanvas(); // Bring one step forward
-          break;
-
-        case 'bringToFront':
-          editor.canvas.bringToFront(activeObject);
-          // Set the maximum zIndex (can adjust according to your logic)
-          activeObject.set('zIndex', maxZIndex);
-          updateLayer(layerId, maxZIndex); // Update backend with the highest zIndex
-          updateCanvas(); // Bring to front
-          break;
-
-        default:
-          return;
+        const elementBehind = elements.find((el) => el.zIndex === currentZIndex - 1);
+        if (elementBehind) {
+          // Swap zIndex
+          elementBehind.zIndex = currentZIndex;
+          activeObject.zIndex = currentZIndex - 1;
+        }
+        break;
       }
 
-      editor.canvas.renderAll(); // Re-render the canvas after the action
+      case 'sendToBack': {
+        // Move the active object to the back and set its zIndex to the lowest
+        editor.canvas.sendToBack(activeObject);
+
+        // Adjust zIndex for all other elements
+        elements.forEach((el) => {
+          if (el !== activeObject && el.zIndex < currentZIndex) {
+            el.zIndex += 1; // Shift zIndex upwards
+          }
+        });
+        activeObject.zIndex = minZIndex; // Set active object to the lowest zIndex
+        break;
+      }
+
+      case 'bringForward': {
+        // Move active object one step forward in canvas and swap zIndex with the element ahead
+        editor.canvas.bringForward(activeObject);
+
+        const elementAhead = elements.find((el) => el.zIndex === currentZIndex + 1);
+        if (elementAhead) {
+          // Swap zIndex
+          elementAhead.zIndex = currentZIndex;
+          activeObject.zIndex = currentZIndex + 1;
+        }
+        break;
+      }
+
+      case 'bringToFront': {
+        // Move the active object to the front and set its zIndex to the highest
+        editor.canvas.bringToFront(activeObject);
+
+        // Adjust zIndex for all other elements
+        elements.forEach((el) => {
+          if (el !== activeObject && el.zIndex > currentZIndex) {
+            el.zIndex -= 1; // Shift zIndex downwards
+          }
+        });
+        activeObject.zIndex = maxZIndex; // Set active object to the highest zIndex
+        break;
+      }
+
+      default:
+        return;
     }
+
+    editor.canvas.renderAll(); // Re-render the canvas after changing zIndex
   };
 
   // const handleRotationChange = (e) => {
@@ -1439,6 +1439,78 @@ function Template() {
   const convertFabricFontSizeToCanvasFontSize = (fontSize) => {
     return fontSize / 1.333;
   };
+
+  const swapZIndex = (text, direction) => {
+    const elements = editor.canvas.getObjects(); // Get all canvas objects
+    const target = editor.canvas.getActiveObject();
+    // Sort elements by current zIndex
+    const sortedElements = elements.sort((a, b) => a.zIndex - b.zIndex);
+
+    // Get the current zIndex of the text object
+    const currentZIndex = target.zIndex;
+
+    let newZIndex;
+
+    if (direction === 'backward') {
+      // Send backward: decrease zIndex
+      newZIndex = currentZIndex - 1;
+      if (newZIndex < 1) {
+        console.log('Cannot send backward any further');
+        return;
+      }
+
+      // Find the element that has the new zIndex
+      const elementToSwapWith = sortedElements.find((el) => el.zIndex === newZIndex);
+      if (elementToSwapWith) {
+        // Swap zIndex with that element
+        elementToSwapWith.zIndex = currentZIndex;
+        text.zIndex = newZIndex;
+      }
+    } else if (direction === 'forward') {
+      // Send forward: increase zIndex
+      newZIndex = currentZIndex + 1;
+
+      // Find the element that has the new zIndex
+      const elementToSwapWith = sortedElements.find((el) => el.zIndex === newZIndex);
+      if (elementToSwapWith) {
+        // Swap zIndex with that element
+        elementToSwapWith.zIndex = currentZIndex;
+        text.zIndex = newZIndex;
+      }
+    }
+
+    // Re-render the canvas after updating zIndex
+    editor.canvas.renderAll();
+  };
+
+  const getFontSize = () => {
+    const activeObject = editor.canvas.getActiveObject();
+    if (!activeObject || activeObject.type !== 'text') {
+      return 0;
+    }
+
+    const fontSizeInPixels = activeObject.fontSize * activeObject.scaleY;
+
+    const fontSizeInPoints = fontSizeInPixels / 1.333;
+    // console.log("test: ", activeObject.width);
+    // console.log("fontsize: ", activeObject.fontSize);
+    console.log('convert: ', parseFloat(fontSizeInPoints.toFixed(1)));
+    // console.log("rotate: ", activeObject.angle);
+
+    return parseFloat(fontSizeInPoints.toFixed(1));
+  };
+
+  const getFontSize2 = (fontSize) => {
+    const fontSizeInPoints = fontSize * 1.333;
+    return parseFloat(fontSizeInPoints.toFixed(1));
+  };
+
+  const updateFontSize = () => {
+    const fontSize = getFontSize();
+
+    // activeObject.fontSize = fontSize;
+  };
+
   const addText = async () => {
     //setColor(color);
     let text = new fabric.Textbox('Text', {
@@ -1471,8 +1543,11 @@ function Template() {
       const scaledHeight = text.getScaledHeight();
 
       setActiveTab('positionSize');
-      // console.log('scale');
-      //console.log('Text fontSize after scaled: ', text.fontSize * text.scaleY);
+
+      const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+      setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
+
       console.log('Text fontSize after scaled: ', text.fontSize * text.scaleX);
 
       setPositionX((text.left * scaleX).toFixed(1));
@@ -1480,6 +1555,10 @@ function Template() {
 
       setHeight((scaledHeight * scaleX).toFixed(1));
       setWidth((scaledWidth * scaleY).toFixed(1));
+
+      setIsHeaderVisible(true);
+
+      setSelectedTool('textBox');
     });
 
     text.on('moving', function () {
@@ -1487,8 +1566,12 @@ function Template() {
       const scaleY = canvasHeight / displayHeight;
       setActiveTab('positionSize');
       setSelectedTool('textBox');
-      // setHeight(text.getScaledHeight());
-      // setWidth(text.getScaledWidth());
+
+      const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+      // Set the new font size in the UI, adjusting for the factor
+      setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
+
       setPositionX((text.left * scaleX).toFixed(1));
       setPositionY((text.top * scaleY).toFixed(1));
     });
@@ -1511,7 +1594,10 @@ function Template() {
 
       const scaledWidth = text.getScaledWidth();
       const scaledHeight = text.getScaledHeight();
-      setFontSize((text.fontSize * text.scaleX).toFixed(1));
+
+      let canvasFontSize = (text.fontSize * text.scaleX).toFixed(1);
+      setFontSize((canvasFontSize / 1.333).toFixed(1));
+
       setColor(text.fill);
 
       setHeight((scaledHeight * scaleX).toFixed(1));
@@ -1558,7 +1644,11 @@ function Template() {
     console.log('Box item id: ', boxItemId);
     console.log('zIndex: ', zIndex);
 
-    text.on('modified', function () {});
+    text.on('modified', function () {
+      console.log('layerId: ', text.layerId);
+      console.log('zIndex: ', text.zIndex);
+      console.log('fontsize: ', (text.fontSize / 1.333).toFixed(1));
+    });
 
     text.on('editing:exited', function () {
       console.log('Text editing exited, new text: ', text.text);
@@ -1576,7 +1666,7 @@ function Template() {
       borderColor: 'dark',
       width: 200,
       height: 200,
-      opacity: 1
+      opacity: 0.3
     });
 
     editor.canvas.add(rect);
@@ -1587,6 +1677,8 @@ function Template() {
     rect.imageCounter = 1;
     rect.nameCounter = 1;
     rect.priceCounter = 1;
+
+    rect.linkedText = [];
 
     rect.setControlsVisibility({
       mtr: false,
@@ -1604,6 +1696,20 @@ function Template() {
       setPositionY((rect.top * scaleY).toFixed(1));
       setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
       setSelectedTool('rect');
+
+      rect.linkedText.forEach((textBox) => {
+        textBox.left += rect.left - rect.prevLeft; // Move text by the same distance as the rectangle
+        textBox.top += rect.top - rect.prevTop;
+        textBox.setCoords();
+      });
+
+      // Store the current position for the next move
+      rect.prevLeft = rect.left;
+      rect.prevTop = rect.top;
+
+      editor.canvas.renderAll();
+
+      // Move the group (rectangle + text) together
     });
 
     rect.on('mouseup', function () {
@@ -1623,7 +1729,7 @@ function Template() {
       setPositionX((rect.left * scaleX).toFixed(1));
       setPositionY((rect.top * scaleY).toFixed(1));
       // let object = event.target;
-      editor.canvas.sendToBack(rect);
+      // editor.canvas.sendToBack(rect);
       console.log('ok');
     });
 
@@ -1927,7 +2033,7 @@ function Template() {
                 textColor: obj.fill,
                 bFontId: 5,
                 // fontSize: getFontSizeV2(obj),
-                fontSize: obj.fontSize * obj.scaleX,
+                fontSize: (obj.fontSize / 1.333).toFixed(1),
                 fontStyle:
                   obj.fontStyle && obj.fontStyle !== 'normal'
                     ? getFontStyleValue(obj.fontStyle)
@@ -1941,7 +2047,8 @@ function Template() {
                 rotation: convertAngleToDegree(obj.angle)
               })
             );
-            // updateLayerItem(obj.layerItemId);
+
+            updateLayer(obj.layerId, obj.zIndex);
           } else if (obj.boxItemId) {
             updateBoxItem(
               obj.boxItemId,
@@ -1954,7 +2061,7 @@ function Template() {
               JSON.stringify({
                 textColor: obj.fill,
                 bFontId: 5,
-                fontSize: 12,
+                fontSize: (obj.fontSize / 1.333).toFixed(1),
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
@@ -2063,9 +2170,9 @@ function Template() {
   const addProductDescription = async () => {
     let textBox = new fabric.Text(`Product Description  ${selectedRect.productCounter}`, {
       left: selectedRect.left + 10,
-      top: selectedRect.left + 10,
+      top: selectedRect.top + 10,
       // fontSize: fontSize,
-      fontSize: 13,
+      fontSize: 15,
       backgroundColor: getRandomColor(),
       borderColor: 'dark',
 
@@ -2080,12 +2187,6 @@ function Template() {
       // selectionBackgroundColor: 'black'
     });
 
-    textBox.rectId = selectedRect.id;
-
-    selectedRect.productCounter += 1;
-
-    setDescriptionCounter((prevCounter) => prevCounter + 1);
-
     textBox.setControlsVisibility({
       mtr: false,
       mt: false, // middle top disable
@@ -2095,57 +2196,8 @@ function Template() {
     });
 
     editor.canvas.add(textBox);
-    let height = textBox.height;
-    let width = textBox.width;
-    // const layerId = await createLayer(3);
-    // const layerItemId = await createLayerItem(layerId, `Product Description ${descriptionCounter + 1}`);
 
-    let style = {
-      // textColor: textBox.fill,
-      textColor: '#ffffff',
-      bFontId: 1,
-      fontSize: textBox.fontSize,
-      // fontStyle: getFontStyleValue(textBox.fontStyle),
-      // alignment: getAlignmentValue(textBox.textAlign),
-      transparency: textBox.opacity,
-      uppercase: true
-    };
-
-    if (boxId) {
-      const { boxItemId, bFontId } = await createBoxItem(
-        boxId,
-        5,
-        textBox.left,
-        textBox.top,
-        textBox.width,
-        textBox.height,
-        3,
-        JSON.stringify(style)
-      );
-
-      textBox.boxItemId = boxItemId;
-      textBox.boxItemType = 3;
-      textBox.bFontId = bFontId;
-      console.log('boxItemId: ', boxItemId);
-    }
-
-    textBox.on('modified', function () {});
-
-    textBox.on('scaling', function () {
-      const scaleX = canvasWidth / displayWidth;
-      const scaleY = canvasHeight / displayHeight;
-
-      const scaledWidth = textBox.getScaledWidth();
-      const scaledHeight = textBox.getScaledHeight();
-
-      const newWidth = textBox.width * textBox.scaleX;
-      const newHeight = textBox.height * textBox.scaleY;
-      console.log('scaledWidth: ', (scaledHeight * scaleX).toFixed(1), ' scaledHeight: ', (scaledWidth * scaleY).toFixed(1));
-
-      setHeight(newHeight.toFixed(1));
-      setWidth(newWidth.toFixed(1));
-      setActiveTab('positionSize');
-    });
+    selectedRect.linkedText.push(textBox);
 
     textBox.on('moving', function () {
       const scaleX = canvasWidth / displayWidth;
@@ -2184,6 +2236,68 @@ function Template() {
       if (textTop + textHeight > rectBottom) {
         textBox.set('top', rectBottom - textHeight);
       }
+
+      textBox.setCoords();
+      editor.canvas.renderAll();
+    });
+
+    textBox.rectId = selectedRect.id;
+
+    selectedRect.productCounter += 1;
+
+    setDescriptionCounter((prevCounter) => prevCounter + 1);
+
+    let height = textBox.height;
+    let width = textBox.width;
+
+    let style = {
+      // textColor: textBox.fill,
+      textColor: '#ffffff',
+      bFontId: 5,
+      fontSize: textBox.fontSize,
+      // fontStyle: getFontStyleValue(textBox.fontStyle),
+      // alignment: getAlignmentValue(textBox.textAlign),
+      transparency: textBox.opacity,
+      uppercase: true
+    };
+
+    if (boxId) {
+      const { boxItemId, bFontId } = await createBoxItem(
+        boxId,
+        5,
+        textBox.left,
+        textBox.top,
+        textBox.width,
+        textBox.height,
+        3,
+        JSON.stringify(style)
+      );
+
+      textBox.boxItemId = boxItemId;
+      textBox.boxItemType = 3;
+      // textBox.bFontId = bFontId;
+      console.log('boxItemId: ', boxItemId);
+    }
+
+    textBox.on('modified', function () {
+      console.log('fontId: ', textBox.bFontId);
+      console.log('color: ', textBox.fill);
+    });
+
+    textBox.on('scaling', function () {
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
+      const scaledWidth = textBox.getScaledWidth();
+      const scaledHeight = textBox.getScaledHeight();
+
+      const newWidth = textBox.width * textBox.scaleX;
+      const newHeight = textBox.height * textBox.scaleY;
+      console.log('scaledWidth: ', (scaledHeight * scaleX).toFixed(1), ' scaledHeight: ', (scaledWidth * scaleY).toFixed(1));
+
+      setHeight(newHeight.toFixed(1));
+      setWidth(newWidth.toFixed(1));
+      setActiveTab('positionSize');
     });
 
     textBox.on('mouseup', function () {
@@ -2238,10 +2352,44 @@ function Template() {
       // mr: false // middle right
     });
 
+    editor.canvas.add(textBox);
+
+    selectedRect.linkedText.push(textBox);
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+
+      textBox.setCoords();
+      editor.canvas.renderAll();
+    });
+
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
-      bFontId: 1,
+      bFontId: 5,
       fontSize: textBox.fontSize,
       fontStyle: getFontStyleValue(textBox.fontStyle),
       alignment: getAlignmentValue(textBox.textAlign),
@@ -2249,7 +2397,6 @@ function Template() {
       uppercase: true
     };
 
-    editor.canvas.add(textBox);
     setNameCounter((prevCounter) => prevCounter + 1);
 
     selectedRect.nameCounter += 1;
@@ -2313,7 +2460,34 @@ function Template() {
       //   'textAlign: ',
       //   textBox.textAlign
       // );
+      console.log('fontId: ', textBox.bFontId);
     });
+  };
+
+  const addProductPrice = async () => {
+    const textBox = new fabric.Text(`Product Price ${selectedRect.priceCounter} `, {
+      left: selectedRect.left + 20,
+      top: selectedRect.top + 20,
+      fontSize: 20,
+      fill: 'white',
+      borderColor: 'dark',
+      width: 200,
+      height: 200,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
+
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false, // middle top disable
+      mb: false, // midle bottom
+      ml: false, // middle left
+      mr: false // middle right
+    });
+
+    editor.canvas.add(textBox);
+
+    selectedRect.linkedText.push(textBox);
 
     textBox.on('moving', function () {
       const textLeft = textBox.left;
@@ -2340,31 +2514,10 @@ function Template() {
       if (textTop + textHeight > rectBottom) {
         textBox.set('top', rectBottom - textHeight);
       }
-    });
-  };
 
-  const addProductPrice = async () => {
-    const textBox = new fabric.Text(`Product Price ${selectedRect.priceCounter} `, {
-      left: selectedRect.left + 20,
-      top: selectedRect.top + 20,
-      fontSize: 20,
-      fill: 'white',
-      borderColor: 'dark',
-      width: 200,
-      height: 200,
-      backgroundColor: getRandomColor()
-      // selectionBackgroundColor: 'black'
+      textBox.setCoords();
+      editor.canvas.renderAll();
     });
-
-    textBox.setControlsVisibility({
-      mtr: false,
-      mt: false, // middle top disable
-      mb: false, // midle bottom
-      ml: false, // middle left
-      mr: false // middle right
-    });
-
-    editor.canvas.add(textBox);
 
     let style = {
       // textColor: textBox.fill,
@@ -2415,24 +2568,7 @@ function Template() {
       }
     });
 
-    textBox.on('modified', function () {
-      // console.log(
-      //   'boxItemId: ',
-      //   textBox.boxItemId,
-      //   'left',
-      //   textBox.left,
-      //   'top',
-      //   textBox.top,
-      //   'width',
-      //   textBox.width,
-      //   'height',
-      //   textBox.height
-      // );
-      // if (textBox.boxItemId) {
-      //   // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      //   updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-      // }
-    });
+    textBox.on('modified', function () {});
 
     setPriceCounter((prevCounter) => prevCounter + 1);
 
@@ -2441,6 +2577,31 @@ function Template() {
     textBox.on('modified', function () {
       // updateBoxItem(textBox.boxItemId, rect.left, rect.top, width, height, priceCounter + 1, JSON.stringify(style));
     });
+  };
+
+  const addProductImage = async () => {
+    const textBox = new fabric.Text(`Product Image ${selectedRect.imageCounter} `, {
+      left: selectedRect.left + 25,
+      top: selectedRect.top + 25,
+      fontSize: 20,
+      fill: color,
+      borderColor: 'dark',
+      width: 200,
+      height: 200,
+      backgroundColor: getRandomColor()
+      // selectionBackgroundColor: 'black'
+    });
+    textBox.setControlsVisibility({
+      mtr: false,
+      mt: false,
+      // mb: false, // midle bottom
+      ml: false // middle left
+      // mr: false // middle right
+    });
+
+    editor.canvas.add(textBox);
+
+    selectedRect.linkedText.push(textBox);
 
     textBox.on('moving', function () {
       const textLeft = textBox.left;
@@ -2467,30 +2628,10 @@ function Template() {
       if (textTop + textHeight > rectBottom) {
         textBox.set('top', rectBottom - textHeight);
       }
-    });
-  };
 
-  const addProductImage = async () => {
-    const textBox = new fabric.Text(`Product Image ${selectedRect.imageCounter} `, {
-      left: selectedRect.left + 25,
-      top: selectedRect.top + 25,
-      fontSize: 20,
-      fill: color,
-      borderColor: 'dark',
-      width: 200,
-      height: 200,
-      backgroundColor: getRandomColor()
-      // selectionBackgroundColor: 'black'
+      textBox.setCoords();
+      editor.canvas.renderAll();
     });
-    textBox.setControlsVisibility({
-      mtr: false,
-      mt: false,
-      // mb: false, // midle bottom
-      ml: false // middle left
-      // mr: false // middle right
-    });
-
-    editor.canvas.add(textBox);
 
     let height = textBox.height;
     let width = textBox.width;
@@ -2498,7 +2639,7 @@ function Template() {
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
-      bFontId: 1,
+      bFontId: 5,
       fontSize: textBox.fontSize,
       fontStyle: getFontStyleValue(textBox.fontStyle),
       alignment: getAlignmentValue(textBox.textAlign),
@@ -2545,33 +2686,6 @@ function Template() {
 
     textBox.on('modified', function () {
       // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
-    });
-
-    textBox.on('moving', function () {
-      const textLeft = textBox.left;
-      const textTop = textBox.top;
-      const textWidth = textBox.width * textBox.scaleX; // consider scaling
-      const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-      // Get the rectangle boundaries
-      const rectLeft = selectedRect.left;
-      const rectTop = selectedRect.top;
-      const rectRight = selectedRect.left + selectedRect.width;
-      const rectBottom = selectedRect.top + selectedRect.height;
-
-      // Restrict text movement within the rectangle boundaries
-      if (textLeft < rectLeft) {
-        textBox.set('left', rectLeft);
-      }
-      if (textTop < rectTop) {
-        textBox.set('top', rectTop);
-      }
-      if (textLeft + textWidth > rectRight) {
-        textBox.set('left', rectRight - textWidth);
-      }
-      if (textTop + textHeight > rectBottom) {
-        textBox.set('top', rectBottom - textHeight);
-      }
     });
   };
 
@@ -2702,10 +2816,54 @@ function Template() {
       mr: false // middle right
     });
 
+    editor.canvas.add(textBox);
+
+    selectedRect.linkedText.push(textBox);
+
+    textBox.on('moving', function () {
+      const textLeft = textBox.left;
+      const textTop = textBox.top;
+      const textWidth = textBox.width * textBox.scaleX; // consider scaling
+      const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+      // Get the rectangle boundaries
+      const rectLeft = selectedRect.left;
+      const rectTop = selectedRect.top;
+      const rectRight = selectedRect.left + selectedRect.width;
+      const rectBottom = selectedRect.top + selectedRect.height;
+
+      // Restrict text movement within the rectangle boundaries
+      if (textLeft < rectLeft) {
+        textBox.set('left', rectLeft);
+      }
+      if (textTop < rectTop) {
+        textBox.set('top', rectTop);
+      }
+      if (textLeft + textWidth > rectRight) {
+        textBox.set('left', rectRight - textWidth);
+      }
+      if (textTop + textHeight > rectBottom) {
+        textBox.set('top', rectBottom - textHeight);
+      }
+
+      textBox.setCoords();
+      editor.canvas.renderAll();
+    });
+
+    textBox.on('mouseup', function () {
+      toggleHeaderVisibility();
+    });
+
+    editor.canvas.on('mouse:down', function (options) {
+      if (options.target !== textBox) {
+        setIsHeaderVisible(false);
+      }
+    });
+
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
-      bFontId: 1,
+      bFontId: 5,
       fontSize: textBox.fontSize,
       fontStyle: getFontStyleValue(textBox.fontStyle),
       alignment: getAlignmentValue(textBox.textAlign),
@@ -2755,45 +2913,7 @@ function Template() {
       // updateBoxItem(textBox.boxItemId, 5, textBox.left, textBox.top, textBox.width, textBox.height, JSON.stringify(style));
     });
 
-    editor.canvas.add(textBox);
     setHeaderCounter((prevCounter) => prevCounter + 1);
-
-    textBox.on('moving', function () {
-      const textLeft = textBox.left;
-      const textTop = textBox.top;
-      const textWidth = textBox.width * textBox.scaleX; // consider scaling
-      const textHeight = textBox.height * textBox.scaleY; // consider scaling
-
-      // Get the rectangle boundaries
-      const rectLeft = selectedRect.left;
-      const rectTop = selectedRect.top;
-      const rectRight = selectedRect.left + selectedRect.width;
-      const rectBottom = selectedRect.top + selectedRect.height;
-
-      // Restrict text movement within the rectangle boundaries
-      if (textLeft < rectLeft) {
-        textBox.set('left', rectLeft);
-      }
-      if (textTop < rectTop) {
-        textBox.set('top', rectTop);
-      }
-      if (textLeft + textWidth > rectRight) {
-        textBox.set('left', rectRight - textWidth);
-      }
-      if (textTop + textHeight > rectBottom) {
-        textBox.set('top', rectBottom - textHeight);
-      }
-    });
-
-    textBox.on('mouseup', function () {
-      toggleHeaderVisibility();
-    });
-
-    editor.canvas.on('mouse:down', function (options) {
-      if (options.target !== textBox) {
-        setIsHeaderVisible(false);
-      }
-    });
   };
 
   const getTextAlignIcon = () => {
@@ -2897,7 +3017,7 @@ function Template() {
     console.log('Selected Font bFontId:', bFontId);
 
     const activeObject = editor.canvas.getActiveObject();
-    if (activeObject && activeObject.type === 'textbox') {
+    if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
       activeObject.set({
         fontFamily: selectedFont,
         bFontId: bFontId
