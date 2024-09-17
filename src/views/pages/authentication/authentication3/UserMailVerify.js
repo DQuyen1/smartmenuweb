@@ -31,7 +31,7 @@ const UserMailVerify = () => {
 
   useEffect(() => {
     axios
-      .post(`http://3.1.81.96/api/Auth/EmailVerify?email=${data.email}`)
+      .post(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/EmailVerify?email=${data.email}`)
       .then((response) => {
         setIsVerifying(true);
       })

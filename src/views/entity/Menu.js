@@ -103,7 +103,7 @@ const EntityMenu = () => {
         menuDescription: editingMenu.menuDescription
       };
 
-      const response = await axios.put(`http://3.1.81.96/api/Menus/${menuId}`, updatedMenu, {
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/${menuId}`, updatedMenu, {
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -139,14 +139,14 @@ const EntityMenu = () => {
     }
 
     try {
-      const response = await axios.post('http://3.1.81.96/api/Menus', newMenuData);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus', newMenuData);
       if (response.status === 201) {
         // Successfully created new menu
         setNewMenuData({ brandId: '', menuName: '', menuDescription: '' });
         setShowAddMenuDialog(false);
 
         // Fetch the updated brand data after adding
-        const updatedResponse = await axios.get('http://3.1.81.96/api/Menus/ProductGroup');
+        const updatedResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/ProductGroup');
         setMenuData(updatedResponse.data);
 
         setOpenSnackbar(true);
@@ -173,8 +173,8 @@ const EntityMenu = () => {
 
       try {
         const [menuResponse, brandResponse] = await Promise.all([
-          axios.get('http://3.1.81.96/api/Menus/ProductGroup'),
-          axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=10')
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/ProductGroup'),
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=10')
         ]);
         setMenuData(menuResponse.data);
         setBrandData(brandResponse.data);
@@ -204,7 +204,7 @@ const EntityMenu = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Menus/${selectedMenu.menuId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/${selectedMenu.menuId}`);
       if (response.status === 200) {
         setMenuData((prevData) => prevData.filter((menu) => menu.menuId !== selectedMenu.menuId));
         setOpenSnackbar(true);

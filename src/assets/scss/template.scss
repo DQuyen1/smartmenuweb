@@ -1,11 +1,9 @@
 .app {
   display: flex;
   flex-direction: column;
- 
   font-family: 'Arial, sans-serif';
   height: 100vh; /* Ensure it covers the full viewport height */
 }
-
 
 .header {
   display: flex;
@@ -16,6 +14,18 @@
   border-bottom: 1px solid #e0e0e0; /* Subtle bottom border */
   color: #333; /* Darker text color */
 }
+
+.header .left-section {
+  display: flex;
+  align-items: center;
+}
+
+.header .text-options {
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+}
+
 
 .header input[type="number"],
 .header input[type="color"] {
@@ -149,23 +159,21 @@
 }
 
 .sidebar-container {
-  display: flex;
-  margin-left: '5%';
-  
-
+  width: 90px;
+  height: 100%;
 }
 
-
-
 .sidebar {
-  width: 100px;
-  background-color: #131315;
+  width: 70px;
+  background-color: #0b0b0d;
   padding: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   color: 'white'; 
-  height: 60%;
+  height: 100%;
+  margin: 10px;
+  border-radius: 10px;
 }
 
 .sidebar button {
@@ -174,13 +182,15 @@
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 10px 0;
+  // padding: 10px;
   margin-bottom: 10px;
   // background-color: #fff;
   // border: 1px solid #dee2e6;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   transition: background-color 0.3s;
+  border-radius: 10px;
+  color: 'white';
 }
 
 .sidebar button:hover {
@@ -258,7 +268,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #272a2f;
+  background-color: #f4f4f4;
   position: relative; /* Ensure it stays relative to its container */
   z-index: 1; /* Ensure it stays below the tab-container */
 }
@@ -267,13 +277,15 @@
   width: 65%;
   height: 65%;
   // border: 2px solid blue;
-  background-color: #f8f9fa;
+  background-color: #f8f9fa;  
 }
 
 .sample-canvas {
   // border: 3px solid salmon;
   width: 100%;
   height: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 

@@ -97,7 +97,7 @@ const AuthForgotPasswordForm = () => {
 
     axios
       // .post(`http://localhost:5063/api/Auth/ForgotPassword?email=${email}`)
-      .post(`http://3.1.81.96/api/Auth/ForgotPassword?email=${email}`)
+      .post(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/ForgotPassword?email=${email}`)
       .then((response) => {
         console.log(response.data); // Handle successful response
         alert('Reset password email sent successfully');

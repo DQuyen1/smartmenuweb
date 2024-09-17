@@ -97,7 +97,9 @@ const CollectionDetail = () => {
 
   const confirmDeleteProductGroupItem = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/ProductGroupItem/${itemToDelete}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem/${itemToDelete}`
+      );
       if (response.status === 200) {
         // Update productGroupItemsData
         setProductGroupItemsData((prevData) => {
@@ -137,7 +139,7 @@ const CollectionDetail = () => {
         productGroupId: parseInt(newProductGroupItemData.productGroupId, 10),
         productId: parseInt(newProductGroupItemData.productId, 10)
       };
-      const response = await axios.post(`http://3.1.81.96/api/ProductGroupItem`, dataToSend);
+      const response = await axios.post(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem`, dataToSend);
       if (response.status === 201) {
         const newItem = response.data;
 
@@ -189,7 +191,10 @@ const CollectionDetail = () => {
         haveNormalPrice: editingProductGroup.haveNormalPrice,
         productGroupMaxCapacity: parseInt(editingProductGroup.productGroupMaxCapacity, 10) || 0
       };
-      const response = await axios.put(`http://3.1.81.96/api/ProductGroup/${editingProductGroup.productGroupId}`, updatedGroupData);
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/${editingProductGroup.productGroupId}`,
+        updatedGroupData
+      );
 
       if (response.status === 200) {
         setCollectionData((prevCollectionData) => ({
@@ -228,7 +233,9 @@ const CollectionDetail = () => {
 
   const confirmDeleteProductGroup = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/ProductGroup/${productGroupToDelete}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/${productGroupToDelete}`
+      );
       if (response.status === 200) {
         setCollectionData((prevCollectionData) => ({
           ...prevCollectionData,
@@ -286,7 +293,7 @@ const CollectionDetail = () => {
         productGroupMaxCapacity: parseInt(newProductGroupData.productGroupMaxCapacity, 10) || 0, // Parse to int or default to 0
         haveNormalPrice: newProductGroupData.haveNormalPrice
       };
-      const response = await axios.post('http://3.1.81.96/api/ProductGroup', dataToSend);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup', dataToSend);
       if (response.status === 201) {
         setCollectionData((prevCollectionData) => {
           const updatedProductGroups = [...(prevCollectionData.productGroups || []), response.data];
@@ -314,7 +321,9 @@ const CollectionDetail = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'); // Replace with your API endpoint
+        const response = await axios.get(
+          'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products?pageNumber=1&pageSize=100'
+        ); // Replace with your API endpoint
         setProducts(response.data); // Assuming response.data is an array of products
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -332,7 +341,7 @@ const CollectionDetail = () => {
 
       try {
         const productGroupResponse = await axios.get(
-          `http://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionData.collectionId}`
+          `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/GroupItem?collectionId=${collectionData.collectionId}`
         );
         setProductGroups(productGroupResponse.data);
         const productGroupItems = productGroupResponse.data;
@@ -342,7 +351,9 @@ const CollectionDetail = () => {
             : [];
 
         if (productIds.length > 0) {
-          const productResponse = await Promise.all(productIds.map((id) => axios.get(`http://3.1.81.96/api/Products?productId=${id}`)));
+          const productResponse = await Promise.all(
+            productIds.map((id) => axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products?productId=${id}`))
+          );
 
           const newProductMap = {};
           productResponse.forEach((response) => {
@@ -354,7 +365,7 @@ const CollectionDetail = () => {
           });
           setProductData(newProductMap);
           const productSizePromises = productIds.map(
-            (id) => axios.get(`http://3.1.81.96/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
+            (id) => axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices?productId=${id}`) // Assuming API supports filtering by productId
           );
           const productSizeResponses = await Promise.all(productSizePromises);
 

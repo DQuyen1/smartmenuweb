@@ -41,8 +41,8 @@ const AdminChooseTemplate = () => {
       setError(null);
       try {
         const [templateResponse, brandResponse] = await Promise.all([
-          axios.get(`http://3.1.81.96/api/Templates?&pageNumber=1&pageSize=1000`),
-          axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+          axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?&pageNumber=1&pageSize=1000`),
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=100')
         ]);
         setTemplateData(templateResponse.data);
         setBrandData(brandResponse.data);

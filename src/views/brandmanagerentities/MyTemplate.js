@@ -97,7 +97,7 @@ const MyTemplate = () => {
     };
     console.log('Payload:', payload); // Log the payload being sent
     try {
-      const response = await axios.post('http://3.1.81.96/api/Templates', payload);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates', payload);
       if (response.status === 201) {
         // Update template data locally (assuming server returns the created template data)
         fetchData();
@@ -123,12 +123,15 @@ const MyTemplate = () => {
     }
 
     try {
-      const response = await axios.put(`http://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
-        ...editTemplateData,
-        templateImgPath:
-          editTemplateData.templateImgPath ||
-          'https://png.pngtree.com/thumb_back/fh260/background/20200821/pngtree-pure-white-minimalist-background-wallpaper-image_396581.jpg'
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${editTemplateData.templateId}`,
+        {
+          ...editTemplateData,
+          templateImgPath:
+            editTemplateData.templateImgPath ||
+            'https://png.pngtree.com/thumb_back/fh260/background/20200821/pngtree-pure-white-minimalist-background-wallpaper-image_396581.jpg'
+        }
+      );
       if (response.status === 200) {
         fetchData();
         setOpenSnackbar(true);
@@ -211,7 +214,9 @@ const MyTemplate = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${selectedTemplate.templateId}`
+      );
       if (response.status === 200) {
         setTemplateData((prevData) => prevData.filter((item) => item.templateId !== selectedTemplate.templateId));
         setOpenSnackbar(true);
@@ -234,7 +239,7 @@ const MyTemplate = () => {
 
     try {
       const brandId = localStorage.getItem('brandId');
-      const templateResponse = await axios.get('http://3.1.81.96/api/Templates', {
+      const templateResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates', {
         params: {
           brandId: brandId,
           pageNumber: 1,

@@ -88,7 +88,7 @@ const UtilitiesShadow = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post('http://3.1.81.96/api/Stores', newStoreData);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores', newStoreData);
       if (response.status === 201) {
         setNewStoreData({
           brandId: '',
@@ -143,13 +143,13 @@ const UtilitiesShadow = () => {
     setIsLoading(true);
     try {
       const [storeResponse, brandResponse] = await Promise.all([
-        axios.get('http://3.1.81.96/api/Stores', {
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores', {
           params: {
             pageNumber: page,
             pageSize: rowsPerPage
           }
         }),
-        axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=100')
       ]);
 
       const storeDataWithBrandNames = storeResponse.data.map((store) => ({
@@ -174,7 +174,7 @@ const UtilitiesShadow = () => {
   const handleDelete = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Stores/${storeToDelete.storeId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores/${storeToDelete.storeId}`);
 
       if (response.status === 200) {
         setStoreData(storeData.filter((store) => store.storeId !== storeToDelete.storeId));

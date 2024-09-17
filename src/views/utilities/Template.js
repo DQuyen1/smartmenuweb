@@ -2854,8 +2854,16 @@ function Template() {
   return (
     <div className="app">
       <header className="header">
+        <div className="left-section">
+          <img
+            src="https://app-registry-assets.staging.screencloudapp.com/icons/canvas-icon-2.png"
+            alt="Icon"
+            style={{ width: '40px', height: '40px', marginRight: '10px' }}
+          />
+          <h2 style={{ margin: '0' }}>hhh</h2> {/* Thay thế bằng tên của canvas */}
+        </div>
         {(selectedTool == 'text' || selectedTool == 'textBox') && (
-          <>
+          <div className="text-options">
             {/* <select id="font-family"></select> */}
 
             {/* <select value={selectedFont} onChange={handleFontChange}>
@@ -2888,7 +2896,7 @@ function Template() {
             <button onClick={cycleTextAlign} className="align-button">
               {getTextAlignIcon()}
             </button>
-          </>
+          </div>
         )}
 
         {selectedTool == 'rect' && (
@@ -2906,33 +2914,56 @@ function Template() {
           </>
         )}
         <div className="actions">
+          <button
+            className="preview-btn"
+            style={{ padding: '10px 20px', backgroundColor: '#fff', border: '1px solid #ddd', cursor: 'pointer', color: 'black' }}
+          >
+            Preview
+          </button>
           <button className="save-btn" onClick={() => getAllCanvasProperties()}>
             Save
           </button>
           <div className="profile">User</div>
+          <div className="close-btn" style={{ cursor: 'pointer', marginLeft: '10px' }}>
+            X
+          </div>
         </div>
       </header>
 
       <div className="main">
         <div className="sidebar-container">
-          <aside className="sidebar" style={{ marginLeft: '10%', borderRadius: '20px', marginTop: '10%' }}>
-            <Button onClick={() => handleTabClick('text')} startIcon={<TextFieldsIcon />} style={{ color: 'white' }}>
+          <div className="sidebar">
+            <Button onClick={() => handleTabClick('text')} style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
+              <img
+                src="https://canvas-editor.apps.screencloud.com/static/media/Text.f80b63f4.svg"
+                alt="Icon"
+                style={{ width: '24px', height: '24px' }}
+              />
               Text
             </Button>
             <Button onClick={() => handleTabClick('background')} startIcon={<ViewModuleIcon />} style={{ color: 'white' }}>
+              <img
+                src="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+                alt="Icon"
+                style={{ width: '24px', height: '24px' }}
+              />
               Background
             </Button>
-            <Button onClick={() => handleTabClick('images')} startIcon={<ImageIcon />} style={{ color: 'white' }}>
+            <Button onClick={() => handleTabClick('images')} style={{ color: 'white' }}>
+              <img
+                src="https://canvas-editor.apps.screencloud.com/static/media/Image.c91d12ab.svg"
+                alt="Icon"
+                style={{ width: '24px', height: '24px' }}
+              />
               Image
             </Button>
-
             <Button onClick={() => handleTabClick('renderLayer')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
               Render Layer
             </Button>
             {/* <Button onClick={() => handleTabClick('menuCollection')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
               Menu Collection
             </Button> */}
-          </aside>
+          </div>
 
           <div className={`tab-container ${activeTab ? 'open' : ''}`}>
             {activeTab === 'positionSize' && (

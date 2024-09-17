@@ -14,7 +14,7 @@ const MyBrand = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get('http://3.1.81.96/api/Brands', {
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands', {
           params: {
             brandId: brandId,
             pageNumber: 1,
