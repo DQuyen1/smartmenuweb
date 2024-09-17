@@ -88,7 +88,7 @@ function Template() {
   const canvasWidth = location.state.templateWidth;
   const canvasHeight = location.state.templateHeight;
   const displayWidth = templateType === 0 ? canvasWidth : 608;
-  const displayHeight = templateType === 0 ? canvasHeight : 800;
+  const displayHeight = templateType === 0 ? canvasHeight : 720;
 
   const defaultCanvasWidth = 608;
   const defaultCanvasHeight = 1080;
@@ -804,9 +804,26 @@ function Template() {
     };
   }, [detectKeydown]);
 
-  const loadCanvas = () => {
-    getLayersByTemplateId(2).then((canvasJson) => {
+  const isNewTemplate = async (templateId) => {
+    const isNew = await layer_service.checkTemplateLength(templateId);
+
+    if (isNew === 0) {
+      return true;
+    }
+    return false;
+  };
+
+  const loadCanvas = async (templateId) => {
+    const newTemplate = await isNewTemplate(templateId);
+
+    if (newTemplate === true) {
+      console.log('new template');
+
+      return;
+    }
+    getLayersByTemplateId(templateId).then((canvasJson) => {
       editor.canvas.loadFromJSON(canvasJson, function () {
+        console.log('loading template');
         editor.canvas.renderAll();
         // console.log('json: ', canvasJson);
       });
@@ -815,7 +832,6 @@ function Template() {
 
   const getLayersByTemplateId = async (templateId) => {
     const canvas = await layer_service.getLayersByTemplateId(templateId);
-    console.log('asdads');
 
     return canvas;
   };
@@ -914,17 +930,13 @@ function Template() {
 
     editor.canvas.preserveObjectStacking = true;
 
-    //loadCanvas();
-
     editor.canvas.renderAll();
   }, []);
 
   useEffect(() => {
     if (editor) {
-      // Set preserveObjectStacking to true
       editor.canvas.preserveObjectStacking = true;
-
-      // Add a rectangle to the canvas
+      loadCanvas(2);
     }
   }, [editor]);
 
@@ -1141,11 +1153,13 @@ function Template() {
     const currentZIndex = activeObject.zIndex; // Get the current zIndex of the active object
     const maxZIndex = Math.max(...elements.map((el) => el.zIndex)); // Get the highest zIndex among objects
     const minZIndex = Math.min(...elements.map((el) => el.zIndex)); // Get the lowest zIndex among objects
+    const background = elements.find((el) => el.isBackground);
 
     switch (action) {
       case 'sendBackward': {
         // Move active object one step back in canvas and swap zIndex with the element behind
         editor.canvas.sendBackwards(activeObject);
+        editor.canvas.sendBackwards(background);
 
         const elementBehind = elements.find((el) => el.zIndex === currentZIndex - 1);
         if (elementBehind) {
@@ -1160,6 +1174,7 @@ function Template() {
         // Move the active object to the back and set its zIndex to the lowest
         editor.canvas.sendToBack(activeObject);
 
+        editor.canvas.sendToBack(background);
         // Adjust zIndex for all other elements
         elements.forEach((el) => {
           if (el !== activeObject && el.zIndex < currentZIndex) {
@@ -1481,34 +1496,6 @@ function Template() {
 
     // Re-render the canvas after updating zIndex
     editor.canvas.renderAll();
-  };
-
-  const getFontSize = () => {
-    const activeObject = editor.canvas.getActiveObject();
-    if (!activeObject || activeObject.type !== 'text') {
-      return 0;
-    }
-
-    const fontSizeInPixels = activeObject.fontSize * activeObject.scaleY;
-
-    const fontSizeInPoints = fontSizeInPixels / 1.333;
-    // console.log("test: ", activeObject.width);
-    // console.log("fontsize: ", activeObject.fontSize);
-    console.log('convert: ', parseFloat(fontSizeInPoints.toFixed(1)));
-    // console.log("rotate: ", activeObject.angle);
-
-    return parseFloat(fontSizeInPoints.toFixed(1));
-  };
-
-  const getFontSize2 = (fontSize) => {
-    const fontSizeInPoints = fontSize * 1.333;
-    return parseFloat(fontSizeInPoints.toFixed(1));
-  };
-
-  const updateFontSize = () => {
-    const fontSize = getFontSize();
-
-    // activeObject.fontSize = fontSize;
   };
 
   const addText = async () => {
@@ -1842,7 +1829,8 @@ function Template() {
           lockScalingX: true, // Lock scaling horizontally
           lockScalingY: true, // Lock scaling vertically
           lockRotation: true, // Lock rotation
-          hasBorders: true // Hide borders
+          hasBorders: true,
+          isBackground: true // Hide borders
         });
 
         // Add the image to the canvas
@@ -2031,7 +2019,7 @@ function Template() {
               obj.boxItemType,
               JSON.stringify({
                 textColor: obj.fill,
-                bFontId: 5,
+                bFontId: obj.bFontId ? obj.bFontId : 5,
                 // fontSize: getFontSizeV2(obj),
                 fontSize: (obj.fontSize / 1.333).toFixed(1),
                 fontStyle:
@@ -2060,7 +2048,7 @@ function Template() {
               obj.boxItemType,
               JSON.stringify({
                 textColor: obj.fill,
-                bFontId: 5,
+                bFontId: obj.bFontId ? obj.bFontId : 5,
                 fontSize: (obj.fontSize / 1.333).toFixed(1),
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
@@ -2168,7 +2156,7 @@ function Template() {
   }
 
   const addProductDescription = async () => {
-    let textBox = new fabric.Text(`Product Description  ${selectedRect.productCounter}`, {
+    let textBox = new fabric.Text(`D ${selectedRect.productCounter}`, {
       left: selectedRect.left + 10,
       top: selectedRect.top + 10,
       // fontSize: fontSize,
@@ -2212,6 +2200,11 @@ function Template() {
 
       setHeight((scaledHeight * scaleX).toFixed(1));
       setWidth((scaledWidth * scaleY).toFixed(1));
+
+      const newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+      // Set the new font size in the UI, adjusting for the factor
+      setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
 
       const textLeft = textBox.left;
       const textTop = textBox.top;
@@ -2293,7 +2286,10 @@ function Template() {
 
       const newWidth = textBox.width * textBox.scaleX;
       const newHeight = textBox.height * textBox.scaleY;
-      console.log('scaledWidth: ', (scaledHeight * scaleX).toFixed(1), ' scaledHeight: ', (scaledWidth * scaleY).toFixed(1));
+
+      let newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+      setFontSize((newFontSize / 1.333).toFixed(1));
 
       setHeight(newHeight.toFixed(1));
       setWidth(newWidth.toFixed(1));
@@ -2306,7 +2302,8 @@ function Template() {
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
+      let canvasFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1);
+      setFontSize((canvasFontSize / 1.333).toFixed(1));
       setColor(textBox.fill);
       setActiveTab('positionSize');
       setIsHeaderVisible(true);
@@ -2335,7 +2332,7 @@ function Template() {
   };
 
   const addProductName = async () => {
-    const textBox = new fabric.Text(`Product Name ${selectedRect.nameCounter} `, {
+    const textBox = new fabric.Text(`N ${selectedRect.nameCounter} `, {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
@@ -2465,7 +2462,7 @@ function Template() {
   };
 
   const addProductPrice = async () => {
-    const textBox = new fabric.Text(`Product Price ${selectedRect.priceCounter} `, {
+    const textBox = new fabric.Text(`P ${selectedRect.priceCounter} `, {
       left: selectedRect.left + 20,
       top: selectedRect.top + 20,
       fontSize: 20,
@@ -2482,7 +2479,7 @@ function Template() {
       mt: false, // middle top disable
       mb: false, // midle bottom
       ml: false, // middle left
-      mr: false // middle right
+      mr: true // middle right
     });
 
     editor.canvas.add(textBox);
@@ -2580,7 +2577,7 @@ function Template() {
   };
 
   const addProductImage = async () => {
-    const textBox = new fabric.Text(`Product Image ${selectedRect.imageCounter} `, {
+    const textBox = new fabric.Text(`I ${selectedRect.imageCounter} `, {
       left: selectedRect.left + 25,
       top: selectedRect.top + 25,
       fontSize: 20,
@@ -2813,7 +2810,7 @@ function Template() {
       mt: false, // middle top disable
       mb: false, // midle bottom
       ml: false, // middle left
-      mr: false // middle right
+      mr: true // middle right
     });
 
     editor.canvas.add(textBox);

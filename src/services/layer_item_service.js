@@ -3,7 +3,9 @@ import axios from 'axios';
 class layerItemService {
   async getLayerItem() {
     try {
-      const response = await axios.get(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems?pageNumber=1&pageSize=10`);
+      const response = await axios.get(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems?pageNumber=1&pageSize=10`
+      );
 
       console.log(response.data);
 
@@ -20,7 +22,7 @@ class layerItemService {
     };
 
     try {
-      const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems', reqBody);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems', reqBody);
 
       const layerItemId = response.data.layerItemId;
 
@@ -37,7 +39,7 @@ class layerItemService {
     };
 
     try {
-      const response = await axios.put(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems/${layerItemId}`, reqBody);
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems/${layerItemId}`, reqBody);
       console.log('Update layeritem: ' + response.data);
 
       return response.data;
@@ -48,7 +50,7 @@ class layerItemService {
 
   deleteLayerItem(id) {
     try {
-      const response = axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems/${id}`);
+      const response = axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/LayerItems/${id}`);
       console.log('Api message: ' + response.data);
     } catch (error) {
       console.log('Error message: ' + error);

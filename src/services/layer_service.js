@@ -6,13 +6,28 @@ import CanvasText from 'models/canvas_text_model';
 import canvasFeatures from 'utils/canvasFeatures';
 // import Layer from 'models/layer_model';
 class layerService {
+  async checkTemplateLength(templateId) {
+    try {
+      const response = await axios.get(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=10`
+      );
+
+      const layers = response.data[0].layers;
+
+      const length = layers.length;
+
+      return length;
+    } catch (error) {
+      console.log('Error message: ', error.message);
+    }
+  }
   async getLayersByTemplateId(templateId) {
     let myCanvas = new Canvas();
     const canvasFeature = new canvasFeatures();
 
     try {
       const response = await axios.get(
-        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=100`
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=100`
       );
 
       console.log('template data: ', response.data[0].layers);
@@ -169,7 +184,7 @@ class layerService {
   }
   async getAll() {
     try {
-      const response = await axios.get(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts?pageNumber=1&pageSize=100`);
+      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts?pageNumber=1&pageSize=100`);
 
       const fonts = response.data.map((font) => {
         return new Font(font.fontId, font.fontName, font.fontPath, font.isDeleted);
@@ -187,7 +202,7 @@ class layerService {
     };
 
     try {
-      const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers', reqBody);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers', reqBody);
 
       const layerId = response.data.layerId;
       const zIndex = response.data.zIndex;
@@ -204,7 +219,7 @@ class layerService {
     };
 
     try {
-      const response = await axios.put(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${layerId}`, reqBody);
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${layerId}`, reqBody);
 
       console.log('Resposne message: ' + response.data);
     } catch (error) {
@@ -214,7 +229,7 @@ class layerService {
 
   deleteLayer(id) {
     try {
-      axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${id}`).then(() => {
+      axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Layers/${id}`).then(() => {
         console.log('success');
       });
     } catch (error) {

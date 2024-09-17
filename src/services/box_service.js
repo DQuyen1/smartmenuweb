@@ -3,7 +3,7 @@ import axios from 'axios';
 class boxService {
   async getBox() {
     try {
-      const response = await axios.get(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes?pageNumber=1&pageSize=10`);
+      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes?pageNumber=1&pageSize=10`);
 
       console.log('response from get box: ', JSON.stringify(response.data));
 
@@ -25,7 +25,7 @@ class boxService {
     };
 
     try {
-      const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes', reqBody);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes', reqBody);
 
       // console.log('Response from create box: ' + JSON.stringify(response.data));
 
@@ -46,7 +46,7 @@ class boxService {
     };
 
     try {
-      const response = await axios.put(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes/${boxId}`, reqBody);
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Boxes/${boxId}`, reqBody);
       return response.data;
     } catch (error) {
       console.log('Error message: ' + error.message);
@@ -54,7 +54,7 @@ class boxService {
   }
   async deleteBox(id) {
     try {
-      const response = await axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Box/${id}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Box/${id}`);
       console.log('Api message: ' + response.data);
     } catch (error) {
       console.log('Error message: ' + error);

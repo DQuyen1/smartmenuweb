@@ -4,7 +4,7 @@ class boxItemService {
   async getBoxItem(boxId) {
     try {
       const response = await axios.get(
-        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem?boxId=${boxId}&pageNumber=1&pageSize=10`
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem?boxId=${boxId}&pageNumber=1&pageSize=10`
       );
 
       console.log(response.data);
@@ -28,7 +28,7 @@ class boxItemService {
     };
 
     try {
-      const response = await axios.post('http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem', reqBody);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem', reqBody);
 
       console.log('response create box item: ' + JSON.stringify(response.data));
       const boxItemId = response.data.boxItemId;
@@ -53,7 +53,7 @@ class boxItemService {
     };
 
     try {
-      const response = await axios.put(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem/${boxId}`, reqBody);
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem/${boxId}`, reqBody);
 
       console.log('Resposne update box item: ' + JSON.stringify(response.data));
     } catch (error) {
@@ -63,7 +63,7 @@ class boxItemService {
 
   async deleteBoxItem(id) {
     try {
-      await axios.delete(`http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem/${id}`);
+      await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BoxItem/${id}`);
       // console.log('Api message: ' + response.data);
     } catch (error) {
       console.log('Error message: ' + error);
