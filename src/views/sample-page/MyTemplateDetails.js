@@ -30,7 +30,9 @@ const MyTemplateDetails = () => {
   useEffect(() => {
     const fetchTemplateDetails = async () => {
       try {
-        const response = await axios.get(`http://3.1.81.96/api/Templates?templateId=${templateId}`);
+        const response = await axios.get(
+          `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?templateId=${templateId}`
+        );
         if (response.status === 200) {
           setTemplateData(response.data[0]);
           setUpdatedTemplateData(response.data[0]);
@@ -60,7 +62,10 @@ const MyTemplateDetails = () => {
 
   const handleUpdateTemplate = async () => {
     try {
-      const response = await axios.put(`http://3.1.81.96/api/Templates/${updatedTemplateData.templateId}`, updatedTemplateData);
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${updatedTemplateData.templateId}`,
+        updatedTemplateData
+      );
       if (response.status === 200) {
         setTemplateData(updatedTemplateData);
         setOpenSnackbar(true);

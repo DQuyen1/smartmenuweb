@@ -98,7 +98,7 @@ const SetNewPassword = ({ ...others }) => {
                         onSubmit={async (values, { setStatus, setSubmitting }) => {
                           try {
                             const response = await axios.post(
-                              'http://3.1.81.96/api/Auth/SetNewPassword', // Change this to your actual endpoint
+                              'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/SetNewPassword', // Change this to your actual endpoint
                               {
                                 password: values.password
                               },

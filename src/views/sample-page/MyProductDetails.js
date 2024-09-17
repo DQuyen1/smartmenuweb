@@ -61,7 +61,7 @@ const MyProductDetails = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://3.1.81.96/api/Categories'); // Adjust the URL as needed
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories'); // Adjust the URL as needed
         setCategories(response.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -95,7 +95,7 @@ const MyProductDetails = () => {
     }
 
     try {
-      const response = await axios.post('http://3.1.81.96/api/ProductSizePrices', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices', {
         productId: productData.productId,
         productSizeType: newSizeType,
         price: parseFloat(newSizePriceData.price)
@@ -126,7 +126,9 @@ const MyProductDetails = () => {
     if (productData?.productId) {
       const fetchProductSizePrices = async () => {
         try {
-          const response = await axios.get(`http://3.1.81.96/api/ProductSizePrices?productId=${productData.productId}`);
+          const response = await axios.get(
+            `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices?productId=${productData.productId}`
+          );
           setProductSizePrices(response.data);
         } catch (error) {
           console.error('Error fetching product size prices:', error);
@@ -158,7 +160,9 @@ const MyProductDetails = () => {
 
   const handleDeleteSizePrice = async (sizePriceId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/ProductSizePrices/${sizePriceId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${sizePriceId}`
+      );
       if (response.status === 200) {
         setProductSizePrices((prevPrices) => prevPrices.filter((p) => p.productSizePriceId !== sizePriceId));
         setOpenSnackbar(true);
@@ -181,10 +185,13 @@ const MyProductDetails = () => {
 
   const handleSaveSizePrice = async () => {
     try {
-      const response = await axios.put(`http://3.1.81.96/api/ProductSizePrices/${editingSizePrice.productSizePriceId}`, {
-        productSizeType: editingSizePrice.productSizeType,
-        price: editingSizePrice.price
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${editingSizePrice.productSizePriceId}`,
+        {
+          productSizeType: editingSizePrice.productSizeType,
+          price: editingSizePrice.price
+        }
+      );
 
       if (response.status === 200) {
         setProductSizePrices((prevPrices) =>

@@ -98,7 +98,7 @@ const UtilitiesProduct = () => {
       };
 
       console.log('Payload being sent to API:', payload);
-      const response = await axios.post('http://3.1.81.96/api/Products', payload);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', payload);
       if (response.status === 201) {
         setNewProductData({
           categoryID: '',
@@ -111,8 +111,8 @@ const UtilitiesProduct = () => {
         setShowAddProductDialog(false);
 
         const [updatedProductResponse, categoryResponse] = await Promise.all([
-          axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
-          axios.get('http://3.1.81.96/api/Categories?pageNumber=1&pageSize=100')
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products?pageNumber=1&pageSize=100'),
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories?pageNumber=1&pageSize=100')
         ]);
 
         if (!updatedProductResponse.data || !categoryResponse.data) {
@@ -192,9 +192,9 @@ const UtilitiesProduct = () => {
 
       try {
         const [productResponse, categoryResponse, brandResponse] = await Promise.all([
-          axios.get('http://3.1.81.96/api/Products?pageNumber=1&pageSize=100'),
-          axios.get('http://3.1.81.96/api/Categories?pageNumber=1&pageSize=100'),
-          axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products?pageNumber=1&pageSize=100'),
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories?pageNumber=1&pageSize=100'),
+          axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=100')
         ]);
 
         if (!productResponse.data || !categoryResponse.data || !brandResponse.data) {
@@ -238,7 +238,9 @@ const UtilitiesProduct = () => {
   const handleDelete = async () => {
     if (!productToDelete) return;
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Products/${productToDelete.productId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToDelete.productId}`
+      );
       if (response.status === 200) {
         setProductData((prevData) => prevData.filter((product) => product.productId !== productToDelete.productId));
         setOpenSnackbar(true);

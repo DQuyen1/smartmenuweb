@@ -48,7 +48,9 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionDataId}&pageNumber=1&pageSize=10`);
+      const response = await axios.get(
+        `https://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionDataId}&pageNumber=1&pageSize=10`
+      );
       console.log('Data fetched:', response.data);
       setProductGroups(response.data);
     } catch (error) {

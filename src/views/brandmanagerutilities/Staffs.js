@@ -93,9 +93,9 @@ const Staff = () => {
 
     try {
       const [userResponse, brandResponse, allStoresResponse] = await Promise.all([
-        axios.get('http://3.1.81.96/api/Users?pageNumber=1&pageSize=1000'),
-        axios.get('http://3.1.81.96/api/Brands/BrandStaff?pageNumber=1&pageSize=1000'),
-        axios.get('http://3.1.81.96/api/Stores?pageNumber=1&pageSize=1000') // Fetch stores
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Users?pageNumber=1&pageSize=1000'),
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands/BrandStaff?pageNumber=1&pageSize=1000'),
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores?pageNumber=1&pageSize=1000') // Fetch stores
       ]);
 
       const filteredUsers = userResponse.data.filter((user) => user.role === 2);
@@ -190,10 +190,10 @@ const Staff = () => {
 
     try {
       // Create the new user
-      await axios.post('http://3.1.81.96/api/Auth/Register', newUser);
+      await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Register', newUser);
 
       // Login with the newly created user
-      const loginResponse = await axios.post('http://3.1.81.96/api/Auth/Login', {
+      const loginResponse = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Login', {
         userName: newUser.userName,
         password: newUser.password
       });
@@ -210,7 +210,9 @@ const Staff = () => {
 
   const checkExistingAssignment = async () => {
     try {
-      const response = await axios.get(`http://3.1.81.96/api/BrandStaffs?brandId=${assignData.brandId}`);
+      const response = await axios.get(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs?brandId=${assignData.brandId}`
+      );
       const existingStoreManagers = response.data.filter((staff) => staff.storeId !== null && staff.storeId === assignData.storeId);
       return existingStoreManagers.length > 0; // If there are any store managers, it means an assignment exists
     } catch (err) {
@@ -231,7 +233,7 @@ const Staff = () => {
     }
 
     try {
-      await axios.post('http://3.1.81.96/api/BrandStaffs', assignData);
+      await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs', assignData);
       Toastify({
         text: 'created staff successfully!',
         duration: 3000,

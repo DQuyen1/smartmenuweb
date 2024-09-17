@@ -116,10 +116,13 @@ const EntityCollection = () => {
       return;
     }
     try {
-      const response = await axios.put(`http://3.1.81.96/api/Collections/${editingCollection.collectionId}`, {
-        ...editingCollection,
-        collectionBackgroundImgPath: collectionBackgroundImgPath
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/${editingCollection.collectionId}`,
+        {
+          ...editingCollection,
+          collectionBackgroundImgPath: collectionBackgroundImgPath
+        }
+      );
 
       if (response.status === 200) {
         setShowEditCollectionDialog(false);
@@ -159,14 +162,14 @@ const EntityCollection = () => {
       return;
     }
     try {
-      const response = await axios.post('http://3.1.81.96/api/Collections', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections', {
         ...newCollectionData,
         collectionBackgroundImgPath: collectionBackgroundImgPath
       });
       if (response.status === 201) {
         setNewCollectionData({ brandId: '', collectionName: '', collectionDescription: '' });
         setShowAddCollectionDialog(false);
-        const updatedResponse = await axios.get('http://3.1.81.96/api/Collections/ProductGroup');
+        const updatedResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/ProductGroup');
         setCollectionData(updatedResponse.data);
         setOpenSnackbar(true);
         setSnackbarMessage('Collection created successfully!');
@@ -191,8 +194,8 @@ const EntityCollection = () => {
 
     try {
       const [collectionResponse, brandResponse] = await Promise.all([
-        axios.get('http://3.1.81.96/api/Collections/ProductGroup'),
-        axios.get('http://3.1.81.96/api/Brands')
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/ProductGroup'),
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands')
       ]);
       setCollectionData(collectionResponse.data);
       setBrandData(brandResponse.data);
@@ -214,7 +217,7 @@ const EntityCollection = () => {
 
   const handleDelete = async (collectionId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Collections/${collectionId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/${collectionId}`);
       if (response.status === 200) {
         setCollectionData(collectionData.filter((collection) => collection.collectionId !== collectionId));
         setOpenSnackbar(true);

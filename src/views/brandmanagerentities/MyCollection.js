@@ -89,7 +89,7 @@ const MyCollection = () => {
     }
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.post('http://3.1.81.96/api/Collections', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections', {
         ...newCollectionData,
         brandId: brandId,
         collectionBackgroundImgPath: collectionBackgroundImgPath
@@ -122,11 +122,14 @@ const MyCollection = () => {
     }
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.put(`http://3.1.81.96/api/Collections/${editCollectionData.collectionId}`, {
-        ...editCollectionData,
-        brandId: brandId,
-        collectionBackgroundImgPath: collectionBackgroundImgPath
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/${editCollectionData.collectionId}`,
+        {
+          ...editCollectionData,
+          brandId: brandId,
+          collectionBackgroundImgPath: collectionBackgroundImgPath
+        }
+      );
 
       if (response.status === 200) {
         setShowEditCollectionDialog(false);
@@ -176,7 +179,7 @@ const MyCollection = () => {
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.get('http://3.1.81.96/api/Collections', {
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -202,7 +205,7 @@ const MyCollection = () => {
 
   const handleDelete = async (collectionId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Collections/${collectionId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Collections/${collectionId}`);
       if (response.status === 200) {
         setCollectionData(collectionData.filter((collection) => collection.collectionId !== collectionId));
         setOpenSnackbar(true);

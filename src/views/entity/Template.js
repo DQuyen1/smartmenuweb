@@ -100,7 +100,7 @@ const EntityTemplate = () => {
       return;
     }
     try {
-      const response = await axios.post('http://3.1.81.96/api/Templates', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates', {
         ...newTemplateData
       });
       if (response.status === 201) {
@@ -135,9 +135,12 @@ const EntityTemplate = () => {
     }
 
     try {
-      const response = await axios.put(`http://3.1.81.96/api/Templates/${editTemplateData.templateId}`, {
-        ...editTemplateData
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${editTemplateData.templateId}`,
+        {
+          ...editTemplateData
+        }
+      );
       if (response.status === 200) {
         fetchData();
         setOpenSnackbar(true);
@@ -221,7 +224,9 @@ const EntityTemplate = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Templates/${selectedTemplate.templateId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/${selectedTemplate.templateId}`
+      );
       if (response.status === 200) {
         setTemplateData((prevData) => prevData.filter((item) => item.templateId !== selectedTemplate.templateId));
         setOpenSnackbar(true);
@@ -244,8 +249,8 @@ const EntityTemplate = () => {
 
     try {
       const [templateResponse, brandResponse] = await Promise.all([
-        axios.get('http://3.1.81.96/api/Templates?pageNumber=1&pageSize=1000'),
-        axios.get('http://3.1.81.96/api/Brands?pageNumber=1&pageSize=100')
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?pageNumber=1&pageSize=1000'),
+        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=100')
       ]);
 
       setTemplateData(templateResponse.data);

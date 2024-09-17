@@ -88,7 +88,7 @@ const EntityFont = () => {
     formData.append('File', selectedFile); // Append the file to the FormData
 
     try {
-      const response = await axios.post('http://3.1.81.96/api/Fonts', formData, {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts', formData, {
         // Replace with your actual API endpoint
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -111,7 +111,7 @@ const EntityFont = () => {
 
   const fetchFontData = async () => {
     try {
-      const response = await axios.get('http://3.1.81.96/api/Fonts?pageNumber=1&pageSize=100'); // Replace with your actual font API endpoint
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts?pageNumber=1&pageSize=100'); // Replace with your actual font API endpoint
       setFontData(response.data);
     } catch (error) {
       console.error('Error fetching font data:', error);
