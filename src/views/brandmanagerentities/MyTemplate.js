@@ -106,7 +106,13 @@ const MyTemplate = () => {
         setShowAddTemplateDialog(false);
 
         console.log('Template added successfully:', response.data);
-        navigate(`/pages/template/${response.data.templateId}`, { state: { templateType: response.data.templateType } });
+        navigate(`/pages/template/${response.data.templateId}`, {
+          state: {
+            templateType: response.data.templateType,
+            templateWidth: response.data.templateWidth,
+            templateHeight: response.data.templateHeight
+          }
+        });
       } else {
         console.error('Error creating template:', response);
         setError(`Error: ${response.statusText}`);
@@ -153,8 +159,8 @@ const MyTemplate = () => {
     if (name === 'templateOrientation') {
       setNewTemplateData((prevState) => ({
         ...prevState,
-        templateWidth: value === 'vertical' ? 794 : 1080,
-        templateHeight: value === 'vertical' ? 1123 : 608,
+        templateWidth: value === 'vertical' ? 608 : 1080,
+        templateHeight: value === 'vertical' ? 720 : 720,
         templateType: value === 'vertical' ? 1 : 0, // Correct the order for horizontal
         [name]: value
       }));
@@ -236,6 +242,8 @@ const MyTemplate = () => {
   const fetchData = async () => {
     setIsLoading(true);
     setError(null);
+    const token = localStorage.getItem('token');
+    console.log('token: ', token);
 
     try {
       const brandId = localStorage.getItem('brandId');
@@ -245,6 +253,9 @@ const MyTemplate = () => {
           pageNumber: 1,
           pageSize: 1000
         }
+        // headers: {
+        //   Authorization: `Bearer ${token}`
+        // }
       });
       setTemplateData(templateResponse.data);
     } catch (error) {
