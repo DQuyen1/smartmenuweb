@@ -89,7 +89,7 @@ const ProductDetails = () => {
     // Fetch categories data
     const fetchCategories = async () => {
       try {
-        const response = await axios.get('http://3.1.81.96/api/Categories?pageSize=1000');
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories?pageSize=1000');
         const categoryMap = response.data.reduce((acc, category) => {
           acc[category.categoryId] = {
             name: category.categoryName,
@@ -107,7 +107,7 @@ const ProductDetails = () => {
     // Fetch brands data
     const fetchBrands = async () => {
       try {
-        const response = await axios.get('http://3.1.81.96/api/Brands'); // Adjust URL if needed
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands'); // Adjust URL if needed
         const brandMap = response.data.reduce((acc, brand) => {
           acc[brand.brandId] = brand.brandName;
           return acc;
@@ -121,7 +121,9 @@ const ProductDetails = () => {
     // Fetch product size prices if productData exists
     const fetchProductSizePrices = async () => {
       try {
-        const response = await axios.get(`http://3.1.81.96/api/ProductSizePrices?productId=${productData.productId}`);
+        const response = await axios.get(
+          `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices?productId=${productData.productId}`
+        );
         setProductSizePrices(response.data);
       } catch (error) {
         console.error('Error fetching product size prices:', error);
@@ -190,7 +192,7 @@ const ProductDetails = () => {
     }
 
     try {
-      const response = await axios.post('http://3.1.81.96/api/ProductSizePrices', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices', {
         productId: productData.productId,
         productSizeType: newSizeType,
         price: parseFloat(newSizePriceData.price)
@@ -229,7 +231,10 @@ const ProductDetails = () => {
         productImgPath: productImgPath,
         productLogoPath: productLogoPath
       };
-      const response = await axios.put(`http://3.1.81.96/api/Products/${updatedProductData.productId}`, payload);
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${updatedProductData.productId}`,
+        payload
+      );
       if (response.status === 200) {
         location.state.productData = response.data;
         setUpdatedProductData(response.data);
@@ -249,7 +254,9 @@ const ProductDetails = () => {
 
   const handleDeleteSizePrice = async (sizePriceId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/ProductSizePrices/${sizePriceId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${sizePriceId}`
+      );
       if (response.status === 200) {
         setProductSizePrices((prevPrices) => prevPrices.filter((p) => p.productSizePriceId !== sizePriceId));
         setOpenSnackbar(true);
@@ -272,10 +279,13 @@ const ProductDetails = () => {
 
   const handleSaveSizePrice = async () => {
     try {
-      const response = await axios.put(`http://3.1.81.96/api/ProductSizePrices/${editingSizePrice.productSizePriceId}`, {
-        productSizeType: editingSizePrice.productSizeType,
-        price: editingSizePrice.price
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${editingSizePrice.productSizePriceId}`,
+        {
+          productSizeType: editingSizePrice.productSizeType,
+          price: editingSizePrice.price
+        }
+      );
 
       if (response.status === 200) {
         setProductSizePrices((prevPrices) =>

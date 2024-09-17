@@ -75,7 +75,7 @@ const MyCategory = () => {
     try {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.post('http://3.1.81.96/api/Categories', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories', {
         ...newCategoryData,
         brandId: brandId // Set brandId fetched from localStorage
       });
@@ -106,10 +106,13 @@ const MyCategory = () => {
     try {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.put(`http://3.1.81.96/api/Categories/${editCategoryData.categoryId}`, {
-        ...editCategoryData,
-        brandId: brandId // Ensure brandId is included in the update payload
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories/${editCategoryData.categoryId}`,
+        {
+          ...editCategoryData,
+          brandId: brandId // Ensure brandId is included in the update payload
+        }
+      );
       if (response.status === 200) {
         // Successfully updated category
         setShowEditCategoryDialog(false);
@@ -158,7 +161,7 @@ const MyCategory = () => {
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
-      const response = await axios.get('http://3.1.81.96/api/Categories', {
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -185,7 +188,7 @@ const MyCategory = () => {
       try {
         const brandId = localStorage.getItem('brandId');
 
-        const response = await axios.get('http://3.1.81.96/api/Categories', {
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories', {
           params: {
             brandId: brandId,
             pageNumber: 1,
@@ -212,7 +215,7 @@ const MyCategory = () => {
 
   const handleDelete = async (categoryId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Categories/${categoryId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories/${categoryId}`);
       if (response.status === 200) {
         // Successfully deleted category
         setCategoryData(categoryData.filter((category) => category.categoryId !== categoryId));

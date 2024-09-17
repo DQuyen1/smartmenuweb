@@ -24,7 +24,10 @@ const TemplateDetails = () => {
 
   const handleUpdateTemplate = async () => {
     try {
-      const response = await axios.put(`http://3.1.81.96/api/Templates?templateId=${updatedTemplateData.templateId}`, updatedTemplateData);
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates?templateId=${updatedTemplateData.templateId}`,
+        updatedTemplateData
+      );
       if (response.status === 200) {
         // Update storeData in location state (optional, but recommended)
         location.state.templateData = response.data;

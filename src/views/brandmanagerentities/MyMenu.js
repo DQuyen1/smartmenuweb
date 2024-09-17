@@ -57,7 +57,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.post('http://3.1.81.96/api/Menus', {
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus', {
         ...newMenuData,
         brandId: brandId // Set brandId fetched from localStorage
       });
@@ -89,7 +89,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.put(`http://3.1.81.96/api/Menus/${editMenuData.menuId}`, {
+      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/${editMenuData.menuId}`, {
         ...editMenuData,
         brandId: brandId // Ensure brandId is included in the update payload
       });
@@ -140,7 +140,7 @@ const MyMenu = () => {
       // Retrieve brandId from localStorage
       const brandId = localStorage.getItem('brandId');
 
-      const response = await axios.get('http://3.1.81.96/api/Menus', {
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -166,7 +166,7 @@ const MyMenu = () => {
 
   const handleDelete = async (menuId) => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Menus/${menuId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/${menuId}`);
       if (response.status === 200) {
         // Successfully deleted menu
         setMenuData(menuData.filter((menu) => menu.menuId !== menuId));

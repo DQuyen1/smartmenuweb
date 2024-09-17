@@ -75,7 +75,7 @@ const MyStore = () => {
     }
 
     try {
-      const response = await axios.post('http://3.1.81.96/api/Stores', newStoreData);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores', newStoreData);
       if (response.status === 201) {
         setNewStoreData({
           storeName: '',
@@ -118,7 +118,7 @@ const MyStore = () => {
     setIsLoading(true);
     try {
       const brandId = localStorage.getItem('brandId');
-      const storeResponse = await axios.get('http://3.1.81.96/api/Stores', {
+      const storeResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores', {
         params: {
           brandId: brandId,
           pageNumber: 1,
@@ -140,7 +140,7 @@ const MyStore = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(`http://3.1.81.96/api/Stores/${storeToDelete.storeId}`);
+      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores/${storeToDelete.storeId}`);
 
       if (response.status === 200) {
         setStoreData(storeData.filter((store) => store.storeId !== storeToDelete.storeId));

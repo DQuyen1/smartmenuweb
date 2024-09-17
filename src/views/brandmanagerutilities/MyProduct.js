@@ -120,7 +120,7 @@ const MyProduct = () => {
         setError(null);
 
         try {
-          const response = await axios.get('http://3.1.81.96/api/Products', {
+          const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
             params: {
               pageNumber: 1,
               pageSize: 100, // Adjust pageSize as needed
@@ -186,8 +186,8 @@ const MyProduct = () => {
         productLogoPath: productLogoPath
       };
       console.log('payload:', payload);
-      await axios.post('http://3.1.81.96/api/Products', payload);
-      const response = await axios.get('http://3.1.81.96/api/Products', {
+      await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', payload);
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
@@ -239,8 +239,8 @@ const MyProduct = () => {
         productImgPath: productImgPath,
         productLogoPath: productLogoPath
       };
-      await axios.put(`http://3.1.81.96/api/Products/${productToEdit.productId}`, payload);
-      const response = await axios.get('http://3.1.81.96/api/Products', {
+      await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToEdit.productId}`, payload);
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
@@ -271,9 +271,9 @@ const MyProduct = () => {
 
   const handleDeleteProduct = async () => {
     try {
-      await axios.delete(`http://3.1.81.96/api/Products/${productToDelete}`);
+      await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToDelete}`);
       // Fetch the updated list of products
-      const response = await axios.get('http://3.1.81.96/api/Products', {
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
         params: {
           pageNumber: 1,
           pageSize: 100,
