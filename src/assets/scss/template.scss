@@ -20,6 +20,13 @@
   align-items: center;
 }
 
+.header .left-section img {
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
 .header .text-options {
   margin-left: 10px;
   display: flex;
@@ -161,10 +168,10 @@
 .sidebar-container {
   width: 90px;
   height: 100%;
+  padding: 10px;
 }
 
-.sidebar {
-  width: 70px;
+.sidebar-container .sidebar {
   background-color: #0b0b0d;
   padding: 10px;
   display: flex;
@@ -172,7 +179,6 @@
   align-items: center;
   color: 'white'; 
   height: 100%;
-  margin: 10px;
   border-radius: 10px;
 }
 

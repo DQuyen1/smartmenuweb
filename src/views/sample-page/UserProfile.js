@@ -34,7 +34,7 @@ const UserProfile = () => {
     const fetchUserData = async () => {
       try {
         const userId = localStorage.getItem('userId');
-        const response = await axios.get('https://3.1.81.96/api/Users', {
+        const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Users', {
           params: { userId: userId, pageNumber: 1, pageSize: 100 }
         });
         setUserData(response.data[0]);
@@ -65,7 +65,7 @@ const UserProfile = () => {
 
     try {
       const userId = localStorage.getItem('userId');
-      await axios.put(`https://3.1.81.96/api/Users/${userId}`, {
+      await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Users/${userId}`, {
         password: newPassword,
         confirmPassword: confirmPassword
       });

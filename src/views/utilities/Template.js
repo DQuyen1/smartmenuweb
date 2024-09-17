@@ -2,6 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
 import '../../assets/scss/template.scss';
+import uploadCloud from '../../assets/images/icons/uploadcloud.svg';
+import text from '../../assets/images/icons/text.svg';
+import images from '../../assets/images/icons/images.svg';
+import background from '../../assets/images/icons/background.svg';
 import 'toastify-js/src/toastify.css';
 import { Button } from '@mui/material';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -936,7 +940,7 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
-      loadCanvas(2);
+      // loadCanvas(2);
     }
   }, [editor]);
 
@@ -3112,30 +3116,19 @@ function Template() {
         <div className="sidebar-container">
           <div className="sidebar">
             <Button onClick={() => handleTabClick('text')} style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
-              <img
-                src="https://canvas-editor.apps.screencloud.com/static/media/Text.f80b63f4.svg"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+              <img src={text} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Text
             </Button>
-            <Button onClick={() => handleTabClick('background')} startIcon={<ViewModuleIcon />} style={{ color: 'white' }}>
-              <img
-                src="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+            <Button onClick={() => handleTabClick('background')} style={{ color: 'white' }}>
+              <img src={background} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Background
             </Button>
             <Button onClick={() => handleTabClick('images')} style={{ color: 'white' }}>
-              <img
-                src="https://canvas-editor.apps.screencloud.com/static/media/Image.c91d12ab.svg"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+              <img src={images} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Image
             </Button>
-            <Button onClick={() => handleTabClick('renderLayer')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
+            <Button onClick={() => handleTabClick('renderLayer')} style={{ color: 'white' }}>
+              <img src={uploadCloud} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Render Layer
             </Button>
             {/* <Button onClick={() => handleTabClick('menuCollection')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
@@ -3325,7 +3318,11 @@ function Template() {
               width: `${displayWidth}px`,
               height: `${displayHeight}px`,
               background: '#f8f9fa',
-              marginLeft: '10%'
+              // marginLeft: '10%',
+              marginTop: '10px',
+              marginBottom: '10px',
+              border: '1px solid #dee2e6',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
             }}
           >
             <FabricJSCanvas className="sample-canvas" onReady={onReady} />

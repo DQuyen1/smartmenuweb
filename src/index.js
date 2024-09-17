@@ -12,7 +12,6 @@ import axios from 'axios';
 // style + assets
 import 'assets/scss/style.scss';
 import config from './config';
-import axios from 'axios';
 
 // ==============================|| REACT DOM RENDER  ||============================== //
 
