@@ -4,7 +4,7 @@ class menuService {
   async getAllByBrand(brandId) {
     try {
       const response = await axios.get(
-        `http://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus?brandId=${brandId}&pageNumber=1&pageSize=10`
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus?brandId=${brandId}&pageNumber=1&pageSize=10`
       );
 
       const menus = response.data.map((menu) => {
