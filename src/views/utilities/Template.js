@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
 import '../../assets/scss/template.scss';
 import uploadCloud from '../../assets/images/icons/uploadcloud.svg';
 import text from '../../assets/images/icons/text.svg';
 import images from '../../assets/images/icons/images.svg';
 import background from '../../assets/images/icons/background.svg';
+import close from '../../assets/images/icons/close.svg';
 import 'toastify-js/src/toastify.css';
 import { Button } from '@mui/material';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -35,6 +36,7 @@ import dataHandler from 'utils/dataHandler';
 function Template() {
   const { templateId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
 
   const [color, setColor] = useState('#35363a');
@@ -3044,11 +3046,12 @@ function Template() {
           />
           <h2 style={{ margin: '0' }}>hhh</h2> {/* Thay thế bằng tên của canvas */}
         </div>
-        {(selectedTool == 'text' || selectedTool == 'textBox') && (
-          <div className="text-options">
-            {/* <select id="font-family"></select> */}
+        <div className="actions">
+          {(selectedTool == 'text' || selectedTool == 'textBox') && (
+            <div className="text-options">
+              {/* <select id="font-family"></select> */}
 
-            {/* <select value={selectedFont} onChange={handleFontChange}>
+              {/* <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
                 <option key={font} value={font}>
                   {font}
@@ -3056,59 +3059,57 @@ function Template() {
               ))}
             </select> */}
 
-            <select value={selectedFont} onChange={handleFontChange}>
-              {fonts.map((font) => (
-                <option key={font.fontId} value={font.fontName}>
-                  {font.fontName}
-                </option>
-              ))}
-            </select>
+              <select value={selectedFont} onChange={handleFontChange}>
+                {fonts.map((font) => (
+                  <option key={font.fontId} value={font.fontName}>
+                    {font.fontName}
+                  </option>
+                ))}
+              </select>
 
-            <input
-              type="number"
-              id="font-size"
-              value={fontSize}
-              onChange={changeFontSize}
-              min="1" // Set minimum value if needed
-              max="150" // Set maximum value if needed
-            />
-            <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
-            <button onClick={toggleBold}>B</button>
-            <button onClick={toggleItalic}>I</button>
-            <button onClick={cycleTextAlign} className="align-button">
-              {getTextAlignIcon()}
-            </button>
-          </div>
-        )}
+              <input
+                type="number"
+                id="font-size"
+                value={fontSize}
+                onChange={changeFontSize}
+                min="1" // Set minimum value if needed
+                max="150" // Set maximum value if needed
+              />
+              <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
+              <button onClick={toggleBold}>B</button>
+              <button onClick={toggleItalic}>I</button>
+              <button onClick={cycleTextAlign} className="align-button">
+                {getTextAlignIcon()}
+              </button>
+            </div>
+          )}
 
-        {selectedTool == 'rect' && (
-          <>
-            <label htmlFor="font-color">Background Color:</label>
-            <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
-            {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
+          {selectedTool == 'rect' && (
+            <div className="background-options">
+              <label htmlFor="font-color">Background Color:</label>
+              <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
+              {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
           Position & Size
         </Button> */}
-            <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
+              <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
 
-            {/* <button onClick={toggleTextCase} className="case-button">
+              {/* <button onClick={toggleTextCase} className="case-button">
               Toggle Case
             </button> */}
-          </>
-        )}
-        <div className="actions">
-          <button
-            className="preview-btn"
-            style={{ padding: '10px 20px', backgroundColor: '#fff', border: '1px solid #ddd', cursor: 'pointer', color: 'black' }}
-          >
-            Preview
-          </button>
+            </div>
+          )}
+          <div className="divider"></div>
           <button className="save-btn" onClick={() => getAllCanvasProperties()}>
             Save
           </button>
           <div className="profile">User</div>
-          <div className="close-btn" style={{ cursor: 'pointer', marginLeft: '10px' }}>
-            X
-          </div>
+          <button
+            className="close-btn"
+            style={{ cursor: 'pointer', marginLeft: '20px' }}
+            onClick={() => navigate('/utils/util-mytemplate')}
+          >
+            <img src={close} alt="Close" />
+          </button>
         </div>
       </header>
 
@@ -3141,14 +3142,9 @@ function Template() {
               <div className="tab">
                 {/* <h4 style={{ color: 'white' }}>Position & Size</h4> */}
                 <div className="subtabs">
-                  <Button onClick={() => handleSubtabClick('position')} style={{ color: 'black', marginRight: '2%' }}>
-                    Position
-                  </Button>
-                  {selectedTool === 'rect' && (
-                    <Button onClick={() => handleSubtabClick('product')} style={{ color: 'black' }}>
-                      Product
-                    </Button>
-                  )}
+                  <Button onClick={() => handleSubtabClick('position')}>Position</Button>
+                  {selectedTool === 'rect' && <div className="subtab-separator"></div>}
+                  {selectedTool === 'rect' && <Button onClick={() => handleSubtabClick('product')}>Product</Button>}
                 </div>
                 {activeSubtab === 'position' && (
                   <div className="subtab-content">
@@ -3204,24 +3200,14 @@ function Template() {
 
                 {activeSubtab === 'product' && selectedTool === 'rect' && (
                   <div className="subtab-content">
-                    <Button onClick={() => addProductDescription()} style={{ color: 'black' }}>
-                      Add Description
-                    </Button>
-                    <Button onClick={() => addProductImage()} style={{ color: 'black' }}>
-                      Add Image
-                    </Button>
-                    <Button onClick={() => addProductName()} style={{ color: 'black' }}>
-                      Add Name
-                    </Button>
-                    <Button onClick={() => addProductPrice()} style={{ color: 'black' }}>
-                      Add Price
-                    </Button>
+                    <Button onClick={() => addProductDescription()}>Add Description</Button>
+                    <Button onClick={() => addProductImage()}>Add Image</Button>
+                    <Button onClick={() => addProductName()}>Add Name</Button>
+                    <Button onClick={() => addProductPrice()}>Add Price</Button>
                     {/* <Button onClick={() => addProductIcon()} style={{ color: 'black' }}>
                       Add Icon
                     </Button>*/}
-                    <Button onClick={() => addProductHeader()} style={{ color: 'black' }}>
-                      Add Header
-                    </Button>
+                    <Button onClick={() => addProductHeader()}>Add Header</Button>
                     {/* <label htmlFor="product-quantity" style={{ color: 'white' }}>
                       Quantity:
                     </label> */}
@@ -3243,7 +3229,7 @@ function Template() {
 
             {activeTab === 'text' && (
               <div className="tab">
-                <h4 style={{ color: 'white' }}>Text</h4>
+                <h4>Text</h4>
                 {/* <button onClick={() => addText('Heading')}>Heading</button>
                 <button onClick={() => addText('Subheading')}>Subheading</button> */}
                 <button onClick={() => addText('Body Text')}>Body Text</button>
@@ -3251,14 +3237,21 @@ function Template() {
             )}
             {activeTab === 'background' && (
               <div className="tab">
-                <h4 style={{ color: 'white' }}>Background</h4>
-                <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
+                <h4>Background</h4>
+                <div className="file-input-wrapper">
+                  <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
+                  <span className="file-input-label">Choose an background...</span>
+                </div>
               </div>
             )}
             {activeTab === 'images' && (
-              <div className="tab narrow-tab" style={{ width: '100%' }}>
-                <h4 style={{ color: 'white' }}>Image</h4>
-                <input type="file" accept="image/*" onChange={handleImageUpload} />
+              <div className="tab narrow-tab">
+                <h4>Image</h4>
+                {/* <input type="file" accept="image/*" onChange={handleImageUpload} /> */}
+                <div className="file-input-wrapper">
+                  <input type="file" accept="image/*" onChange={handleImageUpload} />
+                  <span className="file-input-label">Choose an image...</span>
+                </div>
                 <div
                   className="custom-scrollbar"
                   style={{

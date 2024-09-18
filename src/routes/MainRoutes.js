@@ -35,14 +35,14 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: <UtilsUser />
     },
     {
       path: 'dashboard',
       children: [
         {
           path: 'default',
-          element: <DashboardDefault />
+          element: <UtilsUser />
         }
       ]
     },
@@ -97,27 +97,6 @@ const MainRoutes = {
         {
           path: 'material-icons',
           element: <UtilsMaterialIcons />
-        }
-      ]
-    },
-    {
-      path: 'entities',
-      children: [
-        {
-          path: 'entity-template',
-          element: <EntityTemplate />
-        },
-        {
-          path: 'entity-menu',
-          element: <EntityMenu />
-        },
-        {
-          path: 'entity-collection',
-          element: <EntityCollection />
-        },
-        {
-          path: 'entity-font',
-          element: <EntityFont />
         }
       ]
     },

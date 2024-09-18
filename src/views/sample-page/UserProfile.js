@@ -3,9 +3,6 @@ import axios from 'axios';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Divider,
   CircularProgress,
   IconButton,
   Button,
@@ -13,7 +10,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  TextField,
+  Grid,
+  InputAdornment,
+  Paper
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
@@ -86,23 +86,120 @@ const UserProfile = () => {
             <CircularProgress />
           </Box>
         ) : (
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Username: {userData.userName}</Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="h6">Password: {showPassword ? userData.password : '********'}</Typography>
-                <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </Box>
-              <Typography variant="h6">Email: {userData.email}</Typography>
-              <Typography variant="h6">Role: {userData.role === 0 ? 'Admin' : 'Brand Manager'}</Typography>
-              <Typography variant="h6">Email Verified: {userData.emailVerified ? 'Yes' : 'No'}</Typography>
-              <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)}>
-                Change Password
-              </Button>
-            </CardContent>
-          </Card>
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Paper elevation={3} sx={{ padding: 2 }}>
+                  {/* <Typography variant="h6">Username: {userData.userName}</Typography> */}
+                  <Box component="form" noValidate autoComplete="off">
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Username"
+                          value={userData.userName}
+                          fullWidth
+                          disabled
+                          variant="outlined"
+                          margin="normal"
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Password"
+                          value={showPassword ? userData.password : '********'}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          type={showPassword ? 'text' : 'password'}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
+                                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                                </IconButton>
+                              </InputAdornment>
+                            )
+                          }}
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      {/* <Typography variant="h6">Email: {userData.email}</Typography> */}
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Email"
+                          value={userData.email}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      {/* <Typography variant="h6">Role: {userData.role === 0 ? 'Admin' : 'Brand Manager'}</Typography> */}
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Role"
+                          value={userData.role === 0 ? 'Admin' : 'Brand Manager'}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      {/* <Typography variant="h6">Email Verified: {userData.emailVerified ? 'Yes' : 'No'}</Typography> */}
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Email Verified"
+                          value={userData.emailVerified ? 'Yes' : 'No'}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Button variant="contained" color="secondary" onClick={() => navigate(-1)}>
+                      Back
+                    </Button>
+                    <Button variant="contained" color="primary" onClick={() => setOpenDialog(true)}>
+                      Change Password
+                    </Button>
+                  </Box>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
         )}
       </Box>
 

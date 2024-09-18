@@ -14,7 +14,6 @@ const icons = {
 
 const brandManagerUtilities = {
   id: 'utilities',
-  title: 'Utilities',
   type: 'group',
   children: [
     {
@@ -27,7 +26,7 @@ const brandManagerUtilities = {
     },
     {
       id: 'util-mybrand',
-      title: 'My Brand',
+      title: 'Brand',
       type: 'item',
       url: '/utils/util-mybrand',
       icon: icons.IconBrandMedium,
@@ -35,7 +34,7 @@ const brandManagerUtilities = {
     },
     {
       id: 'util-mystore',
-      title: 'My Stores',
+      title: 'Stores',
       type: 'item',
       url: '/utils/util-mystore',
       icon: icons.IconBuildingStore,
@@ -43,35 +42,43 @@ const brandManagerUtilities = {
     },
     {
       id: 'util-mycategory',
-      title: 'My Category',
+      title: 'Category',
       type: 'item',
       url: '/utils/util-mycategory',
       icon: icons.IconPackage,
       breadcrumbs: false
     },
     {
-      id: 'icons',
-      title: 'Icons',
-      type: 'collapse',
+      id: 'util-mycollection',
+      title: 'Collection',
+      type: 'item',
+      url: '/utils/util-mycollection',
+      icon: icons.IconPackage,
+      breadcrumbs: false
+    },
+    {
+      id: 'util-mymenu',
+      title: 'Menu',
+      type: 'item',
+      url: '/utils/util-mymenu',
+      icon: icons.IconPackage,
+      breadcrumbs: false
+    },
+    {
+      id: 'util-mytemplate',
+      title: 'Template',
+      type: 'item',
+      url: '/utils/util-mytemplate',
+      icon: icons.IconPackage,
+      breadcrumbs: false
+    },
+    {
+      id: 'util-display',
+      title: 'Display',
+      type: 'item',
+      url: 'pages/choose-template',
       icon: icons.IconWindmill,
-      children: [
-        {
-          id: 'tabler-icons',
-          title: 'Tabler Icons',
-          type: 'item',
-          url: '/icons/tabler-icons',
-          breadcrumbs: false
-        },
-        {
-          id: 'material-icons',
-          title: 'Material Icons',
-          type: 'item',
-          external: true,
-          target: '_blank',
-          url: 'https://mui.com/material-ui/material-icons/',
-          breadcrumbs: false
-        }
-      ]
+      breadcrumbs: false
     }
   ]
 };

@@ -102,12 +102,81 @@ const MyTemplateDetails = () => {
         <Grid item xs={12} sm={8}>
           {/* Template Details */}
           <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {/* <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography variant="subtitle1">Name: {templateData.templateName}</Typography>
               <Typography variant="subtitle1">Description: {templateData.templateDescription}</Typography>
               <Typography variant="subtitle1">
                 Dimensions: {templateData.templateWidth} x {templateData.templateHeight}
               </Typography>
+            </Box> */}
+            <Box component="form" noValidate autoComplete="off">
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    value={templateData.templateName}
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    disabled
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                        color: 'black' // Dùng cho các trình duyệt khác
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    value={templateData.templateDescription}
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    margin="normal"
+                    disabled
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                        color: 'black' // Dùng cho các trình duyệt khác
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    label="Width"
+                    value={templateData?.templateWidth || ''}
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    disabled
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                        color: 'black' // Dùng cho các trình duyệt khác
+                      }
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={6}>
+                  <TextField
+                    label="Height"
+                    value={templateData?.templateHeight || ''}
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    disabled
+                    sx={{
+                      '& .MuiInputBase-input.Mui-disabled': {
+                        WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                        color: 'black' // Dùng cho các trình duyệt khác
+                      }
+                    }}
+                  />
+                </Grid>
+              </Grid>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Button variant="contained" color="secondary" onClick={() => navigate(-1)}>

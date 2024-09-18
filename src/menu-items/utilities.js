@@ -15,7 +15,6 @@ const icons = {
 
 const utilities = {
   id: 'utilities',
-  title: 'Utilities',
   type: 'group',
   children: [
     {
@@ -32,31 +31,6 @@ const utilities = {
       type: 'item',
       url: '/utils/util-brand',
       icon: icons.IconBrandMedium,
-      breadcrumbs: false
-    },
-    {
-      id: 'util-store',
-      title: 'Stores',
-      type: 'item',
-      url: '/utils/util-store',
-      icon: icons.IconBuildingStore,
-      breadcrumbs: false
-    },
-
-    {
-      id: 'util-product',
-      title: 'Products',
-      type: 'item',
-      url: '/utils/util-product',
-      icon: icons.IconPackage,
-      breadcrumbs: false
-    },
-    {
-      id: 'util-display',
-      title: 'Display',
-      type: 'item',
-      url: 'pages/admin-choose-template',
-      icon: icons.IconWindmill,
       breadcrumbs: false
     }
   ]
