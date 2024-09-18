@@ -6,6 +6,7 @@ import Loadable from 'ui-component/Loadable';
 import ManageTransaction from 'views/dashboard/Transaction';
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const ManageSubscription = Loadable(lazy(() => import('views/dashboard/Subscription')));
 // utilities routing
 const UtilsUser = Loadable(lazy(() => import('views/utilities/User')));
 const UtilsBrand = Loadable(lazy(() => import('views/utilities/Brand')));
@@ -28,7 +29,7 @@ const CollectionDetails = Loadable(lazy(() => import('views/sample-page/Collecti
 const BrandStaffDetails = Loadable(lazy(() => import('views/sample-page/BrandStaffDetails')));
 const AdminChooseTemplate = Loadable(lazy(() => import('views/sample-page/AdminChooseTemplate')));
 const UserProfile = Loadable(lazy(() => import('views/sample-page/UserProfile')));
-const ManageSubscription = Loadable(lazy(() => import('views/dashboard/Subscription')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
