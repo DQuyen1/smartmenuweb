@@ -1,9 +1,9 @@
-class CanvasImage {
+class CanvasBackgroundImage {
   constructor(
     // angle,
     // backgroundColor,
-    boxId,
-    boxItemId,
+    layerId,
+
     // cropX,
     // cropY,
     crossOrigin,
@@ -14,7 +14,7 @@ class CanvasImage {
     // flipY,
     // globalCompositeOperation,
     height,
-    left,
+    // left,
     opacity,
     // originX,
     // originY,
@@ -33,7 +33,7 @@ class CanvasImage {
     // strokeMiterLimit,
     // strokeUniform,
     // strokeWidth,
-    top,
+    // top,
     type,
     // version,
     // visible,
@@ -42,8 +42,8 @@ class CanvasImage {
   ) {
     // // this.angle = angle;
     // // this.backgroundColor = backgroundColor;
-    this.boxId = boxId;
-    this.boxItemId = boxItemId;
+    this.layerId = layerId;
+
     // // this.cropX = cropX;
     // // this.cropY = cropY;
     this.crossOrigin = crossOrigin;
@@ -54,7 +54,7 @@ class CanvasImage {
     // // this.flipY = flipY;
     // // this.globalCompositeOperation = globalCompositeOperation;
     this.height = height;
-    this.left = left;
+    //this.left = left;
     this.opacity = opacity;
     // this.originX = originX;
     // // this.originY = originY;
@@ -73,7 +73,7 @@ class CanvasImage {
     // // this.strokeMiterLimit = strokeMiterLimit;
     // // this.strokeUniform = strokeUniform;
     // // this.strokeWidth = strokeWidth;
-    this.top = top;
+    // this.top = top;
     this.type = type;
     // // this.version = version;
     // // this.visible = visible;
@@ -82,4 +82,4 @@ class CanvasImage {
   }
 }
 
-export default CanvasImage;
+export default CanvasBackgroundImage;

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import CanvasBackgroundImage from 'models/canvas_background_model';
 import CanvasImage from 'models/canvas_image_model';
 import Canvas from 'models/canvas_model';
 import CanvasRect from 'models/canvas_rect_model';
@@ -21,7 +22,7 @@ class layerService {
       console.log('Error message: ', error.message);
     }
   }
-  async getLayersByTemplateId(templateId) {
+  async getLayersByTemplateId(templateId, canvasWidth, canvasHeight) {
     let myCanvas = new Canvas();
     const canvasFeature = new canvasFeatures();
 
@@ -30,12 +31,37 @@ class layerService {
         `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=100`
       );
 
-      console.log('template data: ', response.data[0].layers);
-      console.log('');
+      console.log('template data (working): ', response.data[0].layers);
 
       const layers = response.data[0].layers.map((layer) => {
         if (layer.layerType == 0) {
-          console.log(' this is background');
+          let src = layer.layerItem.layerItemValue;
+          let layerId = layer.layerItem.layerId;
+          let width = canvasWidth;
+          let height = canvasHeight;
+          let scaleX = 1;
+          let scaleY = 1;
+          let crossOrigin = null;
+          let opacity = 100;
+          let type = 'image';
+          let layerType = layer.layerType;
+
+          const backgroundImage = new CanvasBackgroundImage(
+            layerId,
+            crossOrigin,
+            height,
+            opacity,
+            scaleX,
+            scaleY,
+            src,
+            type,
+            width,
+            layerType
+          );
+
+          console.log('Background image info: ', backgroundImage);
+
+          myCanvas.objects.push(backgroundImage);
         } else if (layer.layerType == 1) {
           let boxId = layer.boxes[0]?.boxId;
           let boxItemId = layer.boxes[0].boxItems[0].boxItemId;
@@ -44,12 +70,12 @@ class layerService {
           let width = layer.boxes[0].boxWidth;
           let left = layer.boxes[0].boxPositionX;
           let top = layer.boxes[0].boxPositionY;
-          let scaleX = 0.5;
-          let scaleY = 0.5;
-          let opacity = 100;
+          let scaleX = 1;
+          let scaleY = 1;
           let src = layer.layerItem.layerItemValue;
           let type = 'image';
           let style = layer.boxes[0].boxItems[0].style;
+          let layerType = layer.layerType;
 
           let imageStyle = canvasFeature.transferStyles(style);
 
@@ -65,7 +91,8 @@ class layerService {
             src,
             top,
             type,
-            width
+            width,
+            layerType
           );
 
           console.log('Image info: ', image);
@@ -87,6 +114,7 @@ class layerService {
           let opacity = 100;
           let type = 'text';
           let style = layer.boxes[0].boxItems[0].style;
+          let layerType = layer.layerType;
 
           let textStyle = canvasFeature.transferStyles(style);
           console.log(' this is text');
@@ -106,21 +134,21 @@ class layerService {
             text,
             top,
             type,
-            width
+            width,
+            layerType
           );
 
           console.log('canvas text info: ', canvasText);
 
           myCanvas.objects.push(canvasText);
         } else if (layer.layerType == 3) {
-          //console.log('this is render layer content product content');
-          if (layer.boxes[0].maxProductItem) {
-            //let backgroundColor = 'pink';
+          console.log('this is render layer content product content');
+          if (layer.boxes[0].boxType == 1) {
             let boxId = layer.boxes[0]?.boxId;
             let fill = canvasFeature.getRandomHexColor();
             let height = layer.boxes[0].boxHeight;
             let left = layer.boxes[0].boxPositionX;
-            let opacity = 100;
+            let opacity = 50;
             let type = 'rect';
             let width = layer.boxes[0].boxWidth;
             let top = layer.boxes[0].boxPositionY;
@@ -132,24 +160,32 @@ class layerService {
             myCanvas.objects.push(layerRender);
 
             layer.boxes[0].boxItems.map((boxItem) => {
-              let backgroundColor = 'transparent';
+              //let style = canvasFeature.transferStyles(boxItem.style);
+              let boxItemType = boxItem.boxItemType;
+
+              let productType = canvasFeature.getProductContentValue(boxItemType);
+
+              let backgroundColor = canvasFeature.getRandomHexColor();
               //let opacity = 100;
-              let boxId = null;
+              let boxId = boxItem.boxId;
               let boxItemId = boxItem.boxItemId;
               //let fill = 'black';
               //let angle = 0;
+              let order = boxItem.order;
               let fontFamily = 'Times New Roman';
               //let fontSize = '30';
               let height = boxItem.boxItemHeight;
               let left = boxItem.boxItemX;
               let top = boxItem.boxItemY;
-              let text = 'Product Content';
+              let text = `${productType} ${order}`;
               let type = 'text';
               let width = boxItem.boxItemWidth;
 
-              let style = layer.boxes[0].boxItems[0].style;
+              let style = boxItem.style;
 
               let textStyle = canvasFeature.transferStyles(style);
+
+              let fontSize = textStyle.fontSize ? (textStyle.fontSize * 1.33).toFixed(1) : 30;
 
               const productContent = new CanvasText(
                 textStyle.angle ? textStyle.angle : 0,
@@ -158,16 +194,18 @@ class layerService {
                 boxItemId,
                 textStyle.textColor ? textStyle.textColor : 'black',
                 fontFamily,
-                textStyle.fontSize ? textStyle.fontSize : 30,
+                fontSize,
                 height,
                 left,
                 textStyle.transparency ? textStyle.transparency : 1,
                 text,
                 top,
                 type,
-                width
+                width,
+                null
               );
-              // console.log('product content info: ', productContent);
+
+              console.log('product content info: ', productContent);
 
               myCanvas.objects.push(productContent);
             });

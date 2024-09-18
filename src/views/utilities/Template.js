@@ -813,7 +813,7 @@ function Template() {
     return false;
   };
 
-  const loadCanvas = async (templateId) => {
+  const loadCanvas = async (templateId, canvasWidth, canvasHeight) => {
     const newTemplate = await isNewTemplate(templateId);
 
     if (newTemplate === true) {
@@ -821,17 +821,297 @@ function Template() {
 
       return;
     }
-    getLayersByTemplateId(templateId).then((canvasJson) => {
+    getLayersByTemplateId(templateId, canvasWidth, canvasHeight).then((canvasJson) => {
       editor.canvas.loadFromJSON(canvasJson, function () {
         console.log('loading template');
+
+        editor.canvas.getObjects().forEach((object) => {
+          if (object.type === 'image' && object.layerType == 1) {
+            object.on('mouseup', () => {
+              console.log('Clicked on image with boxId:', boxId);
+              setActiveTab('positionSize');
+              setSelectedTool('text');
+            });
+
+            editor.canvas.on('mouse:down', function (options) {
+              if (options.target !== rect) {
+                setActiveTab(null);
+              }
+              setSelectedTool(null);
+            });
+          } else if (object.type === 'image' && object.layerType == 0) {
+            object.on('object:selected', function () {
+              console.log('click to background image');
+            });
+          } else if (object.type === 'rect') {
+            object.on('mouseup', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = rect.getScaledWidth();
+              const scaledHeight = rect.getScaledHeight();
+
+              setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+              setSelectedTool('rect');
+              setSelectedRect(rect);
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+              setPositionX((rect.left * scaleX).toFixed(1));
+              setPositionY((rect.top * scaleY).toFixed(1));
+              // let object = event.target;
+              // editor.canvas.sendToBack(rect);
+              console.log('ok');
+            });
+
+            object.setControlsVisibility({
+              mtr: false,
+              mt: false // middle top disable
+              // mb: false, // midle bottom
+              // ml: false, // middle left
+              // mr: false // middle right
+            });
+
+            object.on('moving', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              setPositionX((rect.left * scaleX).toFixed(1));
+              setPositionY((rect.top * scaleY).toFixed(1));
+              setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+              setSelectedTool('rect');
+
+              rect.linkedText.forEach((textBox) => {
+                textBox.left += rect.left - rect.prevLeft; // Move text by the same distance as the rectangle
+                textBox.top += rect.top - rect.prevTop;
+                textBox.setCoords();
+              });
+
+              // Store the current position for the next move
+              rect.prevLeft = rect.left;
+              rect.prevTop = rect.top;
+
+              editor.canvas.renderAll();
+
+              // Move the group (rectangle + text) together
+            });
+
+            object.on('scaling', function () {
+              const newWidth = rect.width * rect.scaleX;
+              const newHeight = rect.height * rect.scaleY;
+
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              rect.set({
+                width: newWidth,
+                height: newHeight,
+                scaleX: 1,
+                scaleY: 1
+              });
+              setHeight(newHeight.toFixed(1));
+              setWidth(newWidth.toFixed(1));
+
+              setPositionX((rect.left * scaleX).toFixed(1));
+              setPositionY((rect.top * scaleY).toFixed(1));
+            });
+
+            // editor.canvas.renderAll();
+
+            editor.canvas.on('mouse:down', function (options) {
+              if (options.target !== rect) {
+                setActiveTab(null);
+              }
+              setSelectedTool(null);
+            });
+          } else if (object.type === 'textbox') {
+            object.setControlsVisibility({
+              mt: false, // middle top disable
+              mb: false // midle bottom
+            });
+
+            object.on('scaling', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = text.getScaledWidth();
+              const scaledHeight = text.getScaledHeight();
+
+              setActiveTab('positionSize');
+
+              const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+              setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
+
+              console.log('Text fontSize after scaled: ', text.fontSize * text.scaleX);
+
+              setPositionX((text.left * scaleX).toFixed(1));
+              setPositionY((text.top * scaleY).toFixed(1));
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+
+              setIsHeaderVisible(true);
+
+              setSelectedTool('textBox');
+            });
+
+            editor.canvas.on('mouse:down', function (options) {
+              setActiveTab(null);
+
+              setSelectedTool(null);
+            });
+
+            object.on('moving', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+              setActiveTab('positionSize');
+              setSelectedTool('textBox');
+
+              const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+              // Set the new font size in the UI, adjusting for the factor
+              setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
+
+              setPositionX((text.left * scaleX).toFixed(1));
+              setPositionY((text.top * scaleY).toFixed(1));
+            });
+
+            object.on('editing:exited', function () {
+              console.log('Text editing exited, new text: ', text.text);
+              updateLayerItem(text.layerItemId, 2, text.text);
+            });
+
+            object.on('mouseup', function () {
+              let adjustedAngle = text.angle;
+              if (adjustedAngle > 180) {
+                adjustedAngle -= 360;
+              } else if (adjustedAngle < -180) {
+                adjustedAngle += 360;
+              }
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = text.getScaledWidth();
+              const scaledHeight = text.getScaledHeight();
+
+              let canvasFontSize = (text.fontSize * text.scaleX).toFixed(1);
+              setFontSize((canvasFontSize / 1.333).toFixed(1));
+
+              setColor(text.fill);
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+              setPositionX((text.left * scaleX).toFixed(1));
+              setPositionY((text.top * scaleY).toFixed(1));
+              setRotationAngle(adjustedAngle);
+
+              setIsHeaderVisible(true);
+
+              setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+              setSelectedTool('textBox');
+              console.log('fontSize: ', text.fontSize);
+            });
+          } else if (object.type === 'text') {
+            object.on('moving', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              setPositionX((textBox.left * scaleX).toFixed(1));
+              setPositionY((textBox.top * scaleY).toFixed(1));
+              // console.log('moving');
+
+              const scaledWidth = textBox.getScaledWidth();
+              const scaledHeight = textBox.getScaledHeight();
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+
+              const newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+              // Set the new font size in the UI, adjusting for the factor
+              setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
+
+              const textLeft = textBox.left;
+              const textTop = textBox.top;
+              const textWidth = textBox.width * textBox.scaleX; // consider scaling
+              const textHeight = textBox.height * textBox.scaleY; // consider scaling
+
+              const rectLeft = selectedRect.left;
+              const rectTop = selectedRect.top;
+              const rectRight = selectedRect.left + selectedRect.width;
+              const rectBottom = selectedRect.top + selectedRect.height;
+
+              //Restrict text movement within the rectangle boundaries
+              if (textLeft < rectLeft) {
+                textBox.set('left', rectLeft);
+              }
+              if (textTop < rectTop) {
+                textBox.set('top', rectTop);
+              }
+              if (textLeft + textWidth > rectRight) {
+                textBox.set('left', rectRight - textWidth);
+              }
+              if (textTop + textHeight > rectBottom) {
+                textBox.set('top', rectBottom - textHeight);
+              }
+
+              textBox.setCoords();
+              editor.canvas.renderAll();
+            });
+
+            object.on('scaling', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = textBox.getScaledWidth();
+              const scaledHeight = textBox.getScaledHeight();
+
+              const newWidth = textBox.width * textBox.scaleX;
+              const newHeight = textBox.height * textBox.scaleY;
+
+              let newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+
+              setFontSize((newFontSize / 1.333).toFixed(1));
+
+              setHeight(newHeight.toFixed(1));
+              setWidth(newWidth.toFixed(1));
+              setActiveTab('positionSize');
+            });
+
+            object.on('mouseup', function () {
+              setHeight(height.toFixed(1));
+              setWidth(width.toFixed(1));
+              setPositionX(textBox.left.toFixed(1));
+              setPositionY(textBox.top.toFixed(1));
+              //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+              let canvasFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1);
+              setFontSize((canvasFontSize / 1.333).toFixed(1));
+              setColor(textBox.fill);
+              setActiveTab('positionSize');
+              setIsHeaderVisible(true);
+              setSelectedTool('text');
+              console.log('selectedRect: ', selectedRect);
+            });
+
+            object.on('mousemove', function () {
+              setHeight(textBox.height.toFixed(1));
+              setWidth(textBox.width.toFixed(1));
+              setPositionX(textBox.left.toFixed(1));
+              setPositionY(textBox.top.toFixed(1));
+            });
+          }
+          console.log('object: ', object);
+        });
+
         editor.canvas.renderAll();
         // console.log('json: ', canvasJson);
       });
     });
   };
 
-  const getLayersByTemplateId = async (templateId) => {
-    const canvas = await layer_service.getLayersByTemplateId(templateId);
+  const getLayersByTemplateId = async (templateId, canvasWidth, canvasHeight) => {
+    const canvas = await layer_service.getLayersByTemplateId(templateId, canvasWidth, canvasHeight);
 
     return canvas;
   };
@@ -936,41 +1216,9 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
-      loadCanvas(2);
+      //loadCanvas(2, canvasWidth, canvasHeight);
     }
   }, [editor]);
-
-  // const addBackgroundImage = (file) => {
-  //   const reader = new FileReader();
-
-  //   reader.onload = (e) => {
-  //     fabric.Image.fromURL(e.target.result, (img) => {
-  //       img.scale(0.75);
-  //       img.scaleX = editor.canvas.width / img.width;
-  //       img.scaleY = editor.canvas.height / img.height;
-  //       editor.canvas.add(img);
-  //       editor.canvas.renderAll();
-  //     });
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
-
-  // const handleBackgroundImageUpload = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     // const url = URL.createObjectURL(file);
-
-  //     addBackgroundImage(file);
-  //     // console.log('File url:', url);
-  //     // console.log('File Name:', file.name);
-  //     // console.log('File Type:', file.type);
-  //     // console.log('File Size:', file.size);
-  //     const layerId = await createLayer(templateId, 'BackGroundImage', 0);
-  //     const layerItemId = await createLayerItem(layerId, file.name);
-  //     console.log('layerId: ', layerId);
-  //     console.log('layerItemId: ', layerItemId);
-  //   }
-  // };
 
   const addImage = (file) => {
     const reader = new FileReader();
@@ -1767,44 +2015,6 @@ function Template() {
 
     // editor.canvas.renderAll();
   };
-
-  // const addBackgroundImage = (file) => {
-  //   const reader = new FileReader();
-
-  //   reader.onload = (e) => {
-  //     fabric.Image.fromURL(e.target.result, (img) => {
-  //       img.scale(0.75);
-  //       img.scaleX = editor.canvas.width / img.width;
-  //       img.scaleY = editor.canvas.height / img.height;
-
-  //       img.set({
-  //         selectable: true,
-  //         hasControls: true,
-  //         evented: true, // Allow interaction
-  //         lockMovementX: false, // If you want to allow movement
-  //         lockMovementY: false
-  //       });
-
-  //       //editor.canvas.add(img);
-  //       editor.canvas.setBackgroundImage(img, editor.canvas.renderAll.bind(editor.canvas), {
-  //         scaleX: editor.canvas.width / img.width, // Scale to canvas width
-  //         scaleY: editor.canvas.height / img.height
-  //         // selectable: true,
-  //         // selectionBackgroundColor: 'black',
-  //         // hasControls: true
-  //         // Scale to canvas height
-  //       });
-
-  //       img.on('mouseup', () => {
-  //         console.log('Background image mouse:up event triggered');
-  //         // Perform any additional logic when mouse is released
-  //       });
-
-  //       editor.canvas.renderAll();
-  //     });
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
 
   const addBackgroundImage = (file) => {
     const reader = new FileReader();
