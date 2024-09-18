@@ -408,7 +408,7 @@ const ManageSubscription = () => {
             <TableCell>Description</TableCell>
             <TableCell>Price</TableCell>
             <TableCell>Duration</TableCell>
-            <TableCell>Status</TableCell>
+            {/* <TableCell>Status</TableCell> */}
             <TableCell>Actions</TableCell>
           </TableRow>
         </TableHead>
@@ -419,9 +419,9 @@ const ManageSubscription = () => {
               <TableCell>{subscription.description}</TableCell>
               <TableCell>{formatPrice(subscription.price)}</TableCell>
               <TableCell>{subscription.dayDuration}</TableCell>
-              <TableCell>
+              {/* <TableCell>
                 <Chip label={subscription.isActive ? "Active" : "Inactive"} color={subscription.isActive ? "success" : "default"} />
-              </TableCell>
+              </TableCell> */}
               <TableCell>
                 <IconButton onClick={() => handleOpenUpdateDialog(subscription)}>
                   <Edit />
