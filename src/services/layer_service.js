@@ -26,6 +26,8 @@ class layerService {
     let myCanvas = new Canvas();
     const canvasFeature = new canvasFeatures();
 
+    let backgroundImage = null;
+
     try {
       const response = await axios.get(
         `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=100`
@@ -46,7 +48,7 @@ class layerService {
           let type = 'image';
           let layerType = layer.layerType;
 
-          const backgroundImage = new CanvasBackgroundImage(
+          const backgroundImageJson = new CanvasBackgroundImage(
             layerId,
             crossOrigin,
             height,
@@ -59,9 +61,11 @@ class layerService {
             layerType
           );
 
-          console.log('Background image info: ', backgroundImage);
+          backgroundImage = backgroundImageJson;
 
-          myCanvas.objects.push(backgroundImage);
+          console.log('Background image info: ', backgroundImageJson);
+
+          //myCanvas.objects.push(backgroundImage);
         } else if (layer.layerType == 1) {
           let boxId = layer.boxes[0]?.boxId;
           let boxItemId = layer.boxes[0].boxItems[0].boxItemId;
@@ -105,19 +109,37 @@ class layerService {
           let width = layer.boxes[0].boxWidth;
           let left = layer.boxes[0].boxPositionX;
           let top = layer.boxes[0].boxPositionY;
-          let text = layer.layerItem.layerItemValue;
+
           let backgroundColor = 'transparent';
           //let angle = 0;
           //let fill = 'black';
           let fontFamily = 'Times New Roman';
           //let fontSize = '30';
           let opacity = 100;
-          let type = 'text';
+          let type = 'textbox';
           let style = layer.boxes[0].boxItems[0].style;
           let layerType = layer.layerType;
 
           let textStyle = canvasFeature.transferStyles(style);
+          let isUppercase = textStyle.uppercase;
+
+          let layerItemId = layer.layerItem.layerItemId;
+
+          let bFontId = layer.boxes[0].boxItems[0].bFontId;
+
+          let fontFam = canvasFeature.getFontFamilyName(bFontId);
+
+          console.log('font family result: ', fontFam);
+
+          //let fontFamily = canvasFeature.getFontFamilyName(textStyle.bFontId);
+
+          let text = isUppercase == true ? layer.layerItem.layerItemValue.toUpperCase() : layer.layerItem.layerItemValue;
           console.log(' this is text');
+
+          let textAlign = canvasFeature.getTextAlignment(textStyle.alignment);
+
+          let fontStyle = canvasFeature.getFontStyle(textStyle.fontStyle);
+
           const canvasText = new CanvasText(
             textStyle.angle ? textStyle.angle : 0,
             backgroundColor,
@@ -135,7 +157,10 @@ class layerService {
             top,
             type,
             width,
-            layerType
+            layerType,
+            textAlign,
+            fontStyle,
+            layerItemId
           );
 
           console.log('canvas text info: ', canvasText);
@@ -177,15 +202,24 @@ class layerService {
               let height = boxItem.boxItemHeight;
               let left = boxItem.boxItemX;
               let top = boxItem.boxItemY;
-              let text = `${productType} ${order}`;
-              let type = 'text';
+
+              let type = 'textbox';
               let width = boxItem.boxItemWidth;
 
               let style = boxItem.style;
 
               let textStyle = canvasFeature.transferStyles(style);
 
-              let fontSize = textStyle.fontSize ? (textStyle.fontSize * 1.33).toFixed(1) : 30;
+              let isUppercase = textStyle.uppercase;
+              let text = isUppercase ? `${productType} ${order}`.toUpperCase() : `${productType} ${order}`;
+
+              let fontSize = textStyle.fontSize ? (textStyle.fontSize * 1.333).toFixed(1) : 30;
+
+              let textAlign = canvasFeature.getTextAlignment(textStyle.alignment);
+
+              let fontStyle = canvasFeature.getFontStyle(textStyle.fontStyle);
+
+              //let fontFamily = canvasFeature.getFontFamilyName(textStyle.bFontId);
 
               const productContent = new CanvasText(
                 textStyle.angle ? textStyle.angle : 0,
@@ -202,10 +236,13 @@ class layerService {
                 top,
                 type,
                 width,
+                null,
+                textAlign,
+                fontStyle,
                 null
               );
 
-              console.log('product content info: ', productContent);
+              // console.log('product content info: ', productContent);
 
               myCanvas.objects.push(productContent);
             });
@@ -215,7 +252,7 @@ class layerService {
 
       console.log('my canvas: ', myCanvas);
 
-      return JSON.stringify(myCanvas);
+      return { canvasJson: JSON.stringify(myCanvas), backgroundImage };
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
