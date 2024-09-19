@@ -50,7 +50,8 @@ class CanvasText {
     // underline,
     // version,
     // visible,
-    width
+    width,
+    layerType
   ) {
     this.angle = angle;
     this.backgroundColor = backgroundColor;
@@ -103,6 +104,7 @@ class CanvasText {
     // // this.version = version;
     // this.visible = visible;
     this.width = width;
+    this.layerType = layerType;
   }
 }
 
