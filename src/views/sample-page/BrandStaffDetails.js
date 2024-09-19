@@ -14,7 +14,9 @@ import {
   Select,
   FormControl,
   InputLabel,
-  CircularProgress
+  CircularProgress,
+  TextField,
+  InputAdornment
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -232,34 +234,141 @@ const BrandStaffDetails = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Paper elevation={3} sx={{ padding: 2 }}>
-                <Typography variant="subtitle1">
-                  <strong>Brand:</strong> {userData?.brandName}
-                </Typography>
-                {userData?.role === 2 && (
-                  <Typography variant="subtitle1">
-                    <strong>Store Name:</strong> {userData?.storeName}
-                  </Typography>
-                )}
-                <Typography variant="subtitle1">
-                  <strong>User Name:</strong> {userData?.userName}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography variant="subtitle1">
-                    <strong>Password:</strong> {showPassword ? userData?.password : '********'}
-                  </Typography>
-                  <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
+                <Box component="form" noValidate autoComplete="off">
+                  <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Brand"
+                        value={userData?.brandName || ''}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    {userData?.role === 2 && (
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Store Name"
+                          value={userData?.storeName || ''}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                    )}
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="User Name"
+                        value={userData?.userName || ''}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Password"
+                        value={showPassword ? userData?.password || '' : '********'}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        type={showPassword ? 'text' : 'password'}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton aria-label="toggle password visibility" onClick={handleClickShowPassword} edge="end">
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }}
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Email"
+                        value={userData?.email || ''}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Role"
+                        value={getRoleName(userData?.role) || ''}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={6}>
+                      <TextField
+                        label="Status"
+                        value={userData?.isDeleted ? 'Disabled' : 'Enabled'}
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        disabled
+                        sx={{
+                          '& .MuiInputBase-input.Mui-disabled': {
+                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                            color: 'black' // Dùng cho các trình duyệt khác
+                          }
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
                 </Box>
-                <Typography variant="subtitle1">
-                  <strong>Email:</strong> {userData?.email}
-                </Typography>
-                <Typography variant="subtitle1">
-                  <strong>Role:</strong> {getRoleName(userData?.role)}
-                </Typography>
-                <Typography variant="subtitle1">
-                  <strong>Status:</strong> {userData?.isDeleted ? 'Disabled' : 'Enabled'}
-                </Typography>
+
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
                     Back

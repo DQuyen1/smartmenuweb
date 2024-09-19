@@ -14,7 +14,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  Paper
 } from '@mui/material';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -121,33 +122,111 @@ const StoreDetails = () => {
 
   return (
     <MainCard title="Store Details">
-      <Box p={3}>
+      <Box sx={{ flexGrow: 1 }}>
         <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Store Code:</Typography>
-            <Typography variant="body1">{storeData.storeCode}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Store Name:</Typography>
-            <Typography variant="body1">{storeData.storeName}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Location:</Typography>
-            <Typography variant="body1">{storeData.storeLocation}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Contact Email:</Typography>
-            <Typography variant="body1">{storeData.storeContactEmail}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Contact Number:</Typography>
-            <Typography variant="body1">{storeData.storeContactNumber}</Typography>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Status:</Typography>
-            <Typography variant="body1" style={{ color: storeData.storeStatus ? 'green' : 'red' }}>
-              {storeData.storeStatus ? 'Active' : 'Inactive'}
-            </Typography>
+          <Grid item xs={12}>
+            <Paper elevation={3} sx={{ padding: 2 }}>
+              <Box component="form" noValidate autoComplete="off">
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Store Code"
+                      value={storeData.storeCode}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Store Name"
+                      value={storeData.storeName}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Location"
+                      value={storeData.storeLocation}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Contact Email"
+                      value={storeData.storeContactEmail}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Contact Number"
+                      value={storeData.storeContactNumber}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      label="Status"
+                      value={storeData.storeStatus ? 'Active' : 'Inactive'}
+                      variant="outlined"
+                      fullWidth
+                      margin="normal"
+                      disabled
+                      sx={{
+                        '& .MuiInputBase-input.Mui-disabled': {
+                          WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                          color: 'black' // Dùng cho các trình duyệt khác
+                        }
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            </Paper>
           </Grid>
         </Grid>
 

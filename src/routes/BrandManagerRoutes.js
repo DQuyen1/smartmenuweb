@@ -43,7 +43,7 @@ const BrandManagerRoutes = {
       children: [
         {
           path: 'default',
-          element: <DashboardDefault />
+          element: <UtilsMyBrand />
         }
       ]
     },
