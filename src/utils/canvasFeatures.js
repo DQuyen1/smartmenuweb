@@ -1,6 +1,15 @@
 import canvasStyle from 'models/canvas_style_model';
+import fontService from 'services/font_service';
 
 class canvasFeatures {
+  async getFontFamilyName(bFontId) {
+    const font_service = new fontService();
+
+    const response = await font_service.getOne(bFontId);
+
+    return response.fontName;
+  }
+
   transferStyles(value) {
     const styleObject = JSON.parse(value);
 
@@ -56,6 +65,32 @@ class canvasFeatures {
     }
 
     return value;
+  }
+
+  getTextAlignment(value) {
+    switch (value) {
+      case 0:
+        return 'left';
+      case 1:
+        return 'center';
+      case 2:
+        return 'right';
+      default:
+        return 'left';
+    }
+  }
+
+  getFontStyle(value) {
+    switch (value) {
+      case 0:
+        return 'regular';
+      case 1:
+        return 'bold';
+      case 2:
+        return 'italic';
+      default:
+        return 'regular';
+    }
   }
 }
 
