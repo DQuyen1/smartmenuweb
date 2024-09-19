@@ -28,7 +28,7 @@ import boxItemService from 'services/box_item_service';
 import layerItemService from 'services/layer_item_service';
 import fontService from 'services/font_service';
 import cloudinaryService from 'services/cloudinary_service';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 
 import canvasFeatures from 'utils/canvasFeatures';
 import dataHandler from 'utils/dataHandler';
@@ -104,8 +104,6 @@ function Template() {
   const defaultDisplayHeight = 800;
 
   const lowestZIndex = 1;
-
-  const navigate = useNavigate();
 
   const [canvasDimensions, setCanvasDimensions] = useState({
     canvasWidth: defaultCanvasWidth,
@@ -1268,7 +1266,6 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
-
     }
   }, [editor]);
 
