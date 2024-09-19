@@ -1,8 +1,8 @@
 // assets
-import { IconDashboard } from '@tabler/icons-react';
+import { IconDashboard, IconReceipt, IconCreditCard } from '@tabler/icons-react';
 
 // constant
-const icons = { IconDashboard };
+const icons = { IconDashboard, IconReceipt, IconCreditCard };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -12,11 +12,27 @@ const dashboard = {
   type: 'group',
   children: [
     {
-      id: 'default',
+      id: 'dashboard',
       title: 'Dashboard',
       type: 'item',
       url: '/dashboard/default',
       icon: icons.IconDashboard,
+      breadcrumbs: false
+    },
+    {
+      id: 'subscription',
+      title: 'Subscription',
+      type: 'item',
+      url: '/dashboard/subscription',
+      icon: icons.IconCreditCard,
+      breadcrumbs: false
+    },
+    {
+      id: 'transaction',
+      title: 'Transaction',
+      type: 'item',
+      url: '/dashboard/transaction',
+      icon: icons.IconReceipt,
       breadcrumbs: false
     }
   ]
