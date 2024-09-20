@@ -390,7 +390,7 @@ const UtilitiesBrandStaff = () => {
               onClick={handleOpen}
               sx={{ mb: 2, color: 'white' }}
             >
-              Add User
+              Register
             </Button>
           </Box>
           {isLoading ? (
@@ -440,7 +440,7 @@ const UtilitiesBrandStaff = () => {
         </Grid>
       </Grid>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add New User</DialogTitle>
+        <DialogTitle>Register New User</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
