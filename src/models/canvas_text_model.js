@@ -51,7 +51,10 @@ class CanvasText {
     // version,
     // visible,
     width,
-    layerType
+    layerType,
+    textAlign,
+    fontStyle,
+    layerItemId
   ) {
     this.angle = angle;
     this.backgroundColor = backgroundColor;
@@ -105,6 +108,9 @@ class CanvasText {
     // this.visible = visible;
     this.width = width;
     this.layerType = layerType;
+    this.textAlign = textAlign;
+    this.fontStyle = fontStyle;
+    this.layerItemId = layerItemId;
   }
 }
 

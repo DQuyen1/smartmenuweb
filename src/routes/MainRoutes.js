@@ -3,8 +3,10 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import ManageTransaction from 'views/dashboard/Transaction';
 // dashboard routing
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const ManageSubscription = Loadable(lazy(() => import('views/dashboard/Subscription')));
 // utilities routing
 const UtilsUser = Loadable(lazy(() => import('views/utilities/User')));
 const UtilsBrand = Loadable(lazy(() => import('views/utilities/Brand')));
@@ -27,6 +29,7 @@ const CollectionDetails = Loadable(lazy(() => import('views/sample-page/Collecti
 const BrandStaffDetails = Loadable(lazy(() => import('views/sample-page/BrandStaffDetails')));
 const AdminChooseTemplate = Loadable(lazy(() => import('views/sample-page/AdminChooseTemplate')));
 const UserProfile = Loadable(lazy(() => import('views/sample-page/UserProfile')));
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -35,14 +38,32 @@ const MainRoutes = {
   children: [
     {
       path: '/',
-      element: <DashboardDefault />
+      element: <UtilsUser />
     },
     {
       path: 'dashboard',
       children: [
         {
           path: 'default',
-          element: <DashboardDefault />
+          element: <UtilsUser />
+        }
+      ]
+    },
+    {
+      path: 'dashboard',
+      children: [
+        {
+          path: 'subscription',
+          element: <ManageSubscription />
+        }
+      ]
+    },
+    {
+      path: 'dashboard',
+      children: [
+        {
+          path: 'transaction',
+          element: <ManageTransaction />
         }
       ]
     },
@@ -97,27 +118,6 @@ const MainRoutes = {
         {
           path: 'material-icons',
           element: <UtilsMaterialIcons />
-        }
-      ]
-    },
-    {
-      path: 'entities',
-      children: [
-        {
-          path: 'entity-template',
-          element: <EntityTemplate />
-        },
-        {
-          path: 'entity-menu',
-          element: <EntityMenu />
-        },
-        {
-          path: 'entity-collection',
-          element: <EntityCollection />
-        },
-        {
-          path: 'entity-font',
-          element: <EntityFont />
         }
       ]
     },

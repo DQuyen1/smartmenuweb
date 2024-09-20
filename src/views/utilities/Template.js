@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { FabricJSCanvas, useFabricJSEditor } from 'fabricjs-react';
 import '../../assets/scss/template.scss';
+import uploadCloud from '../../assets/images/icons/uploadcloud.svg';
+import text from '../../assets/images/icons/text.svg';
+import images from '../../assets/images/icons/images.svg';
+import background from '../../assets/images/icons/background.svg';
+import close from '../../assets/images/icons/close.svg';
 import 'toastify-js/src/toastify.css';
 import { Button } from '@mui/material';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
@@ -31,10 +36,11 @@ import dataHandler from 'utils/dataHandler';
 function Template() {
   const { templateId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(null);
 
   const [color, setColor] = useState('#35363a');
-  const [fontSize, setFontSize] = useState(20);
+  const [fontSize, setFontSize] = useState(30);
   const [opacity, setOpacity] = useState(1);
   // const [templateId, setTemplateId] = useState(null);
   // const [isDisabled, setIsDisabled] = useState(false);
@@ -76,6 +82,8 @@ function Template() {
   const cloudinary_service = new cloudinaryService();
   const canvasFeature = new canvasFeatures();
   const dataConvert = new dataHandler();
+
+  const currentPath = location.pathname;
 
   // const cloudName = import.meta.env.VITE_CLOUD_NAME;
   // const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
@@ -688,6 +696,7 @@ function Template() {
   const removeSelectedObject = useCallback(() => {
     if (editor && editor.canvas) {
       const activeObject = editor.canvas.getActiveObject();
+      console.log('activeObject: ', activeObject);
 
       if (!activeObject) {
         return; // Early return if no object is selected
@@ -821,8 +830,24 @@ function Template() {
 
       return;
     }
-    getLayersByTemplateId(templateId, canvasWidth, canvasHeight).then((canvasJson) => {
+    getLayersByTemplateId(templateId, canvasWidth, canvasHeight).then(({ canvasJson, backgroundImage }) => {
       editor.canvas.loadFromJSON(canvasJson, function () {
+        if (backgroundImage) {
+          fabric.Image.fromURL(
+            backgroundImage.src,
+            function (img) {
+              img.scaleX = editor.canvas.width / img.width;
+              img.scaleY = editor.canvas.height / img.height;
+
+              // img.scaleToWidth(canvasWidth);
+              // img.scaleToHeight(canvasHeight);
+              editor.canvas.setBackgroundImage(img);
+              editor.canvas.requestRenderAll();
+            }
+            // { crossOrigin: 'anonymous' }
+          ); // Ensure CORS if necessary
+        }
+
         console.log('loading template');
 
         editor.canvas.getObjects().forEach((object) => {
@@ -840,25 +865,31 @@ function Template() {
               setSelectedTool(null);
             });
           } else if (object.type === 'image' && object.layerType == 0) {
-            object.on('object:selected', function () {
-              console.log('click to background image');
-            });
+            // object.on('object:selected', function () {
+            //   console.log('click to background image');
+            // });
+            // fabric.Image.fromURL(`${backgroundImage.src}`, function (img) {
+            //   img.scaleToWidth(canvasWidth);
+            //   img.scaleToHeight(canvasHeight);
+            //   editor.canvas.setBackgroundImage(img);
+            //   editor.canvas.requestRenderAll();
+            // });
           } else if (object.type === 'rect') {
             object.on('mouseup', function () {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              const scaledWidth = rect.getScaledWidth();
-              const scaledHeight = rect.getScaledHeight();
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
 
               setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
               setSelectedTool('rect');
-              setSelectedRect(rect);
+              setSelectedRect(object);
 
               setHeight((scaledHeight * scaleX).toFixed(1));
               setWidth((scaledWidth * scaleY).toFixed(1));
-              setPositionX((rect.left * scaleX).toFixed(1));
-              setPositionY((rect.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
               // let object = event.target;
               // editor.canvas.sendToBack(rect);
               console.log('ok');
@@ -876,20 +907,20 @@ function Template() {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              setPositionX((rect.left * scaleX).toFixed(1));
-              setPositionY((rect.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
               setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
               setSelectedTool('rect');
 
-              rect.linkedText.forEach((textBox) => {
-                textBox.left += rect.left - rect.prevLeft; // Move text by the same distance as the rectangle
-                textBox.top += rect.top - rect.prevTop;
-                textBox.setCoords();
-              });
+              // object.linkedText.forEach((textBox) => {
+              //   textBox.left += object.left - object.prevLeft; // Move text by the same distance as the rectangle
+              //   textBox.top += object.top - object.prevTop;
+              //   textBox.setCoords();
+              // });
 
               // Store the current position for the next move
-              rect.prevLeft = rect.left;
-              rect.prevTop = rect.top;
+              object.prevLeft = object.left;
+              object.prevTop = object.top;
 
               editor.canvas.renderAll();
 
@@ -897,13 +928,13 @@ function Template() {
             });
 
             object.on('scaling', function () {
-              const newWidth = rect.width * rect.scaleX;
-              const newHeight = rect.height * rect.scaleY;
+              const newWidth = object.width * object.scaleX;
+              const newHeight = object.height * object.scaleY;
 
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              rect.set({
+              object.set({
                 width: newWidth,
                 height: newHeight,
                 scaleX: 1,
@@ -912,8 +943,8 @@ function Template() {
               setHeight(newHeight.toFixed(1));
               setWidth(newWidth.toFixed(1));
 
-              setPositionX((rect.left * scaleX).toFixed(1));
-              setPositionY((rect.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
             });
 
             // editor.canvas.renderAll();
@@ -934,19 +965,19 @@ function Template() {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              const scaledWidth = text.getScaledWidth();
-              const scaledHeight = text.getScaledHeight();
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
 
               setActiveTab('positionSize');
 
-              const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+              const newFontSize = (object.fontSize * object.scaleX).toFixed(1); // Using scaleX for proportional scaling
 
               setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
 
-              console.log('Text fontSize after scaled: ', text.fontSize * text.scaleX);
+              console.log('Text fontSize after scaled: ', object.fontSize * object.scaleX);
 
-              setPositionX((text.left * scaleX).toFixed(1));
-              setPositionY((text.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
 
               setHeight((scaledHeight * scaleX).toFixed(1));
               setWidth((scaledWidth * scaleY).toFixed(1));
@@ -968,22 +999,24 @@ function Template() {
               setActiveTab('positionSize');
               setSelectedTool('textBox');
 
-              const newFontSize = (text.fontSize * text.scaleX).toFixed(1); // Using scaleX for proportional scaling
+              const newFontSize = (object.fontSize * object.scaleX).toFixed(1); // Using scaleX for proportional scaling
 
               // Set the new font size in the UI, adjusting for the factor
               setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
 
-              setPositionX((text.left * scaleX).toFixed(1));
-              setPositionY((text.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
             });
 
             object.on('editing:exited', function () {
-              console.log('Text editing exited, new text: ', text.text);
-              updateLayerItem(text.layerItemId, 2, text.text);
+              console.log('Text editing exited, new text: ', object.text);
+              updateLayerItem(object.layerItemId, 2, object.text);
             });
 
             object.on('mouseup', function () {
-              let adjustedAngle = text.angle;
+              console.log('touched text box');
+
+              let adjustedAngle = object.angle;
               if (adjustedAngle > 180) {
                 adjustedAngle -= 360;
               } else if (adjustedAngle < -180) {
@@ -992,71 +1025,71 @@ function Template() {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              const scaledWidth = text.getScaledWidth();
-              const scaledHeight = text.getScaledHeight();
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
 
-              let canvasFontSize = (text.fontSize * text.scaleX).toFixed(1);
+              let canvasFontSize = (object.fontSize * object.scaleX).toFixed(1);
               setFontSize((canvasFontSize / 1.333).toFixed(1));
 
-              setColor(text.fill);
+              setColor(object.fill);
 
               setHeight((scaledHeight * scaleX).toFixed(1));
               setWidth((scaledWidth * scaleY).toFixed(1));
-              setPositionX((text.left * scaleX).toFixed(1));
-              setPositionY((text.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
               setRotationAngle(adjustedAngle);
 
               setIsHeaderVisible(true);
 
               setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
               setSelectedTool('textBox');
-              console.log('fontSize: ', text.fontSize);
+              console.log('fontSize: ', object.fontSize);
             });
           } else if (object.type === 'text') {
             object.on('moving', function () {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              setPositionX((textBox.left * scaleX).toFixed(1));
-              setPositionY((textBox.top * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
               // console.log('moving');
 
-              const scaledWidth = textBox.getScaledWidth();
-              const scaledHeight = textBox.getScaledHeight();
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
 
               setHeight((scaledHeight * scaleX).toFixed(1));
               setWidth((scaledWidth * scaleY).toFixed(1));
 
-              const newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+              const newFontSize = (object.fontSize * object.scaleX).toFixed(1); // Using scaleX for proportional scaling
 
               // Set the new font size in the UI, adjusting for the factor
               setFontSize((newFontSize / 1.333).toFixed(1)); // Convert back t
 
-              const textLeft = textBox.left;
-              const textTop = textBox.top;
-              const textWidth = textBox.width * textBox.scaleX; // consider scaling
-              const textHeight = textBox.height * textBox.scaleY; // consider scaling
+              const textLeft = object.left;
+              const textTop = object.top;
+              const textWidth = object.width * object.scaleX; // consider scaling
+              const textHeight = object.height * object.scaleY; // consider scaling
 
-              const rectLeft = selectedRect.left;
-              const rectTop = selectedRect.top;
-              const rectRight = selectedRect.left + selectedRect.width;
-              const rectBottom = selectedRect.top + selectedRect.height;
+              // const rectLeft = selectedRect.left;
+              // const rectTop = selectedRect.top;
+              // const rectRight = selectedRect.left + selectedRect.width;
+              // const rectBottom = selectedRect.top + selectedRect.height;
 
               //Restrict text movement within the rectangle boundaries
-              if (textLeft < rectLeft) {
-                textBox.set('left', rectLeft);
-              }
-              if (textTop < rectTop) {
-                textBox.set('top', rectTop);
-              }
-              if (textLeft + textWidth > rectRight) {
-                textBox.set('left', rectRight - textWidth);
-              }
-              if (textTop + textHeight > rectBottom) {
-                textBox.set('top', rectBottom - textHeight);
-              }
+              // if (textLeft < rectLeft) {
+              //   object.set('left', rectLeft);
+              // }
+              // if (textTop < rectTop) {
+              //   object.set('top', rectTop);
+              // }
+              // if (textLeft + textWidth > rectRight) {
+              //   object.set('left', rectRight - textWidth);
+              // }
+              // if (textTop + textHeight > rectBottom) {
+              //   object.set('top', rectBottom - textHeight);
+              // }
 
-              textBox.setCoords();
+              object.setCoords();
               editor.canvas.renderAll();
             });
 
@@ -1064,13 +1097,13 @@ function Template() {
               const scaleX = canvasWidth / displayWidth;
               const scaleY = canvasHeight / displayHeight;
 
-              const scaledWidth = textBox.getScaledWidth();
-              const scaledHeight = textBox.getScaledHeight();
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
 
-              const newWidth = textBox.width * textBox.scaleX;
-              const newHeight = textBox.height * textBox.scaleY;
+              const newWidth = object.width * object.scaleX;
+              const newHeight = object.height * object.scaleY;
 
-              let newFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1); // Using scaleX for proportional scaling
+              let newFontSize = (object.fontSize * object.scaleX).toFixed(1); // Using scaleX for proportional scaling
 
               setFontSize((newFontSize / 1.333).toFixed(1));
 
@@ -1080,28 +1113,45 @@ function Template() {
             });
 
             object.on('mouseup', function () {
-              setHeight(height.toFixed(1));
-              setWidth(width.toFixed(1));
-              setPositionX(textBox.left.toFixed(1));
-              setPositionY(textBox.top.toFixed(1));
-              //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-              let canvasFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1);
+              console.log('touched text type');
+              let adjustedAngle = object.angle;
+              if (adjustedAngle > 180) {
+                adjustedAngle -= 360;
+              } else if (adjustedAngle < -180) {
+                adjustedAngle += 360;
+              }
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = object.getScaledWidth();
+              const scaledHeight = object.getScaledHeight();
+
+              let canvasFontSize = (object.fontSize * object.scaleX).toFixed(1);
               setFontSize((canvasFontSize / 1.333).toFixed(1));
-              setColor(textBox.fill);
-              setActiveTab('positionSize');
+
+              setColor(object.fill);
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+              setPositionX((object.left * scaleX).toFixed(1));
+              setPositionY((object.top * scaleY).toFixed(1));
+              setRotationAngle(adjustedAngle == 0 ? adjustedAngle : adjustedAngle.toFixed(1));
+
               setIsHeaderVisible(true);
-              setSelectedTool('text');
-              console.log('selectedRect: ', selectedRect);
+
+              setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+              setSelectedTool('textBox');
+              console.log('fontSize: ', object.fontSize);
             });
 
             object.on('mousemove', function () {
-              setHeight(textBox.height.toFixed(1));
-              setWidth(textBox.width.toFixed(1));
-              setPositionX(textBox.left.toFixed(1));
-              setPositionY(textBox.top.toFixed(1));
+              setHeight(object.height.toFixed(1));
+              setWidth(object.width.toFixed(1));
+              setPositionX(object.left.toFixed(1));
+              setPositionY(object.top.toFixed(1));
             });
           }
-          console.log('object: ', object);
+          //console.log('object: ', object);
         });
 
         editor.canvas.renderAll();
@@ -1216,7 +1266,6 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
-      //loadCanvas(2, canvasWidth, canvasHeight);
     }
   }, [editor]);
 
@@ -1363,6 +1412,11 @@ function Template() {
 
       // Set the converted font size in Fabric.js
       activeObject.set('fontSize', fabricFontSize);
+
+      activeObject.set({
+        scaleX: 1,
+        scaleY: 1
+      });
 
       // Log the actual font size being set
       console.log('Canvas Font Size: ', canvasFontSize);
@@ -1747,6 +1801,7 @@ function Template() {
   };
 
   const addText = async () => {
+    const defaultFontSize = 30;
     //setColor(color);
     let text = new fabric.Textbox('Text', {
       top: 300,
@@ -1758,7 +1813,7 @@ function Template() {
       // fontWeight: isBold ? 'bold' : 'normal',
       // textAlign: textAlign,
       //fontFamily: selectedFont,
-      fontSize: fontSize,
+      fontSize: defaultFontSize,
       fontFamily: selectedFont,
       editable: true,
       angle: 0
@@ -1882,7 +1937,7 @@ function Template() {
     text.on('modified', function () {
       console.log('layerId: ', text.layerId);
       console.log('zIndex: ', text.zIndex);
-      console.log('fontsize: ', (text.fontSize / 1.333).toFixed(1));
+      console.log('fontsize here: ', ((text.fontSize * text.scaleX) / 1.333).toFixed(1));
     });
 
     text.on('editing:exited', function () {
@@ -2016,6 +2071,8 @@ function Template() {
     // editor.canvas.renderAll();
   };
 
+  function replaceCanvasBackground() {}
+
   const addBackgroundImage = (file) => {
     const reader = new FileReader();
     const userId = 469;
@@ -2023,12 +2080,26 @@ function Template() {
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
+
+    // const removeBackgroundImage = () => {
+    //   const objects = editor.canvas.getObjects();
+    //   const backgroundImage = objects.find((obj) => obj.isBackground);
+
+    //   if (backgroundImage) {
+    //     editor.canvas.remove(backgroundImage);
+    //     console.log('Previous background image removed.');
+    //   }
+    // };
+
     reader.onload = (e) => {
       fabric.Image.fromURL(e.target.result, async (img) => {
+        // removeBackgroundImage();
+
         // Scale the image to fit the canvas dimensions
         img.scaleX = editor.canvas.width / img.width;
         img.scaleY = editor.canvas.height / img.height;
-
+        // editor.canvas.setBackgroundImage(img);
+        // editor.canvas.requestRenderAll();
         // Set the image properties
         img.set({
           selectable: true, // Make it selectable
@@ -2043,22 +2114,42 @@ function Template() {
           isBackground: true // Hide borders
         });
 
-        // Add the image to the canvas
+        img.layerType = 0;
+
+        //Add the image to the canvas
         editor.canvas.add(img);
 
         // Ensure the background image is always at the lowest z-index
         editor.canvas.sendToBack(img);
 
-        // Attach the 'mouseup' event to the image
-        // img.on('mouseup', () => {
-        //   console.log('Background image mouse:up event triggered');
-        //   // Additional logic for mouse:up event
+        // img.on('selected', () => {
+        //   console.log('Background image selected');
+        //   console.log('Properties of background image:', img);
+
+        //   // Example: log specific properties
+        //   console.log('Width:', img.width);
+        //   console.log('Height:', img.height);
+        //   console.log('ScaleX:', img.scaleX);
+        //   console.log('ScaleY:', img.scaleY);
         // });
-        img.on('object:selected', () => {
-          editor.canvas.sendToBack(img); // Send back on selection
-        });
+
+        // img.on('object:selected', () => {
+        //   console.log('click to background image');
+
+        //   editor.canvas.sendToBack(img); // Send back on selection
+        // });
         // Render the canvas
         editor.canvas.renderAll();
+
+        // const objects = editor.canvas.getObjects();
+
+        // objects.map((obj) => {
+        //   if (obj instanceof fabric.Image && obj.layerType === 0) {
+        //     console.log('has image');
+        //   }
+        // });
+
+        //console.log('objects: ', objects);
 
         formData.append('file', file);
         formData.append('upload_preset', preset_key);
@@ -2159,6 +2250,38 @@ function Template() {
     }
   };
 
+  // const takeScreenShot = () => {
+  //   const preset_key = 'xdm798lx';
+  //   const formData = new FormData();
+
+  //   html2canvas(document.querySelector('.sample-canvas'), {
+  //     allowTaint: true,
+  //     useCORS: true
+  //   }).then(async (canvas) => {
+  //     const base64 = canvas.toDataURL('image/png');
+  //     // console.log('URL: ', base64);
+  //     // const screenShot = base64Decoder(base64);
+  //     // console.log('Screen Shot: ', screenShot);
+  //     formData.append('file', base64);
+  //     formData.append('upload_preset', preset_key);
+  //     // console.log('Result ', canvas.toDataURL('image/png'));
+  //     try {
+  //       await axios
+  //         .post(`https://api.cloudinary.com/v1_1/dchov8fes/image/upload`, formData)
+  //         .then(async (result) => {
+  //           const templateImg = result.data.url;
+  //           updateTemplateImg(templateId, templateImg);
+  //           // console.log('Response from cloudinary: ' + JSON.stringify(result.data.url));
+  //         })
+  //         .catch((error) => {
+  //           console.log('Failed to upload to cloundinary: ' + error);
+  //         });
+  //     } catch (error) {
+  //       console.log('Failed to upload to cloundinary: ' + error.toString());
+  //     }
+  //   });
+  // };
+
   const takeScreenShot = () => {
     const preset_key = 'xdm798lx';
     const formData = new FormData();
@@ -2168,25 +2291,30 @@ function Template() {
       useCORS: true
     }).then(async (canvas) => {
       const base64 = canvas.toDataURL('image/png');
-      // console.log('URL: ', base64);
-      // const screenShot = base64Decoder(base64);
-      // console.log('Screen Shot: ', screenShot);
-      formData.append('file', base64);
+
+      // Converting base64 to Blob (Cloudinary requires file input as Blob, not base64 string)
+      const blob = await (await fetch(base64)).blob();
+
+      formData.append('file', blob);
       formData.append('upload_preset', preset_key);
-      // console.log('Result ', canvas.toDataURL('image/png'));
+
       try {
-        await axios
-          .post(`https://api.cloudinary.com/v1_1/dchov8fes/image/upload`, formData)
-          .then(async (result) => {
-            const templateImg = result.data.url;
-            updateTemplateImg(templateId, templateImg);
-            // console.log('Response from cloudinary: ' + JSON.stringify(result.data.url));
-          })
-          .catch((error) => {
-            console.log('Failed to upload to cloundinary: ' + error);
-          });
+        const response = await fetch(`https://api.cloudinary.com/v1_1/dchov8fes/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to upload to Cloudinary: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        const templateImg = result.url;
+        updateTemplateImg(templateId, templateImg);
+
+        console.log('Response from Cloudinary: ', result.url);
       } catch (error) {
-        console.log('Failed to upload to cloundinary: ' + error.toString());
+        console.log('Failed to upload to Cloudinary: ', error);
       }
     });
   };
@@ -2231,7 +2359,7 @@ function Template() {
                 textColor: obj.fill,
                 bFontId: obj.bFontId ? obj.bFontId : 5,
                 // fontSize: getFontSizeV2(obj),
-                fontSize: (obj.fontSize / 1.333).toFixed(1),
+                fontSize: ((obj.fontSize * obj.scaleX) / 1.333).toFixed(1),
                 fontStyle:
                   obj.fontStyle && obj.fontStyle !== 'normal'
                     ? getFontStyleValue(obj.fontStyle)
@@ -2259,7 +2387,7 @@ function Template() {
               JSON.stringify({
                 textColor: obj.fill,
                 bFontId: obj.bFontId ? obj.bFontId : 5,
-                fontSize: (obj.fontSize / 1.333).toFixed(1),
+                fontSize: ((obj.fontSize * obj.scaleX) / 1.333).toFixed(1),
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
@@ -3193,27 +3321,30 @@ function Template() {
       });
   };
 
-  // Handle font change from the select input
-  // const handleFontChange = (event) => {
-  //   const selectedFont = event.target.value;
-  //   setSelectedFont(selectedFont);
+  const handlePopState = (event) => {
+    const confirmed = window.confirm('Are you sure you want to leave? Any unsaved changes will be lost.');
+    if (!confirmed) {
+      // Prevents the user from going back
+      navigate(currentPath, { replace: true });
+    }
+  };
 
-  //   const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
-  //   const bFontId = selectedFontData ? selectedFontData.fontId : null;
-  //   console.log('bFontId: ', bFontId);
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = 'Are you sure you want to leave? Any unsaved changes will be lost.';
+    };
 
-  //   if (selectedFont !== 'Times New Roman') {
-  //     loadAndUseFont(selectedFont);
-  //   } else {
-  //     const activeObject = editor.canvas.getActiveObject();
-  //     if (activeObject) {
-  //       activeObject.set('fontFamily', 'Times New Roman');
-  //       activeObject.set('bFontId', bFontId);
-  //       activeObject.fire('modified');
-  //       editor.canvas.requestRenderAll();
-  //     }
-  //   }
-  // };
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate, currentPath]);
+
   const handleFontChange = (event) => {
     const selectedFont = event.target.value;
     setSelectedFont(selectedFont);
@@ -3250,11 +3381,12 @@ function Template() {
           />
           <h2 style={{ margin: '0' }}>hhh</h2> {/* Thay thế bằng tên của canvas */}
         </div>
-        {(selectedTool == 'text' || selectedTool == 'textBox') && (
-          <div className="text-options">
-            {/* <select id="font-family"></select> */}
+        <div className="actions">
+          {(selectedTool == 'text' || selectedTool == 'textBox') && (
+            <div className="text-options">
+              {/* <select id="font-family"></select> */}
 
-            {/* <select value={selectedFont} onChange={handleFontChange}>
+              {/* <select value={selectedFont} onChange={handleFontChange}>
               {fonts.map((font) => (
                 <option key={font} value={font}>
                   {font}
@@ -3262,59 +3394,57 @@ function Template() {
               ))}
             </select> */}
 
-            <select value={selectedFont} onChange={handleFontChange}>
-              {fonts.map((font) => (
-                <option key={font.fontId} value={font.fontName}>
-                  {font.fontName}
-                </option>
-              ))}
-            </select>
+              <select value={selectedFont} onChange={handleFontChange}>
+                {fonts.map((font) => (
+                  <option key={font.fontId} value={font.fontName}>
+                    {font.fontName}
+                  </option>
+                ))}
+              </select>
 
-            <input
-              type="number"
-              id="font-size"
-              value={fontSize}
-              onChange={changeFontSize}
-              min="1" // Set minimum value if needed
-              max="150" // Set maximum value if needed
-            />
-            <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
-            <button onClick={toggleBold}>B</button>
-            <button onClick={toggleItalic}>I</button>
-            <button onClick={cycleTextAlign} className="align-button">
-              {getTextAlignIcon()}
-            </button>
-          </div>
-        )}
+              <input
+                type="number"
+                id="font-size"
+                value={fontSize}
+                onChange={changeFontSize}
+                min="1" // Set minimum value if needed
+                max="150" // Set maximum value if needed
+              />
+              <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
+              <button onClick={toggleBold}>B</button>
+              <button onClick={toggleItalic}>I</button>
+              <button onClick={cycleTextAlign} className="align-button">
+                {getTextAlignIcon()}
+              </button>
+            </div>
+          )}
 
-        {selectedTool == 'rect' && (
-          <>
-            <label htmlFor="font-color">Background Color:</label>
-            <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
-            {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
+          {selectedTool == 'rect' && (
+            <div className="background-options">
+              <label htmlFor="font-color">Background Color:</label>
+              <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
+              {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
           Position & Size
         </Button> */}
-            <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
+              <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
 
-            {/* <button onClick={toggleTextCase} className="case-button">
+              {/* <button onClick={toggleTextCase} className="case-button">
               Toggle Case
             </button> */}
-          </>
-        )}
-        <div className="actions">
-          <button
-            className="preview-btn"
-            style={{ padding: '10px 20px', backgroundColor: '#fff', border: '1px solid #ddd', cursor: 'pointer', color: 'black' }}
-          >
-            Preview
-          </button>
+            </div>
+          )}
+          <div className="divider"></div>
           <button className="save-btn" onClick={() => getAllCanvasProperties()}>
             Save
           </button>
           <div className="profile">User</div>
-          <div className="close-btn" style={{ cursor: 'pointer', marginLeft: '10px' }}>
-            X
-          </div>
+          <button
+            className="close-btn"
+            style={{ cursor: 'pointer', marginLeft: '20px' }}
+            onClick={() => navigate('/utils/util-mytemplate')}
+          >
+            <img src={close} alt="Close" />
+          </button>
         </div>
       </header>
 
@@ -3322,30 +3452,19 @@ function Template() {
         <div className="sidebar-container">
           <div className="sidebar">
             <Button onClick={() => handleTabClick('text')} style={{ color: 'white', display: 'flex', alignItems: 'center' }}>
-              <img
-                src="https://canvas-editor.apps.screencloud.com/static/media/Text.f80b63f4.svg"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+              <img src={text} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Text
             </Button>
-            <Button onClick={() => handleTabClick('background')} startIcon={<ViewModuleIcon />} style={{ color: 'white' }}>
-              <img
-                src="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+            <Button onClick={() => handleTabClick('background')} style={{ color: 'white' }}>
+              <img src={background} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Background
             </Button>
             <Button onClick={() => handleTabClick('images')} style={{ color: 'white' }}>
-              <img
-                src="https://canvas-editor.apps.screencloud.com/static/media/Image.c91d12ab.svg"
-                alt="Icon"
-                style={{ width: '24px', height: '24px' }}
-              />
+              <img src={images} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Image
             </Button>
-            <Button onClick={() => handleTabClick('renderLayer')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
+            <Button onClick={() => handleTabClick('renderLayer')} style={{ color: 'white' }}>
+              <img src={uploadCloud} alt="Icon" style={{ width: '30px', height: '30px' }} />
               Render Layer
             </Button>
             {/* <Button onClick={() => handleTabClick('menuCollection')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
@@ -3358,14 +3477,9 @@ function Template() {
               <div className="tab">
                 {/* <h4 style={{ color: 'white' }}>Position & Size</h4> */}
                 <div className="subtabs">
-                  <Button onClick={() => handleSubtabClick('position')} style={{ color: 'black', marginRight: '2%' }}>
-                    Position
-                  </Button>
-                  {selectedTool === 'rect' && (
-                    <Button onClick={() => handleSubtabClick('product')} style={{ color: 'black' }}>
-                      Product
-                    </Button>
-                  )}
+                  <Button onClick={() => handleSubtabClick('position')}>Position</Button>
+                  {selectedTool === 'rect' && <div className="subtab-separator"></div>}
+                  {selectedTool === 'rect' && <Button onClick={() => handleSubtabClick('product')}>Product</Button>}
                 </div>
                 {activeSubtab === 'position' && (
                   <div className="subtab-content">
@@ -3421,24 +3535,14 @@ function Template() {
 
                 {activeSubtab === 'product' && selectedTool === 'rect' && (
                   <div className="subtab-content">
-                    <Button onClick={() => addProductDescription()} style={{ color: 'black' }}>
-                      Add Description
-                    </Button>
-                    <Button onClick={() => addProductImage()} style={{ color: 'black' }}>
-                      Add Image
-                    </Button>
-                    <Button onClick={() => addProductName()} style={{ color: 'black' }}>
-                      Add Name
-                    </Button>
-                    <Button onClick={() => addProductPrice()} style={{ color: 'black' }}>
-                      Add Price
-                    </Button>
+                    <Button onClick={() => addProductDescription()}>Add Description</Button>
+                    <Button onClick={() => addProductImage()}>Add Image</Button>
+                    <Button onClick={() => addProductName()}>Add Name</Button>
+                    <Button onClick={() => addProductPrice()}>Add Price</Button>
                     {/* <Button onClick={() => addProductIcon()} style={{ color: 'black' }}>
                       Add Icon
                     </Button>*/}
-                    <Button onClick={() => addProductHeader()} style={{ color: 'black' }}>
-                      Add Header
-                    </Button>
+                    <Button onClick={() => addProductHeader()}>Add Header</Button>
                     {/* <label htmlFor="product-quantity" style={{ color: 'white' }}>
                       Quantity:
                     </label> */}
@@ -3460,7 +3564,7 @@ function Template() {
 
             {activeTab === 'text' && (
               <div className="tab">
-                <h4 style={{ color: 'white' }}>Text</h4>
+                <h4>Text</h4>
                 {/* <button onClick={() => addText('Heading')}>Heading</button>
                 <button onClick={() => addText('Subheading')}>Subheading</button> */}
                 <button onClick={() => addText('Body Text')}>Body Text</button>
@@ -3468,14 +3572,21 @@ function Template() {
             )}
             {activeTab === 'background' && (
               <div className="tab">
-                <h4 style={{ color: 'white' }}>Background</h4>
-                <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
+                <h4>Background</h4>
+                <div className="file-input-wrapper">
+                  <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
+                  <span className="file-input-label">Choose an background...</span>
+                </div>
               </div>
             )}
             {activeTab === 'images' && (
-              <div className="tab narrow-tab" style={{ width: '100%' }}>
-                <h4 style={{ color: 'white' }}>Image</h4>
-                <input type="file" accept="image/*" onChange={handleImageUpload} />
+              <div className="tab narrow-tab">
+                <h4>Image</h4>
+                {/* <input type="file" accept="image/*" onChange={handleImageUpload} /> */}
+                <div className="file-input-wrapper">
+                  <input type="file" accept="image/*" onChange={handleImageUpload} />
+                  <span className="file-input-label">Choose an image...</span>
+                </div>
                 <div
                   className="custom-scrollbar"
                   style={{
@@ -3535,7 +3646,11 @@ function Template() {
               width: `${displayWidth}px`,
               height: `${displayHeight}px`,
               background: '#f8f9fa',
-              marginLeft: '10%'
+              // marginLeft: '10%',
+              marginTop: '10px',
+              marginBottom: '10px',
+              border: '1px solid #dee2e6',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
             }}
           >
             <FabricJSCanvas className="sample-canvas" onReady={onReady} />

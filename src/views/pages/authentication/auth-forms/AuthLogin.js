@@ -71,7 +71,7 @@ const FirebaseLogin = ({ ...others }) => {
         onSubmit={async (values, { setStatus, setSubmitting }) => {
           try {
             const response = await axios.post(
-              'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Login',
+              'http://3.1.81.96/api/Auth/Login',
               {
                 userName: values.userName,
                 password: values.password

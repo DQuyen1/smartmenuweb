@@ -22,7 +22,8 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Paper
+  Paper,
+  Grid
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -213,23 +214,71 @@ const MyProductDetails = () => {
     <MainCard title="Product Details">
       <Stack spacing={2}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ mr: 1 }}>
-              Category:
-            </Typography>
-            <Typography variant="body1">{getCategoryName(productData.categoryId)}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ mr: 1 }}>
-              Product Name:
-            </Typography>
-            <Typography variant="body1">{productData.productName}</Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ mr: 1 }}>
-              Product Description:
-            </Typography>
-            <Typography variant="body1">{productData.productDescription}</Typography>
+          <Box component="form" noValidate autoComplete="off">
+            <Grid container spacing={2}>
+              {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                  Category:
+                </Typography>
+                <Typography variant="body1">{getCategoryName(productData.categoryId)}</Typography>
+              </Box> */}
+              <Grid item xs={6}>
+                <TextField
+                  label="Category"
+                  value={getCategoryName(productData.categoryId)}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  disabled
+                  sx={{
+                    '& .MuiInputBase-input.Mui-disabled': {
+                      WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                      color: 'black' // Dùng cho các trình duyệt khác
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  label="Product Name"
+                  value={productData.productName}
+                  variant="outlined"
+                  fullWidth
+                  margin="normal"
+                  disabled
+                  sx={{
+                    '& .MuiInputBase-input.Mui-disabled': {
+                      WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                      color: 'black' // Dùng cho các trình duyệt khác
+                    }
+                  }}
+                />
+              </Grid>
+              {/* <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="subtitle1" sx={{ mr: 1 }}>
+                  Product Description:
+                </Typography>
+                <Typography variant="body1">{productData.productDescription}</Typography>
+              </Box> */}
+              <Grid item xs={12}>
+                <TextField
+                  label="Product Description"
+                  value={productData.productDescription}
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  margin="normal"
+                  disabled
+                  sx={{
+                    '& .MuiInputBase-input.Mui-disabled': {
+                      WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                      color: 'black' // Dùng cho các trình duyệt khác
+                    }
+                  }}
+                />
+              </Grid>
+            </Grid>
           </Box>
           <Typography variant="subtitle1">Size Prices:</Typography>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>

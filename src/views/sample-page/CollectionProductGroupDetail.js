@@ -48,7 +48,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://3.1.81.96/api/ProductGroup/GroupItem?collectionId=${collectionDataId}&pageNumber=1&pageSize=10`);
+      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/GroupItem?collectionId=${collectionDataId}&pageNumber=1&pageSize=10`);
       console.log('Data fetched:', response.data);
       setProductGroups(response.data);
     } catch (error) {
@@ -63,7 +63,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
     setIsLoading(true);
     try {
       // const brandId = localStorage.getItem('brandId');
-      const response = await axios.get(`https://3.1.81.96/api/Categories?brandId=${brandId}&&pageNumber=1&pageSize=1000`);
+      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Categories?brandId=${brandId}&&pageNumber=1&pageSize=1000`);
       console.log('Data fetched:', response.data);
       setCategories(response.data);
     } catch (error) {
@@ -78,7 +78,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
   const fetchProductData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`https://3.1.81.96/api/Products?pageNumber=1&pageSize=1000`);
+      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products?pageNumber=1&pageSize=1000`);
       console.log('Data fetched:', response.data);
       setProducts(response.data);
     } catch (error) {
@@ -205,7 +205,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
       console.log(productGroupCreate);
       // console.log(productPriceCreate, groupItem.productId);
 
-      const response = await fetch(`https://3.1.81.96/api/ProductGroup`, {
+      const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup`, {
         method: 'POST', // Or PATCH, depending on your API
         headers: {
           'Content-Type': 'application/json'
@@ -420,7 +420,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
         console.log(productGroupItemCreate);
         // console.log(productPriceCreate, groupItem.productId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroupItem`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -468,7 +468,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
         });
         // console.log(productPriceCreate, groupItem.productId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -509,7 +509,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
 
     const handleSubmitEditPrice = async (e, size) => {
       try {
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${size.productSizePriceId}`, {
           method: 'PUT', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -546,7 +546,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
 
         // console.log(groupItem.productGroupItemId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroup/${row.productGroupId}`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/${row.productGroupId}`, {
           method: 'DELETE', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -585,7 +585,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
 
         // console.log(groupItem.productGroupItemId);
 
-        const response = await fetch(`https://3.1.81.96/api/ProductGroupItem/${groupItem.productGroupItemId}`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem/${groupItem.productGroupItemId}`, {
           method: 'DELETE', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
@@ -619,7 +619,7 @@ const CollectionProductGroupDetails = ({ collectionDataId, brandId }) => {
     };
     const handleSubmitDeletePrice = async (e, size) => {
       try {
-        const response = await fetch(`https://3.1.81.96/api/ProductSizePrices/${size.productSizePriceId}`, {
+        const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${size.productSizePriceId}`, {
           method: 'Delete', // Or PATCH, depending on your API
           headers: {
             'Content-Type': 'application/json'
