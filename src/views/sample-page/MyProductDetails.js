@@ -243,7 +243,7 @@ const MyProductDetails = () => {
                 <TableRow>
                   <TableCell>Size</TableCell>
                   <TableCell align="right">Price</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell align="center"></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
