@@ -435,7 +435,7 @@ const MyMenu = () => {
 
       <Dialog open={showAddMenuDialog} onClose={handleCloseAddMenuDialog}>
         <DialogTitle>Add Menu</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ padding: '0px 24px' }}>
           <DialogContentText>To add a new menu, please fill out the form below.</DialogContentText>
           <TextField
             autoFocus
@@ -461,6 +461,11 @@ const MyMenu = () => {
             onChange={handleChange}
           />
         </DialogContent>
+        
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseAddMenuDialog} color="secondary">
             Cancel
@@ -469,7 +474,6 @@ const MyMenu = () => {
             Add
           </Button>
         </DialogActions>
-        {errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}
       </Dialog>
 
       <Dialog open={showEditMenuDialog} onClose={handleCloseEditMenuDialog}>
@@ -500,6 +504,11 @@ const MyMenu = () => {
             onChange={handleEditChange}
           />
         </DialogContent>
+
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseEditMenuDialog} color="secondary">
             Cancel
@@ -508,7 +517,6 @@ const MyMenu = () => {
             Save
           </Button>
         </DialogActions>
-        {errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}
       </Dialog>
     </Box>
   );

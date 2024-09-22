@@ -244,7 +244,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
     );
 
     setProductGroups(response.data);
-    setSuccessMessage('Product price added successfully');
+    setSuccessMessage('Product group added successfully');
     setOpenSnackBar(true);
     setToggleAddProductGroup(false);
     setProductGroupCreate({
@@ -328,6 +328,8 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       haveNormalPrice: true,
       productGroupMaxCapacity: -1
     });
+
+    const [imgError, setImgError] = useState(false);
 
     const [errorMessage2, setErrorMessage2] = React.useState('');
     const [successMessage2, setSuccessMessage2] = React.useState('');
@@ -508,7 +510,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         });
 
         if (response.ok) {
-
           handleSubmitAddProductGroupItem2(e, row.productGroupId);
 
           // Update state or do whatever you need with the updated data
@@ -675,8 +676,8 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
     const handleSubmitDeleteProductGroupItem = async (e, groupItem) => {
       try {
         const token = localStorage.getItem('token');
-        setErrorMessage('');
-        setSuccessMessage('');
+        setErrorMessage2('');
+        setSuccessMessage2('');
         setIsSubmitting(true);
 
         // console.log(groupItem.productGroupItemId);
@@ -704,7 +705,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
           // Update state or do whatever you need with the updated data
         } else {
           const errorResponse = await response.json();
-          setErrorMessage(errorResponse.error);
+          setErrorMessage2(errorResponse.error);
           setOpenSnackBar(true);
           setIsSubmitting(false);
           // Handle errors (e.g., display an error message to the user)
@@ -720,7 +721,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       event.preventDefault();
 
       setGroupItems((prevGroupItems) => prevGroupItems.filter((item) => item.productId !== size.productId));
-      setSuccessMessage2('Product price deleted successfully');
+      setSuccessMessage2('Product deleted successfully');
       setOpenSnackBar2(true);
       setIsSubmitting(false);
     };
@@ -855,7 +856,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                         </Button>
                         {/* Add product dialog */}
                         <Dialog sx={{ m: '1rem' }} open={toggleAddProduct} onClose={() => setToggleAddProduct(!toggleAddProduct)}>
-                          <DialogTitle sx={{ fontSize: '1rem' }}>Add Product</DialogTitle>
+                          <DialogTitle sx={{ fontSize: '1rem', minWidth: '200px' }}>Add Product</DialogTitle>
 
                           <DialogContent>
                             <Box sx={{ minWidth: 120 }}>
@@ -914,17 +915,11 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                         </TableCell>
 
                         <TableCell>
-                          {groupItem.product.productImgPath !== null ? (
+                          {groupItem.product.productImgPath !== null && !imgError ? (
                             <img
                               src={groupItem.product.productImgPath}
                               alt={groupItem.product.productName}
-                              style={{
-                                maxWidth: '100px',
-                                minWidth: '100px',
-                                maxHeight: '100px',
-                                minHeight: '100px',
-                                objectFit: 'contain'
-                              }}
+                              onError={() => setImgError(true)}
                             />
                           ) : (
                             <ImageNotSupported
@@ -1028,12 +1023,12 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                 }}
                 autoHideDuration={4000}
                 open={openSnackBar2}
-                onClose={() => setOpenSnackBar2(!openSnackBar2)}
+                onClose={() => setOpenSnackBar2(false)}
                 // message={errorMessage}
                 // key={groupItem.productId}
               >
                 <Alert
-                  onClose={() => setOpenSnackBar2(!openSnackBar2)}
+                  onClose={() => setOpenSnackBar2(false)}
                   severity={errorMessage2 === '' ? 'success' : 'error'}
                   variant="filled"
                   sx={{ width: '100%' }}
