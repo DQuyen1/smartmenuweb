@@ -131,8 +131,8 @@ const Staff = () => {
         });
 
       const allUsers = updatedBrandData.flatMap((brand) => brand.brandStaffs);
-
-      const filteredStores = allStoresResponse.data.filter((store) => store.brandId === 2);
+      const brandId = localStorage.getItem('brandId');
+      const filteredStores = allStoresResponse.data.filter((store) => store.brandId === brandId);
       setFilteredStores(filteredStores);
 
       setBrandData(allUsers);

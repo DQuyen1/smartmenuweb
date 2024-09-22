@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// material-ui
 import { useTheme } from '@mui/material/styles';
 import {
   Box,
@@ -21,6 +20,7 @@ import {
 
 // third party
 import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 // project imports
 import AnimateButton from 'ui-component/extended/AnimateButton';
@@ -38,26 +38,29 @@ const FirebaseLogin = ({ ...others }) => {
   // const dispatch = useDispatch();
   const theme = useTheme();
   const [checked, setChecked] = useState(true);
-
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const [loginError, setLoginError] = useState(null);
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  useEffect(() => {}, []);
-
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
-  const navigate = useNavigate();
-  const [loginError, setLoginError] = useState(null);
+  // useEffect(() => {}, []);
+
+  const validationSchema = Yup.object().shape({
+    userName: Yup.string().required('Username can not be empty'),
+    password: Yup.string().required('Password can not be empty')
+  });
 
   return (
     <>
       <Grid container direction="column" justifyContent="center" spacing={2}>
         <Grid item xs={12} container alignItems="center" justifyContent="center">
           <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">Sign in with Email address</Typography>
+            <Typography variant="subtitle1">Sign in with Username</Typography>
           </Box>
         </Grid>
       </Grid>
@@ -68,6 +71,7 @@ const FirebaseLogin = ({ ...others }) => {
           password: '',
           submit: null
         }}
+        validationSchema={validationSchema}
         onSubmit={async (values, { setStatus, setSubmitting }) => {
           try {
             const response = await axios.post(
@@ -93,20 +97,36 @@ const FirebaseLogin = ({ ...others }) => {
               setStatus({ success: true });
               setSubmitting(false);
               navigate('/dashboard/default', { replace: true });
-            } else {
-              // Handle login error
-              const errorData = response.data;
-              if (errorData && errorData.error) {
-                setLoginError(errorData.error);
-              } else {
-                setLoginError('Login failed. Please try again.');
-              }
-              setStatus({ success: false });
-              setSubmitting(false);
             }
+            // } else {
+            //   // Handle login error
+            //   const errorData = response.data;
+            //   if (errorData && errorData.error) {
+            //     setLoginError(errorData.error);
+            //   } else {
+            //     setLoginError('Login failed. Please try again.');
+            //   }
+            //   setStatus({ success: false });
+            //   setSubmitting(false);
+            // }
           } catch (error) {
-            // Handle network errors or other exceptions
-            setLoginError('Login failed. Please try again.');
+            // Handle login error
+            let errorMessage = 'Login failed. Please try again.';
+            if (error.response) {
+              // Nếu API trả về lỗi (4xx/5xx)
+              if (error.response.status === 400) {
+                errorMessage = 'Username or password is incorrect.';
+              } else if (error.response.status === 500) {
+                errorMessage = 'Server error. Please try again later.';
+              } else if (error.response.data && error.response.data.error) {
+                errorMessage = error.response.data.error;
+              }
+            } else if (error.request) {
+              // Nếu không nhận được phản hồi từ server
+              errorMessage = 'No response from server. Please try again.';
+            }
+
+            setLoginError(errorMessage);
             setStatus({ success: false });
             setSubmitting(false);
           }
@@ -114,7 +134,7 @@ const FirebaseLogin = ({ ...others }) => {
       >
         {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit} {...others}>
-            <FormControl fullWidth sx={{ ...theme.typography.customInput }}>
+            <FormControl fullWidth error={Boolean(touched.userName && errors.userName)} sx={{ ...theme.typography.customInput }}>
               <InputLabel htmlFor="outlined-adornment-email-login">Username</InputLabel>
               <OutlinedInput
                 id="outlined-adornment-email-login"
@@ -124,8 +144,9 @@ const FirebaseLogin = ({ ...others }) => {
                 onBlur={handleBlur}
                 onChange={handleChange}
                 label="Username"
-                inputProps={{}}
+                // inputProps={{}}
               />
+              {touched.userName && errors.userName && <FormHelperText error>{errors.userName}</FormHelperText>}
             </FormControl>
 
             <FormControl fullWidth error={Boolean(touched.password && errors.password)} sx={{ ...theme.typography.customInput }}>
@@ -151,13 +172,14 @@ const FirebaseLogin = ({ ...others }) => {
                   </InputAdornment>
                 }
                 label="Password"
-                inputProps={{}}
+                // inputProps={{}}
               />
-              {touched.password && errors.password && (
+              {/* {touched.password && errors.password && (
                 <FormHelperText error id="standard-weight-helper-text-password-login">
                   {errors.password}
                 </FormHelperText>
-              )}
+              )} */}
+              {touched.password && errors.password && <FormHelperText error>{errors.password}</FormHelperText>}
             </FormControl>
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
               <FormControlLabel
