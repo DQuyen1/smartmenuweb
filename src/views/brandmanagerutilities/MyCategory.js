@@ -68,8 +68,16 @@ const MyCategory = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const isDuplicateCategoryName = (categoryName) => {
+    return categoryData.some((category) => category.categoryName.toLowerCase() === categoryName.toLowerCase());
+  };
+
   const handleAddCategory = async () => {
     if (!validateNewCategoryData()) {
+      return;
+    }
+    if (isDuplicateCategoryName(newCategoryData.categoryName)) {
+      setValidationErrors({ categoryName: 'Category name already exists' });
       return;
     }
     try {
@@ -101,6 +109,10 @@ const MyCategory = () => {
 
   const handleEditCategory = async () => {
     if (!validateEditCategoryData()) {
+      return;
+    }
+    if (isDuplicateCategoryName(editCategoryData.categoryName)) {
+      setValidationErrors({ categoryName: 'Category name already exists' });
       return;
     }
     try {
