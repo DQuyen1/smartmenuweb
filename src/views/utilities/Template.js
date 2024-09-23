@@ -1273,7 +1273,8 @@ function Template() {
     const reader = new FileReader();
     const userId = 46;
     const formData = new FormData();
-    const preset_key = process.env.REACT_APP_PRESET_KEY;
+    //const preset_key = process.env.REACT_APP_PRESET_KEY;
+    const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
     reader.onload = (e) => {
@@ -1287,6 +1288,22 @@ function Template() {
           scaleY: 0.5
         });
 
+        editor.canvas.add(myImg);
+        editor.canvas.requestRenderAll();
+
+        editor.canvas.on('mouse:down', function (options) {
+          if (options.target !== rect) {
+            setActiveTab(null);
+          }
+          setSelectedTool(null);
+        });
+
+        myImg.on('mouseup', () => {
+          console.log('clicked to images layer');
+          setActiveTab('positionSize');
+          setSelectedTool('text');
+        });
+
         let width = myImg.getScaledWidth();
         let height = myImg.getScaledHeight();
         let positionX = myImg.left;
@@ -1296,12 +1313,21 @@ function Template() {
         formData.append('upload_preset', preset_key);
         formData.append('tags', tags);
         formData.append('folder', folder);
-        axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-          const layerItemValue = result.data.secure_url;
+
+        try {
+          const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+          console.log('result: ', result);
+
+          const layerItemValue = result.secure_url;
           const { layerId, zIndex } = await createLayer(templateId, 1);
           const layerItemId = await createLayerItem(layerId, layerItemValue);
 
-          const public_id = result.data.public_id;
+          const public_id = result.public_id;
 
           setAssetImage((preImages) => [public_id, ...preImages]);
 
@@ -1332,27 +1358,10 @@ function Template() {
 
           myImg.bFontId = bFontId;
 
-          // console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
-        });
-
-        // console.log('boxItemId: ', boxItemId);
-        // console.log('boxId: ', boxId);
-
-        editor.canvas.on('mouse:down', function (options) {
-          if (options.target !== rect) {
-            setActiveTab(null);
-          }
-          setSelectedTool(null);
-        });
-
-        myImg.on('mouseup', () => {
-          console.log('clicked to images layer');
-          setActiveTab('positionSize');
-          setSelectedTool('text');
-        });
-
-        editor.canvas.add(myImg);
-        editor.canvas.renderAll();
+          console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
+        } catch (error) {
+          console.log('error upload image: ', error);
+        }
       });
     };
 
@@ -2173,7 +2182,7 @@ function Template() {
           console.log('layerId: ', layerId);
           console.log('layerItemId: ', layerItemId);
         } catch (error) {
-          console.error('Error uploading image:', error);
+          console.error('Error uploading backgroundimage:', error);
         }
       });
     };
