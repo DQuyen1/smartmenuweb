@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Alert,
@@ -24,9 +24,11 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TablePagination,
+  TableRow,
+  TextField
 } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, maxWidth } from '@mui/system';
 import IconButton from '@mui/material/IconButton';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -43,13 +45,14 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
   const [errorMessage, setErrorMessage] = React.useState('');
   const [successMessage, setSuccessMessage] = React.useState('');
   const [openSnackBar, setOpenSnackBar] = React.useState(false);
+  const [isSubmittingParent, setIsSubmittingParent] = React.useState(true);
   const blockInvalidChar = (e) => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault();
 
   const fetchData = async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/GroupItem?menuId=${menuDataId}&pageNumber=1&pageSize=10`
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/GroupItem?menuId=${menuDataId}&pageNumber=1&pageSize=1000`
       );
       console.log('Data fetched:', response.data);
       setProductGroups(response.data);
@@ -146,7 +149,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
     menuId: 0,
     collectionId: 0,
     productGroupName: '',
-    productGroupMaxCapacity: 1,
     haveNormalPrice: true
   });
 
@@ -162,8 +164,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
   const handleAddProductGroup = (e) => {
     const { name, value, checked } = e.target;
-    let cleanedValue;
-    let parsedValue;
 
     switch (name) {
       case 'productGroupName':
@@ -172,20 +172,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         setProductGroupCreate({
           ...productGroupCreate,
           productGroupName: category.categoryName
-        });
-        break;
-
-      case 'productGroupMaxCapacity':
-        // 1. Remove leading zeros:
-        cleanedValue = value.replace(/^0+/, '');
-
-        // 2. Parse to a number
-        parsedValue = parseInt(cleanedValue, 10);
-        if (value >= 1000000000) return;
-
-        setProductGroupCreate({
-          ...productGroupCreate,
-          productGroupMaxCapacity: parsedValue
         });
         break;
 
@@ -199,58 +185,48 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       default:
         break;
     }
+
+    setIsSubmittingParent(false);
   };
 
-  const handleSubmitAddProductGroup = async () => {
+  const handleSubmitAddProductGroup = async (e) => {
     try {
+      const token = localStorage.getItem('token');
       setErrorMessage('');
       setSuccessMessage('');
+      setIsSubmittingParent(true);
 
       if (productGroupCreate.productGroupName === '') return;
       console.log(productGroupCreate);
       // console.log(productPriceCreate, groupItem.productId);
 
+      const data = JSON.stringify({
+        menuId: menuDataId,
+        collectionId: 0,
+        productGroupName: productGroupCreate.productGroupName,
+        haveNormalPrice: productGroupCreate.haveNormalPrice
+      });
+
       const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup`, {
         method: 'POST', // Or PATCH, depending on your API
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
           // Add any authentication headers if required
         },
-        body: JSON.stringify({
-          menuId: menuDataId,
-          collectionId: 0,
-          productGroupName: productGroupCreate.productGroupName,
-          productGroupMaxCapacity: productGroupCreate.productGroupMaxCapacity,
-          haveNormalPrice: productGroupCreate.haveNormalPrice
-        })
+        body: data
       });
 
       if (response.ok) {
         // Handle success (e.g., update UI, show a message)
-        setSuccessMessage('Product price added successfully');
-        setOpenSnackBar(true);
-        const addedProduct = await response.json();
-        console.log(addedProduct);
-        setToggleAddProductGroup(false);
-
-        setProductGroupCreate({
-          menuId: 0,
-          collectionId: 0,
-          productGroupName: '',
-          productGroupMaxCapacity: 1,
-          haveNormalPrice: true
-        });
-        console.log('Reset complete');
-
-        setTimeout(() => {
-          fetchData();
-        }, 2000);
+        handleSubmitAddProductGroup2(e);
 
         // Update state or do whatever you need with the updated data
       } else {
         const errorResponse = await response.json();
         setErrorMessage(errorResponse.error);
         setOpenSnackBar(true);
+        setIsSubmittingParent(false);
         // Handle errors (e.g., display an error message to the user)
         console.error('Error add product price:', errorResponse.error);
       }
@@ -259,10 +235,62 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       // Handle network errors
     }
   };
+  const handleSubmitAddProductGroup2 = async (e) => {
+    e.preventDefault();
 
-  // Render table
+    // Assuming you have a state variable for the list of products
+    const response = await axios.get(
+      `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/GroupItem?menuId=${menuDataId}&pageNumber=1&pageSize=1000`
+    );
+
+    setProductGroups(response.data);
+    setSuccessMessage('Product group added successfully');
+    setOpenSnackBar(true);
+    setToggleAddProductGroup(false);
+    setProductGroupCreate({
+      menuId: 0,
+      collectionId: 0,
+      productGroupName: '',
+      haveNormalPrice: true
+    });
+  };
+
+  // Pagination
+
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // State for rows per page
+
+  // Function to handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  // Function to handle rows per page change
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page after changing rows per page
+  };
+
+  // Searching
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredProductGroups, setFilteredProductGroups] = useState([]);
+
+  useEffect(() => {
+    const results = productGroups.filter((group) => group.productGroupName.toLowerCase().includes(searchTerm.toLowerCase()));
+    setFilteredProductGroups(results);
+  }, [searchTerm, productGroups]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  ///////////////////
+  // Render table //
+  /////////////////
   function Row(props) {
     const { row } = props;
+    const [groupItems, setGroupItems] = useState(row.productGroupItems);
 
     const [open, setOpen] = React.useState(false);
 
@@ -301,12 +329,51 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       productGroupMaxCapacity: -1
     });
 
-    const handleAddProductClick = () => {
-      const matchedCategory = categories.find((category) => category.categoryName === row.productGroupName);
+    const [imgError, setImgError] = useState(false);
 
+    const [errorMessage2, setErrorMessage2] = React.useState('');
+    const [successMessage2, setSuccessMessage2] = React.useState('');
+    const [openSnackBar2, setOpenSnackBar2] = React.useState(false);
+    const [selectedProductId, setSelectedProductId] = useState(-1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleAddProductClick = (productGroupId) => {
+      const matchedCategory = categories.find((category) => category.categoryName === row.productGroupName);
+      const productGroupHaveNormalPrice = row.haveNormalPrice;
+
+      console.log(
+        products.filter(
+          (product) =>
+            product.categoryId === matchedCategory.categoryId && product.productSizePrices.filter((price) => price.productSizeType === 3)
+        )
+      );
       console.log(matchedCategory);
       console.log(products);
-      setFilterProducts(products.filter((product) => product.categoryId === matchedCategory.categoryId));
+
+      switch (productGroupHaveNormalPrice) {
+        case true:
+          setFilterProducts(
+            products.filter(
+              (product) =>
+                product.categoryId === matchedCategory.categoryId &&
+                product.productSizePrices.some((price) => price.productSizeType === 3) &&
+                product.productSizePrices.length > 0
+            )
+          );
+          break;
+        case false:
+          setFilterProducts(
+            products.filter(
+              (product) =>
+                product.categoryId === matchedCategory.categoryId &&
+                product.productSizePrices.some((price) => price.productSizeType !== 3) &&
+                product.productSizePrices.length > 0
+            )
+          );
+          break;
+        default:
+          break;
+      }
       // setCategories(filterCategories);
       setToggleAddProduct(!toggleAddProduct);
     };
@@ -350,17 +417,19 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       setToggleDeleteProductGroupItem(!toggleDeleteProductGroupItem);
     };
 
-    const handleDeletePriceClick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setToggleDeletePrice(!toggleDeletePrice); // Toggle edit mode
+    const handleDeletePriceClick = (dialogId) => {
+      setOpenDialogIds({
+        ...openDialogIds, // Keep other dialogs as is
+        [dialogId]: true // Open this specific dialog
+      });
     };
 
     const handleAddProductGroupItem = (e) => {
+      setSelectedProductId(Number(e.target.value));
+
       const { name, value } = e.target;
       let productIdValue = value;
-      console.log('In');
-      console.log(e.target.value);
+
       switch (name) {
         case 'productGroupItemProductId':
           productIdValue = parseInt(value);
@@ -418,16 +487,20 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
     const handleSubmitAddProductGroupItem = async (e, groupItem) => {
       try {
-        setErrorMessage('');
-        setSuccessMessage('');
-        if (productGroupItemCreate.productId === 0 || productGroupItemCreate.productGroupId === 0) return;
-        console.log(productGroupItemCreate);
+        const token = localStorage.getItem('token');
+        setErrorMessage2('');
+        setSuccessMessage2('');
+        setIsSubmitting(true);
+
+        // if (productGroupItemCreate.productId === 0 || productGroupItemCreate.productGroupId === 0) return;
+        // console.log(productGroupItemCreate);
         // console.log(productPriceCreate, groupItem.productId);
 
         const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
             // Add any authentication headers if required
           },
           body: JSON.stringify({
@@ -437,24 +510,16 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         });
 
         if (response.ok) {
-          // Handle success (e.g., update UI, show a message)
-          setSuccessMessage('Product added successfully');
-          setOpenSnackBar(true);
-          const addedProduct = await response.json();
-          console.log(addedProduct);
-          setToggleAddProduct(false);
-
-          setTimeout(() => {
-            fetchData();
-          }, 2000);
+          handleSubmitAddProductGroupItem2(e, row.productGroupId);
 
           // Update state or do whatever you need with the updated data
         } else {
           const errorResponse = await response.json();
-          setErrorMessage(errorResponse.error);
-          setOpenSnackBar(true);
-          // Handle errors (e.g., display an error message to the user)
-          console.error('Error add product price:', errorResponse.error);
+          setErrorMessage2(errorResponse.error);
+          setOpenSnackBar2(true);
+          setIsSubmitting(false);
+
+          console.error('Error add product item:', errorResponse.error);
         }
       } catch (error) {
         console.error('Network error:', error.message);
@@ -462,8 +527,23 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
       }
     };
 
+    const handleSubmitAddProductGroupItem2 = async (e, productGroupId) => {
+      e.preventDefault();
+
+      const response = await axios.get(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroupItem?productGroupId=${productGroupId}&pageNumber=1&pageSize=10`
+      );
+
+      setGroupItems(response.data);
+      setSuccessMessage2('Product item added successfully');
+      setOpenSnackBar2(true);
+      setToggleAddProduct(false);
+      setIsSubmitting(false);
+    };
+
     const handleSubmitAddPrice = async (e, groupItem) => {
       try {
+        const token = localStorage.getItem('token');
         setErrorMessage('');
         setSuccessMessage('');
         console.log({
@@ -475,7 +555,8 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/`, {
           method: 'POST', // Or PATCH, depending on your API
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
             // Add any authentication headers if required
           },
           body: JSON.stringify({
@@ -513,12 +594,14 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
     const handleSubmitEditPrice = async (e, size) => {
       try {
+        const token = localStorage.getItem('token');
         const response = await fetch(
           `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${size.productSizePriceId}`,
           {
             method: 'PUT', // Or PATCH, depending on your API
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
               // Add any authentication headers if required
             },
             body: JSON.stringify({
@@ -548,35 +631,28 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
     const handleSubmitDeleteProductGroup = async (e, row) => {
       try {
+        const token = localStorage.getItem('token');
+        setIsSubmitting(true);
         setErrorMessage('');
         setSuccessMessage('');
-
         // console.log(groupItem.productGroupItemId);
 
         const response = await fetch(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductGroup/${row.productGroupId}`, {
           method: 'DELETE', // Or PATCH, depending on your API
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
             // Add any authentication headers if required
           }
         });
 
         if (response.ok) {
-          // Handle success (e.g., update UI, show a message)
-          setSuccessMessage('Product group deleted successfully');
-          setOpenSnackBar(true);
-
-          setToggleDeleteProductGroup(false);
-
-          setTimeout(() => {
-            fetchData();
-          }, 2000);
-
-          // Update state or do whatever you need with the updated data
+          handleSubmitDeleteProductGroup2(e, row);
         } else {
           const errorResponse = await response.json();
           setErrorMessage(errorResponse.error);
           setOpenSnackBar(true);
+          setIsSubmitting(false);
           // Handle errors (e.g., display an error message to the user)
           console.error('Error delete product group :', errorResponse.error);
         }
@@ -585,10 +661,24 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         // Handle network errors
       }
     };
+
+    const handleSubmitDeleteProductGroup2 = async (e, row) => {
+      e.preventDefault();
+
+      // Assuming you have a state variable for the list of products
+      setProductGroups((prevProductGroup) => prevProductGroup.filter((group) => group.productGroupId !== row.productGroupId));
+
+      setSuccessMessage('Product group deleted successfully');
+      setOpenSnackBar(true);
+      setIsSubmitting(false);
+    };
+
     const handleSubmitDeleteProductGroupItem = async (e, groupItem) => {
       try {
-        setErrorMessage('');
-        setSuccessMessage('');
+        const token = localStorage.getItem('token');
+        setErrorMessage2('');
+        setSuccessMessage2('');
+        setIsSubmitting(true);
 
         // console.log(groupItem.productGroupItemId);
 
@@ -597,28 +687,27 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
           {
             method: 'DELETE', // Or PATCH, depending on your API
             headers: {
-              'Content-Type': 'application/json'
-              // Add any authentication headers if required
+              'Content-Type': 'application/json',
+              Accept: '*/*',
+              Authorization: `Bearer ${token}`
             }
           }
         );
 
         if (response.ok) {
           // Handle success (e.g., update UI, show a message)
-          setSuccessMessage('Product group item deleted successfully');
-          setOpenSnackBar(true);
+          // setSuccessMessage('Product group item deleted successfully');
+          // setOpenSnackBar(true);
 
-          setToggleDeleteProductGroupItem(false);
-
-          setTimeout(() => {
-            fetchData();
-          }, 2000);
+          // setToggleDeleteProductGroupItem(false);
+          handleSubmitDeleteProductGroupItem2(e, groupItem);
 
           // Update state or do whatever you need with the updated data
         } else {
           const errorResponse = await response.json();
-          setErrorMessage(errorResponse.error);
+          setErrorMessage2(errorResponse.error);
           setOpenSnackBar(true);
+          setIsSubmitting(false);
           // Handle errors (e.g., display an error message to the user)
           console.error('Error delete product group item:', errorResponse.error);
         }
@@ -627,14 +716,27 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         // Handle network errors
       }
     };
+
+    const handleSubmitDeleteProductGroupItem2 = (event, size) => {
+      event.preventDefault();
+
+      setGroupItems((prevGroupItems) => prevGroupItems.filter((item) => item.productId !== size.productId));
+      setSuccessMessage2('Product deleted successfully');
+      setOpenSnackBar2(true);
+      setIsSubmitting(false);
+    };
+
     const handleSubmitDeletePrice = async (e, size) => {
       try {
+        const token = localStorage.getItem('token');
+        console.log(size.productSizePriceId);
         const response = await fetch(
           `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${size.productSizePriceId}`,
           {
             method: 'Delete', // Or PATCH, depending on your API
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
               // Add any authentication headers if required
             }
           }
@@ -642,8 +744,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
         if (response.ok) {
           // Handle success (e.g., update UI, show a message)
-          setToggleDeletePrice(false);
-          fetchData();
+          handleSubmitDeletePrice2(e, size);
 
           // Update state or do whatever you need with the updated data
         } else {
@@ -655,11 +756,40 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
         // Handle network errors
       }
     };
+    const handleSubmitDeletePrice2 = (event, size) => {
+      event.preventDefault();
+
+      // Assuming you have a state variable for the list of products
+      setGroupItems((prevGroupItems) =>
+        prevGroupItems.map((groupItem) => {
+          if (groupItem.product.productId === size.productId) {
+            console.log(size.productId);
+            // Filter out the deleted size price
+            const updatedProductSizePrices = groupItem.product.productSizePrices.filter(
+              (item) => item.productSizePriceId !== size.productSizePriceId
+            );
+            return {
+              ...groupItem,
+              product: {
+                ...groupItem.product,
+                productSizePrices: updatedProductSizePrices
+              }
+            };
+          }
+          return groupItem;
+        })
+      );
+
+      setSuccessMessage2('Product price deleted successfully');
+      setOpenSnackBar2(true);
+      // Optionally close the delete dialog after deletion
+      setToggleDeletePrice(false);
+    };
 
     return (
       <React.Fragment>
         <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
-          <TableCell>
+          <TableCell sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
             <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
               Products
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -667,10 +797,12 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
           </TableCell>
 
           {/* ProductgroupName */}
-          <TableCell component="th">{row.productGroupName}</TableCell>
+          <TableCell component="th" sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
+            {row.productGroupName}
+          </TableCell>
 
           {/* HaveNormalPrice */}
-          <TableCell align="left">
+          <TableCell align="left" sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
             {row.haveNormalPrice ? (
               // <Check color="success" sx={{ fontSize: "3rem" }} /> Normal price
               <div style={{ color: 'green', fontWeight: 'bold' }}>Normal price</div>
@@ -680,7 +812,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
             )}
           </TableCell>
 
-          <TableCell>
+          <TableCell sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
             {/* Delete ProductGroupItem */}
             <Button style={{ color: 'red' }} onClick={handleDeleteProductGroupClick}>
               <DeleteIcon />
@@ -688,14 +820,16 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
             {/* Dialog Delete */}
             <Dialog open={toggleDeleteProductGroup} onClose={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)}>
-              <DialogTitle variant="h4">Delete Product Group Item</DialogTitle>
+              <DialogTitle variant="h4">Delete Product Group </DialogTitle>
               <DialogContent>Delete product group `{row.productGroupName}`</DialogContent>
               <DialogActions>
                 <Button onClick={() => setToggleDeleteProductGroup(!toggleDeleteProductGroup)} color="secondary">
                   Cancel
                 </Button>
 
-                <Button onClick={(e) => handleSubmitDeleteProductGroup(e, row)}>OK</Button>
+                <Button onClick={(e) => handleSubmitDeleteProductGroup(e, row)} disabled={isSubmitting}>
+                  OK
+                </Button>
               </DialogActions>
             </Dialog>
           </TableCell>
@@ -714,16 +848,15 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
                       <TableCell style={{ fontWeight: 'bold' }}>Image</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Name</TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>Description</TableCell>
+                      <TableCell style={{ fontWeight: 'bold', minWidth: '1rem' }}>Description</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Currency</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>
-                        Actions
-                        <Button variant="contained" sx={{ ml: 1 }} onClick={handleAddProductClick}>
+                        <Button variant="contained" sx={{ ml: 1 }} onClick={() => handleAddProductClick(row.productGroupId)}>
                           <AddIcon />
                         </Button>
                         {/* Add product dialog */}
                         <Dialog sx={{ m: '1rem' }} open={toggleAddProduct} onClose={() => setToggleAddProduct(!toggleAddProduct)}>
-                          <DialogTitle>Add Product</DialogTitle>
+                          <DialogTitle sx={{ fontSize: '1rem', minWidth: '200px' }}>Add Product</DialogTitle>
 
                           <DialogContent>
                             <Box sx={{ minWidth: 120 }}>
@@ -756,14 +889,16 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                             <Button onClick={() => setToggleAddProduct(false)} color="secondary">
                               Cancel
                             </Button>
-                            <Button onClick={(e) => handleSubmitAddProductGroupItem(e)}>OK</Button>
+                            <Button onClick={(e) => handleSubmitAddProductGroupItem(e)} disabled={selectedProductId === -1 || isSubmitting}>
+                              OK
+                            </Button>
                           </DialogActions>
                         </Dialog>
                       </TableCell>
                     </TableRow>
                   </TableHead>
 
-                  {row.productGroupItems.map((groupItem, groupItemIndex) => (
+                  {groupItems.map((groupItem, groupItemIndex) => (
                     <TableBody key={groupItem.productGroupItemId}>
                       {/* Product  */}
                       <TableRow>
@@ -780,17 +915,11 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                         </TableCell>
 
                         <TableCell>
-                          {groupItem.product.productImgPath !== null ? (
+                          {groupItem.product.productImgPath !== null && !imgError ? (
                             <img
                               src={groupItem.product.productImgPath}
                               alt={groupItem.product.productName}
-                              style={{
-                                maxWidth: '100px',
-                                minWidth: '100px',
-                                maxHeight: '100px',
-                                minHeight: '100px',
-                                objectFit: 'contain'
-                              }}
+                              onError={() => setImgError(true)}
                             />
                           ) : (
                             <ImageNotSupported
@@ -806,7 +935,7 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                         </TableCell>
 
                         <TableCell>{groupItem.product.productName}</TableCell>
-                        <TableCell>{groupItem.product.productDescription}</TableCell>
+                        <TableCell sx={{ maxWidth: '4rem', maxHeight: '2rem' }}>{groupItem.product.productDescription}</TableCell>
                         <TableCell style={{ fontWeight: 'bold', color: 'green' }}>
                           {getProductCurrency(groupItem.product.productPriceCurrency)}
                         </TableCell>
@@ -828,7 +957,9 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                 Cancel
                               </Button>
 
-                              <Button onClick={(e) => handleSubmitDeleteProductGroupItem(e, groupItem)}>OK</Button>
+                              <Button onClick={(e) => handleSubmitDeleteProductGroupItem(e, groupItem)} disabled={isSubmitting}>
+                                OK
+                              </Button>
                             </DialogActions>
                           </Dialog>
                         </TableCell>
@@ -846,74 +977,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                     <TableCell />
                                     <TableCell style={{ fontWeight: 'bold' }}>Size</TableCell>
                                     <TableCell style={{ fontWeight: 'bold' }}>Price</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold' }}>
-                                      Action
-                                      <Button variant="contained" name="addPrice" sx={{ ml: 1 }} onClick={handleAddPriceClick}>
-                                        <AddIcon />
-                                      </Button>
-                                      {/* Add price dialog */}
-                                      <Dialog sx={{ m: '1rem' }} open={toggleAddPrice} onClose={() => setToggleAddPrice(!toggleAddPrice)}>
-                                        <DialogTitle>Add Price</DialogTitle>
-                                        <DialogContent>
-                                          <DialogContentText>Add price of product {groupItem.product.productName}</DialogContentText>
-                                        </DialogContent>
-
-                                        <DialogContent>
-                                          <Box sx={{ minWidth: 120 }}>
-                                            <FormControl fullWidth>
-                                              <InputLabel variant="standard" htmlFor="productSizeTypeLabel">
-                                                Size
-                                              </InputLabel>
-                                              <NativeSelect
-                                                defaultValue={0}
-                                                inputProps={{
-                                                  name: 'productSizeType',
-                                                  id: 'productSizeTypeLabel'
-                                                }}
-                                                onChange={handleAddPrice}
-                                              >
-                                                <option value={0}>S</option>
-                                                <option value={1}>M</option>
-                                                <option value={2}>L</option>
-                                                <option value={3}>Normal</option>
-                                              </NativeSelect>
-                                            </FormControl>
-                                          </Box>
-                                        </DialogContent>
-
-                                        <DialogContent>
-                                          <InputLabel variant="standard" htmlFor="priceLabel">
-                                            Price
-                                          </InputLabel>
-                                          <Input
-                                            id="priceLabel"
-                                            margin="dense"
-                                            name="price"
-                                            label="Price"
-                                            type="number"
-                                            fullWidth
-                                            variant="standard"
-                                            value={
-                                              // size.price
-                                              productPriceCreate.price
-                                            }
-                                            onChange={handleAddPrice}
-                                            inputProps={{
-                                              min: 1,
-                                              max: 1000000000
-                                            }}
-                                            onKeyDown={blockInvalidChar}
-                                          />
-                                        </DialogContent>
-
-                                        <DialogActions>
-                                          <Button onClick={() => setToggleAddPrice(!toggleAddPrice)} color="secondary">
-                                            Cancel
-                                          </Button>
-                                          <Button onClick={(e) => handleSubmitAddPrice(e, groupItem)}>OK</Button>
-                                        </DialogActions>
-                                      </Dialog>
-                                    </TableCell>
                                   </TableRow>
                                 </TableHead>
 
@@ -937,63 +1000,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                                               currency: 'USD'
                                             })}
                                       </TableCell>
-
-                                      {/* Buttons */}
-                                      <TableCell>
-                                        {/* Edit price */}
-                                        <Button onClick={() => handleEditClick(size.productSizePriceId)}>
-                                          <EditIcon />
-                                        </Button>
-
-                                        {/* Delete Price */}
-                                        <Button style={{ color: 'red' }} onClick={handleDeletePriceClick}>
-                                          <DeleteIcon />
-                                        </Button>
-
-                                        {/* Dialog Edit */}
-                                        <Dialog
-                                          id={size.productSizePriceId}
-                                          open={openDialogIds[size.productSizePriceId] || false}
-                                          onClose={() => handleCloseDialog(size.productSizePriceId)}
-                                        >
-                                          <DialogTitle>Edit Price</DialogTitle>
-                                          <DialogContent>Edit price of product id {groupItem.productId}</DialogContent>
-                                          <Input
-                                            margin="dense"
-                                            name="price"
-                                            label="Price"
-                                            type="number"
-                                            fullWidth
-                                            variant="standard"
-                                            value={
-                                              // size.price
-                                              productPriceUpdate
-                                            }
-                                            onChange={async (e) => {
-                                              await handleEditProductPrice(e, size.productSizePriceId, row);
-                                            }}
-                                          />
-                                          <DialogActions>
-                                            <Button onClick={() => handleCloseDialog(size.productSizePriceId)} color="secondary">
-                                              Cancel
-                                            </Button>
-                                            <Button onClick={(e) => handleSubmitEditPrice(e, size)}>OK</Button>
-                                          </DialogActions>
-                                        </Dialog>
-
-                                        {/* Dialog Delete */}
-                                        <Dialog open={toggleDeletePrice} onClose={() => setToggleDeletePrice(!toggleDeletePrice)}>
-                                          <DialogTitle>Delete Price</DialogTitle>
-                                          <DialogContent>Delete price of product id {groupItem.productId}</DialogContent>
-                                          <DialogActions>
-                                            <Button onClick={() => setToggleDeletePrice(!toggleDeletePrice)} color="secondary">
-                                              Cancel
-                                            </Button>
-
-                                            <Button onClick={(e) => handleSubmitDeletePrice(e, size)}>OK</Button>
-                                          </DialogActions>
-                                        </Dialog>
-                                      </TableCell>
                                     </TableRow>
                                   ))}
                                 </TableBody>
@@ -1016,18 +1022,18 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                   horizontal: 'right'
                 }}
                 autoHideDuration={4000}
-                open={openSnackBar}
-                onClose={() => setOpenSnackBar(!openSnackBar)}
+                open={openSnackBar2}
+                onClose={() => setOpenSnackBar2(false)}
                 // message={errorMessage}
                 // key={groupItem.productId}
               >
                 <Alert
-                  onClose={() => setOpenSnackBar(!openSnackBar)}
-                  severity={errorMessage === '' ? 'success' : 'error'}
+                  onClose={() => setOpenSnackBar2(false)}
+                  severity={errorMessage2 === '' ? 'success' : 'error'}
                   variant="filled"
                   sx={{ width: '100%' }}
                 >
-                  {errorMessage === '' ? successMessage : errorMessage}
+                  {errorMessage2 === '' ? successMessage2 : errorMessage2}
                 </Alert>
               </Snackbar>
             </Box>
@@ -1040,30 +1046,33 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
   return (
     <>
       <TableContainer component={Paper}>
+        <Box sx={{ p: 2 }}>
+          <TextField fullWidth label="Search Product Groups" variant="outlined" value={searchTerm} onChange={handleSearchChange} />
+        </Box>
+
         <Table aria-label="collapsible table">
           {/* Header */}
           <TableHead>
             <TableRow>
-              <TableCell />
-              <TableCell style={{ fontWeight: 'bold' }}>Product group</TableCell>
-              <TableCell align="left" style={{ fontWeight: 'bold' }}>
+              <TableCell sx={{ maxWidth: '50px  ', minWidth: '50px' }} />
+              <TableCell style={{ fontWeight: 'bold' }} sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
+                Product group
+              </TableCell>
+              <TableCell style={{ fontWeight: 'bold' }} sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
                 Price type
               </TableCell>
-              <TableCell style={{ fontWeight: 'bold' }}>
-                Actions
+              <TableCell style={{ fontWeight: 'bold' }} sx={{ maxWidth: '50px  ', minWidth: '50px' }}>
                 <Button variant="contained" sx={{ ml: 1 }} onClick={handleAddProductGroupClick}>
                   <AddIcon />
                 </Button>
                 {/* Add product dialog */}
                 <Dialog sx={{ m: '1rem' }} open={toggleAddProductGroup} onClose={() => setToggleAddProductGroup(!toggleAddProductGroup)}>
                   <DialogTitle>Add Product Group</DialogTitle>
-
-                  {/* Product group name */}
                   <DialogContent>
                     <Box sx={{ minWidth: 120 }}>
                       <FormControl fullWidth>
                         <InputLabel variant="standard" htmlFor="productGroupMenuIdLabel">
-                          Brand{`'`}s Categories
+                          Brand Categories
                         </InputLabel>
                         <NativeSelect
                           defaultValue={-1}
@@ -1086,37 +1095,6 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                     </Box>
                   </DialogContent>
 
-                  {/* productGroupMaxCapacity */}
-                  <DialogContent>
-                    <Box sx={{ minWidth: 120 }}>
-                      <FormControl fullWidth>
-                        <InputLabel variant="standard" htmlFor="productGroupMenuIdLabel">
-                          Max capacity
-                        </InputLabel>
-                        <Input
-                          id="productGroupMenuIdLabel"
-                          margin="dense"
-                          name="productGroupMaxCapacity"
-                          label="Max capacity"
-                          type="number"
-                          fullWidth
-                          variant="standard"
-                          value={
-                            // size.price
-                            productGroupCreate.productGroupMaxCapacity
-                          }
-                          onChange={handleAddProductGroup}
-                          inputProps={{
-                            min: 1,
-                            max: 1000000000
-                          }}
-                          onKeyDown={blockInvalidChar}
-                        />
-                      </FormControl>
-                    </Box>
-                  </DialogContent>
-
-                  {/* haveNormalPrice */}
                   <DialogContent>
                     <InputLabel id="haveNormalPrice">Use normal price</InputLabel>
                     <FormControl>
@@ -1134,21 +1112,19 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                     <Button onClick={() => setToggleAddProductGroup(false)} color="secondary">
                       Cancel
                     </Button>
-                    <Button onClick={(e) => handleSubmitAddProductGroup(e)}>OK</Button>
+                    <Button onClick={(e) => handleSubmitAddProductGroup(e)} disabled={isSubmittingParent}>
+                      OK
+                    </Button>
                   </DialogActions>
                 </Dialog>
+
                 {/* Snackbar error message */}
                 <Box sx={{ width: 500 }}>
                   <Snackbar
-                    anchorOrigin={{
-                      vertical: 'top',
-                      horizontal: 'right'
-                    }}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                     autoHideDuration={4000}
                     open={openSnackBar}
                     onClose={() => setOpenSnackBar(!openSnackBar)}
-                    // message={errorMessage}
-                    // key={groupItem.productId}
                   >
                     <Alert
                       onClose={() => setOpenSnackBar(!openSnackBar)}
@@ -1164,17 +1140,12 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
             </TableRow>
           </TableHead>
 
+          {/* Body */}
           {isLoading ? (
             <TableBody>
               <TableRow>
                 <TableCell>
-                  <Backdrop
-                    sx={{
-                      color: '#fff',
-                      zIndex: (theme) => theme.zIndex.drawer + 1
-                    }}
-                    open={isLoading} // Controlled by isLoading
-                  >
+                  <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
                     <CircularProgress color="inherit" />
                   </Backdrop>
                 </TableCell>
@@ -1182,15 +1153,26 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
             </TableBody>
           ) : (
             <>
-              {/* Body */}
               <TableBody>
-                {productGroups.map((row, index) => (
+                {filteredProductGroups.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <Row key={index} row={row} />
                 ))}
               </TableBody>
             </>
           )}
         </Table>
+
+        {/* Pagination */}
+        <TablePagination
+          sx={{ display: 'flex', justifyContent: 'flex-end' }}
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={productGroups.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
     </>
   );
