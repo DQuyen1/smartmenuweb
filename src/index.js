@@ -39,28 +39,7 @@ axios.interceptors.response.use((response) => {
 });
 
 const container = document.getElementById('root');
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    // Add Authorization header to every request
-    // console.log('token: ' + token);
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    config.headers.Accept = '*/*'; // Add other global headers if needed
-
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-axios.interceptors.response.use((response) => {
-  console.log(response);
-  return response;
-});
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(
   <Provider store={store}>
