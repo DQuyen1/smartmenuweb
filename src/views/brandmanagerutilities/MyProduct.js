@@ -202,7 +202,7 @@ const MyProduct = () => {
       console.error('Error adding product:', error);
       setError(error.message);
     } finally {
-      setIsSubmitting(false); // Re-enable the button after the process is complete
+      setIsSubmitting(false);
     }
   };
 
@@ -237,6 +237,7 @@ const MyProduct = () => {
       return;
     }
     try {
+      setIsSubmitting(true);
       const payload = {
         ...productToEdit,
         productPriceCurrency: parseFloat(productToEdit.productPriceCurrency),
@@ -256,7 +257,10 @@ const MyProduct = () => {
     } catch (error) {
       console.error('Error updating product:', error);
       setError(error.message);
+    } finally {
+      setIsSubmitting(false);
     }
+    
   };
 
   const handleOpenConfirmDialog = (productId) => {
@@ -618,7 +622,7 @@ const MyProduct = () => {
           <Button onClick={handleCloseEditDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleUpdateProduct}>Update</Button>
+          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>Update</Button>
         </DialogActions>
       </Dialog>
 
