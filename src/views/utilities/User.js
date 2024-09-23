@@ -480,7 +480,7 @@ const UtilitiesBrandStaff = () => {
           />
           <FormControl fullWidth margin="dense">
             <InputLabel id="role-label">Role</InputLabel>
-            <Select labelId="role-label" name="role" value={newUser.role} onChange={handleChange}>
+            <Select labelId="role-label" name="role" value={newUser.role} onChange={handleChange} label="Role">
               <MenuItem value={1}>Brand Manager</MenuItem>
               <MenuItem value={2}>Store Manager</MenuItem>
             </Select>
