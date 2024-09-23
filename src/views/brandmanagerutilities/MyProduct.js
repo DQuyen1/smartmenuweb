@@ -44,7 +44,7 @@ const MyProduct = () => {
     productDescription: '',
     productPriceCurrency: '',
     productImgPath: '',
-    productLogoPath: ''
+    // productLogoPath: ''
   });
   const [productToEdit, setProductToEdit] = useState({
     categoryId: categoryId,
@@ -52,13 +52,14 @@ const MyProduct = () => {
     productDescription: '',
     productPriceCurrency: '',
     productImgPath: '',
-    productLogoPath: ''
+    // productLogoPath: ''
   });
   const [productToDelete, setProductToDelete] = useState(null);
   const navigate = useNavigate();
   const [validationErrors, setValidationErrors] = useState({});
   const [productImgPath, setProductImgPath] = useState(false);
   const [productLogoPath, setProductLogoPath] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateNewProductData = () => {
     const errors = {};
@@ -81,9 +82,9 @@ const MyProduct = () => {
     if (!newProduct.productImgPath) {
       errors.productImgPath = 'Product image path is required';
     }
-    if (!newProduct.productLogoPath) {
-      errors.productLogoPath = 'Product logo path is required';
-    }
+    // if (!newProduct.productLogoPath) {
+    //   errors.productLogoPath = 'Product logo path is required';
+    // }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -106,9 +107,9 @@ const MyProduct = () => {
     if (!productToEdit.productImgPath) {
       errors.productImgPath = 'Product image path is required';
     }
-    if (!productToEdit.productLogoPath) {
-      errors.productLogoPath = 'Product logo path is required';
-    }
+    // if (!productToEdit.productLogoPath) {
+    //   errors.productLogoPath = 'Product logo path is required';
+    // }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -157,7 +158,7 @@ const MyProduct = () => {
       productDescription: '',
       productPriceCurrency: '',
       productImgPath: null,
-      productLogoPath: null
+      // productLogoPath: null
     });
     setValidationErrors({});
   };
@@ -179,11 +180,12 @@ const MyProduct = () => {
       return;
     }
     try {
+      setIsSubmitting(true);
       const payload = {
         ...newProduct,
         productPriceCurrency: parseFloat(newProduct.productPriceCurrency),
         productImgPath: productImgPath,
-        productLogoPath: productLogoPath
+        // productLogoPath: productLogoPath
       };
       console.log('payload:', payload);
       await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', payload);
@@ -199,13 +201,15 @@ const MyProduct = () => {
     } catch (error) {
       console.error('Error adding product:', error);
       setError(error.message);
+    } finally {
+      setIsSubmitting(false); // Re-enable the button after the process is complete
     }
   };
 
   const handleOpenEditDialog = (product) => {
     setProductToEdit(product);
     setProductImgPath(product.productImgPath);
-    setProductLogoPath(product.productLogoPath);
+    // setProductLogoPath(product.productLogoPath);
     setOpenEditDialog(true);
     console.log('productToEdit:', product);
   };
@@ -237,7 +241,7 @@ const MyProduct = () => {
         ...productToEdit,
         productPriceCurrency: parseFloat(productToEdit.productPriceCurrency),
         productImgPath: productImgPath,
-        productLogoPath: productLogoPath
+        // productLogoPath: productLogoPath
       };
       await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToEdit.productId}`, payload);
       const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
@@ -272,7 +276,6 @@ const MyProduct = () => {
   const handleDeleteProduct = async () => {
     try {
       await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToDelete}`);
-      // Fetch the updated list of products
       const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products', {
         params: {
           pageNumber: 1,
@@ -301,6 +304,8 @@ const MyProduct = () => {
       formData.append('upload_preset', preset_key);
       formData.append('tags', tags);
       formData.append('folder', folder);
+
+      setIsSubmitting(true);
   
       try {
         const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
@@ -324,11 +329,17 @@ const MyProduct = () => {
           ...prevProduct,
           productImgPath: imageUrl
         }));
+        
+        
   
         console.log('Result hihi: ', result.secure_url);
       } catch (error) {
         console.error('Error uploading image:', error);
+      } finally {
+        // Set isSubmitting to false after image upload completes
+        setIsSubmitting(false); 
       }
+      
     }
   };
   
@@ -347,14 +358,14 @@ const MyProduct = () => {
       formData.append('folder', folder);
       axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
         const imageUrl = result.data.secure_url;
-        setProductLogoPath(imageUrl);
+        // setProductLogoPath(imageUrl);
         setNewProduct((prevProduct) => ({
           ...prevProduct,
-          productLogoPath: imageUrl
+          // productLogoPath: imageUrl
         }));
         setProductToEdit((prevProduct) => ({
           ...prevProduct,
-          productLogoPath: imageUrl
+          // productLogoPath: imageUrl
         }));
       });
     }
@@ -363,75 +374,42 @@ const MyProduct = () => {
   return (
     <>
       <MainCard title="My Products">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            variant="outlined"
-            sx={{ marginBottom: '16px' }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              )
-            }}
-          />
-          <Button variant="contained" color="primary" startIcon={<Add />} onClick={handleOpenAddDialog} sx={{ mb: 2 }}>
-            Add Product
-          </Button>
-        </Box>
-        {isLoading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <TableContainer component={Paper}>
-            <Table stickyHeader aria-label="sticky table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Description</TableCell>
-                  <TableCell>Price Currency</TableCell>
-                  <TableCell>Image</TableCell>
-                  <TableCell>Logo</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {products
-                  .filter((product) => product.productName.toLowerCase().includes(filter.toLowerCase()))
-                  .map((product) => (
-                    <TableRow key={product.productId}>
-                      <TableCell>{product.productName}</TableCell>
-                      <TableCell>{product.productDescription}</TableCell>
-                      <TableCell>
-                        {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
-                      </TableCell>
-                      <TableCell>
-                        {product.productImgPath ? (
-                          <img
-                            src={product.productImgPath}
-                            alt={`${product.productName}`}
-                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          'No Image'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {product.productLogoPath ? (
-                          <img
-                            src={product.productLogoPath}
-                            alt={`${product.productName} logo`}
-                            style={{ width: '30px', height: '30px', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          'No Logo'
-                        )}
-                      </TableCell>
-                      <TableCell sx={{ display: 'flex', gap: 1 }}>
-                        <Button
+        {/* ... (previous code remains the same) */}
+        <TableContainer component={Paper}>
+          <Table stickyHeader aria-label="sticky table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Price Currency</TableCell>
+                <TableCell>Image</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {products
+                .filter((product) => product.productName.toLowerCase().includes(filter.toLowerCase()))
+                .map((product) => (
+                  <TableRow key={product.productId}>
+                    <TableCell>{product.productName}</TableCell>
+                    <TableCell>{product.productDescription}</TableCell>
+                    <TableCell>
+                      {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
+                    </TableCell>
+                    <TableCell>
+                      {product.productImgPath ? (
+                        <img
+                          src={product.productImgPath}
+                          alt={`${product.productName}`}
+                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        'No Image'
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                      <Button
                           variant="outlined"
                           color="primary"
                           size="small"
@@ -479,13 +457,13 @@ const MyProduct = () => {
                         >
                           Delete
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </MainCard>
 
       <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
@@ -548,7 +526,7 @@ const MyProduct = () => {
             margin="dense"
           />
           <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
-          <Input
+          {/* <Input
             type="file"
             name="productLogoPath"
             accept="image/*"
@@ -557,13 +535,13 @@ const MyProduct = () => {
             fullWidth
             margin="dense"
           />
-          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
+          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddProduct}>Add</Button>
+          <Button onClick={handleAddProduct} disabled={isSubmitting}>Add</Button>
         </DialogActions>
       </Dialog>
 
@@ -625,7 +603,7 @@ const MyProduct = () => {
             margin="dense"
           />
           <FormHelperText error={!!validationErrors.productImgPath}>{validationErrors.productImgPath}</FormHelperText>
-          <Input
+          {/* <Input
             type="file"
             name="productLogoFile"
             accept="image/*"
@@ -634,7 +612,7 @@ const MyProduct = () => {
             fullWidth
             margin="dense"
           />
-          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText>
+          <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText> */}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEditDialog} color="secondary">
