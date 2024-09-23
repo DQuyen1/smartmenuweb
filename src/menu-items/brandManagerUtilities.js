@@ -72,14 +72,14 @@ const brandManagerUtilities = {
       icon: icons.IconPackage,
       breadcrumbs: false
     },
-    {
-      id: 'util-display',
-      title: 'Display',
-      type: 'item',
-      url: 'pages/choose-template',
-      icon: icons.IconWindmill,
-      breadcrumbs: false
-    }
+    // {
+    //   id: 'util-display',
+    //   title: 'Display',
+    //   type: 'item',
+    //   url: 'pages/choose-template',
+    //   icon: icons.IconWindmill,
+    //   breadcrumbs: false
+    // }
   ]
 };
 

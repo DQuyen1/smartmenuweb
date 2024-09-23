@@ -18,11 +18,13 @@ import {
   DialogActions,
   Snackbar,
   Alert,
-  FormHelperText
+  FormHelperText,
+  IconButton
 } from '@mui/material';
 import { gridSpacing } from 'store/constant';
 import FolderIcon from '@mui/icons-material/Folder';
 import UploadIcon from '@mui/icons-material/Upload';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 // Create a styled card component to resemble a folder
 const FolderCard = styled(Card)({
@@ -54,6 +56,8 @@ const EntityFont = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [fontToDelete, setFontToDelete] = useState(null);
 
   const validateNewFontData = () => {
     const errors = {};
@@ -80,6 +84,7 @@ const EntityFont = () => {
   };
 
   const handleUploadFont = async () => {
+    setIsLoading(true);
     if (!validateNewFontData()) {
       return; // Don't proceed if validation fails
     }
@@ -106,17 +111,40 @@ const EntityFont = () => {
       setError('An error occurred while uploading the font.');
     } finally {
       handleCloseUploadDialog();
+      setIsLoading(false);
     }
   };
 
   const fetchFontData = async () => {
     try {
-      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts?pageNumber=1&pageSize=100'); // Replace with your actual font API endpoint
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts'); // Replace with your actual font API endpoint
       setFontData(response.data);
     } catch (error) {
       console.error('Error fetching font data:', error);
       setError(error.message || 'An error occurred while fetching font data.');
     } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (font) => {
+    setFontToDelete(font);
+    setShowDeleteDialog(true); // Open the confirmation dialog
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsLoading(true);
+    try {
+      await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Fonts/${fontToDelete.bFontId}`); // Use the actual API to delete the font
+      fetchFontData(); // Refresh the font list after deletion
+      setOpenSnackbar(true);
+      setSnackbarMessage('Font deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting font:', error);
+      setError('An error occurred while deleting the font.');
+    } finally {
+      setShowDeleteDialog(false);
+      setFontToDelete(null); // Reset the font to delete
       setIsLoading(false);
     }
   };
@@ -129,11 +157,16 @@ const EntityFont = () => {
     <Grid item xs={12} sm={6} md={4} key={font.bFontId}>
       <Tooltip title={font.fontPath}>
         <FolderCard elevation={2} sx={{ transition: 'box-shadow 0.3s ease', '&:hover': { boxShadow: 4 } }}>
-          <CardContent sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
-            <FolderIcon sx={{ fontSize: 40, mr: 2 }} />
-            <Typography variant="h6" component="div" noWrap sx={{ fontFamily: font.fontPath, fontWeight: 'bold' }}>
-              {font.fontName}
-            </Typography>
+          <CardContent sx={{ display: 'flex', alignItems: 'center', p: 2, justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <FolderIcon sx={{ fontSize: 40, mr: 2 }} />
+              <Typography variant="h6" component="div" noWrap sx={{ fontFamily: font.fontPath, fontWeight: 'bold' }}>
+                {font.fontName}
+              </Typography>
+            </Box>
+            <IconButton color="error" onClick={() => handleDeleteClick(font)}>
+              <DeleteIcon />
+            </IconButton>
           </CardContent>
         </FolderCard>
       </Tooltip>
@@ -194,8 +227,22 @@ const EntityFont = () => {
           <Button onClick={handleCloseUploadDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleUploadFont} variant="contained">
-            Upload
+          <Button onClick={handleUploadFont} variant="contained" color="success" disabled={isLoading}>
+            <Typography style={{ color: 'white' }}>Upload</Typography>
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={showDeleteDialog} onClose={() => setShowDeleteDialog(false)}>
+        <DialogTitle>Delete Font</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Are you sure you want to delete this font?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDeleteDialog(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} variant="contained" color="error" disabled={isLoading}>
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

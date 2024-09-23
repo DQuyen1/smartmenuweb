@@ -23,7 +23,8 @@ import {
   InputAdornment,
   Box,
   Typography,
-  Grid
+  Grid,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Visibility, Delete, Edit } from '@mui/icons-material';
@@ -32,8 +33,7 @@ const MyMenu = () => {
   const [menuData, setMenuData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [errorInput, setErrorInput] = useState(null);
   const [showAddMenuDialog, setShowAddMenuDialog] = useState(false);
   const [showEditMenuDialog, setShowEditMenuDialog] = useState(false);
   const navigate = useNavigate();
@@ -52,9 +52,19 @@ const MyMenu = () => {
     isDeleted: false
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Snackbar
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [successMessage, setSuccessMessage] = React.useState('');
+  const [openSnackBar, setOpenSnackBar] = React.useState(false);
+
   const handleAddMenu = async () => {
     try {
       // Retrieve brandId from localStorage
+      setIsSubmitting(false);
+      setErrorMessage('');
+      setSuccessMessage('');
       const brandId = localStorage.getItem('brandId');
 
       const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus', {
@@ -72,11 +82,13 @@ const MyMenu = () => {
         });
         setShowAddMenuDialog(false);
         fetchMenuData(); // Refresh menu list
-        setOpenSnackbar(true);
-        setSnackbarMessage('Menu added successfully!');
+        setSuccessMessage('Menu added successfully');
+        setOpenSnackBar(true);
       } else {
-        console.error('Error creating menu:', response);
-        setError(response.statusText);
+        const errorResponse = await response.json();
+        setErrorMessage(errorResponse.error);
+        setOpenSnackBar(true);
+        setIsSubmitting(true);
       }
     } catch (error) {
       console.error('Error creating menu:', error);
@@ -86,8 +98,9 @@ const MyMenu = () => {
 
   const handleEditMenu = async () => {
     try {
+      setIsSubmitting(false);
       // Retrieve brandId from localStorage
-      const brandId = localStorage.getItem('brandId');
+      const brandId = parseInt(localStorage.getItem('brandId'));
 
       const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Menus/${editMenuData.menuId}`, {
         ...editMenuData,
@@ -98,11 +111,15 @@ const MyMenu = () => {
         // Successfully updated menu
         setShowEditMenuDialog(false);
         fetchMenuData();
-        setOpenSnackbar(true);
-        setSnackbarMessage('Menu updated successfully!');
+        setSuccessMessage('Menu updated successfully');
+        setOpenSnackBar(true);
+        setIsSubmitting(true);
       } else {
-        console.error('Error updating menu:', response);
-        setError(response.statusText);
+        const errorResponse = await response.json();
+        console.log(errorResponse);
+        setErrorMessage(errorResponse.error);
+        setOpenSnackBar(true);
+        setIsSubmitting(true);
       }
     } catch (error) {
       console.error('Error updating menu:', error);
@@ -113,11 +130,55 @@ const MyMenu = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
     setNewMenuData((prevState) => ({ ...prevState, [name]: value }));
+
+    // Validate menuName length
+    if (name === 'menuName') {
+      if (value.length < 5 || value.length > 50) {
+        setErrorInput('Menu name must be between 5 and 50 characters.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Validate menuDescription length
+    if (name === 'menuDescription') {
+      if (value.length < 5 || value.length > 200) {
+        setErrorInput('Menu description must be between 5 and 200 characters.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // If no errors, clear the error and allow submitting
+    setErrorInput('');
+    setIsSubmitting(true);
   };
 
   const handleEditChange = (event) => {
     const { name, value } = event.target;
     setEditMenuData((prevState) => ({ ...prevState, [name]: value }));
+
+    // Validate menuName length
+    if (name === 'menuName') {
+      if (value.length < 5 || value.length > 50) {
+        setErrorInput('Menu name must be between 5 and 50 characters.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // Validate menuDescription length
+    if (name === 'menuDescription') {
+      if (value.length < 5 || value.length > 200) {
+        setErrorInput('Menu description must be between 5 and 200 characters.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    // If no errors, clear the error and allow submitting
+    setErrorInput('');
+    setIsSubmitting(true);
   };
 
   const handleCloseAddMenuDialog = () => {
@@ -153,8 +214,8 @@ const MyMenu = () => {
       }
       setMenuData(response.data);
     } catch (error) {
-      console.error('Error fetching menu data:', error);
-      setError(error.message);
+      // console.error('Error fetching menu data:', error);
+      setError(error.response.data.error);
     } finally {
       setIsLoading(false);
     }
@@ -170,15 +231,15 @@ const MyMenu = () => {
       if (response.status === 200) {
         // Successfully deleted menu
         setMenuData(menuData.filter((menu) => menu.menuId !== menuId));
-        setOpenSnackbar(true);
-        setSnackbarMessage('Menu deleted successfully!');
+        setSuccessMessage('Menu deleted successfully!');
+        setOpenSnackBar(true);
       } else {
         console.error('Error deleting menu:', response);
-        setError(response.statusText);
+        setError(error.response.data.error);
       }
     } catch (error) {
       console.error('Error deleting menu:', error);
-      setError(error.message);
+      setError(error.response.data.error);
     }
   };
 
@@ -191,6 +252,22 @@ const MyMenu = () => {
     const brandIdMatch = menu.brandId?.toString().includes(filter.toLowerCase());
     return menuNameMatch || brandIdMatch;
   });
+
+  // Paginated
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page when changing rows per page
+  };
+
+  // Calculate the data to be displayed based on pagination
+  const paginatedData = filteredMenuData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -233,6 +310,7 @@ const MyMenu = () => {
                   whiteSpace: 'nowrap' // Prevent text from wrapping
                 }}
                 size="small"
+                disabled={error || isLoading}
               >
                 Add Menu
               </Button>
@@ -242,91 +320,122 @@ const MyMenu = () => {
                 <CircularProgress />
               </div>
             ) : error ? (
-              <p>{error}</p>
+              <p style={{ color: 'red' }}>{error}</p>
             ) : (
-              <TableContainer component={Paper} sx={{ maxHeight: 450, overflowY: 'auto' }}>
-                <Table stickyHeader aria-label="sticky table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Description</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredMenuData.map((menu) => (
-                      <TableRow key={menu.menuId}>
-                        <TableCell>{menu.menuName}</TableCell>
-                        <TableCell>{menu.menuDescription}</TableCell>
-                        <TableCell sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant="outlined"
-                            color="info"
-                            size="small"
-                            onClick={() => handleViewDetails(menu)}
-                            startIcon={<Visibility />}
-                            sx={{
-                              color: 'info.main',
-                              borderColor: 'info.main',
-                              '&:hover': {
-                                backgroundColor: 'info.light'
-                              }
-                            }}
-                          >
-                            View Details
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="success"
-                            size="small"
-                            onClick={() => handleEditClick(menu)}
-                            startIcon={<Edit />}
-                            sx={{
-                              color: 'success.main',
-                              borderColor: 'success.main',
-                              '&:hover': {
-                                backgroundColor: 'success.light'
-                              }
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDelete(menu.menuId)}
-                            startIcon={<Delete />}
-                            sx={{
-                              color: 'error.main',
-                              borderColor: 'error.main',
-                              '&:hover': {
-                                backgroundColor: 'error.light'
-                              }
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
+              <>
+                <TableContainer component={Paper} sx={{ maxHeight: 450, overflowY: 'auto' }}>
+                  <Table stickyHeader aria-label="sticky table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Description</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {filteredMenuData.map((menu) => (
+                        <TableRow key={menu.menuId}>
+                          <TableCell sx={{ minWidth: '16rem', maxWidth: '16rem' }}>{menu.menuName}</TableCell>
+                          <TableCell sx={{ minWidth: '32rem', maxWidth: '32rem' }}>{menu.menuDescription}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outlined"
+                              color="info"
+                              size="small"
+                              onClick={() => handleViewDetails(menu)}
+                              startIcon={<Visibility />}
+                              sx={{
+                                color: 'info.main',
+                                borderColor: 'info.main',
+                                '&:hover': {
+                                  backgroundColor: 'info.light'
+                                }
+                              }}
+                            >
+                              View Details
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="success"
+                              size="small"
+                              onClick={() => handleEditClick(menu)}
+                              startIcon={<Edit />}
+                              sx={{
+                                color: 'success.main',
+                                borderColor: 'success.main',
+                                '&:hover': {
+                                  backgroundColor: 'success.light'
+                                },
+                                margin: '0.5rem'
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDelete(menu.menuId)}
+                              startIcon={<Delete />}
+                              sx={{
+                                color: 'error.main',
+                                borderColor: 'error.main',
+                                '&:hover': {
+                                  backgroundColor: 'error.light'
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredMenuData.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
             )}
           </MainCard>
         </Grid>
       </Grid>
 
-      <Snackbar open={openSnackbar} autoHideDuration={3000} onClose={() => setOpenSnackbar(false)}>
-        <Alert onClose={() => setOpenSnackbar(false)} severity="success">
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+      {/* Snackbar */}
+      <Box sx={{ width: 500 }}>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+          autoHideDuration={4000}
+          open={openSnackBar}
+          onClose={() => setOpenSnackBar(!openSnackBar)}
+          // message={errorMessage}
+          // key={groupItem.productId}
+        >
+          <Alert
+            onClose={() => setOpenSnackBar(!openSnackBar)}
+            severity={errorMessage === '' ? 'success' : 'error'}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {errorMessage === '' ? successMessage : errorMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
 
       <Dialog open={showAddMenuDialog} onClose={handleCloseAddMenuDialog}>
         <DialogTitle>Add Menu</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ padding: '0px 24px' }}>
           <DialogContentText>To add a new menu, please fill out the form below.</DialogContentText>
           <TextField
             autoFocus
@@ -352,11 +461,16 @@ const MyMenu = () => {
             onChange={handleChange}
           />
         </DialogContent>
+        
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseAddMenuDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddMenu} color="primary">
+          <Button onClick={handleAddMenu} color="primary" disabled={!isSubmitting}>
             Add
           </Button>
         </DialogActions>
@@ -390,11 +504,16 @@ const MyMenu = () => {
             onChange={handleEditChange}
           />
         </DialogContent>
+
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
+
         <DialogActions>
           <Button onClick={handleCloseEditMenuDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleEditMenu} color="primary">
+          <Button onClick={handleEditMenu} color="primary" disabled={!isSubmitting}>
             Save
           </Button>
         </DialogActions>

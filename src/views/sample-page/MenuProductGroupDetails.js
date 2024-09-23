@@ -716,10 +716,9 @@ const MenuProductGroupDetails = ({ menuDataId, brandId }) => {
                       <TableCell style={{ fontWeight: 'bold' }}>Product Id</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Image</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Name</TableCell>
-                      <TableCell style={{ fontWeight: 'bold' }}>Description</TableCell>
+                      <TableCell style={{ fontWeight: 'bold', minWidth: '100px' }}>Description</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>Currency</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>
-                        Actions
                         <Button variant="contained" sx={{ ml: 1 }} onClick={handleAddProductClick}>
                           <AddIcon />
                         </Button>

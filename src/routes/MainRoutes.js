@@ -50,24 +50,6 @@ const MainRoutes = {
       ]
     },
     {
-      path: 'dashboard',
-      children: [
-        {
-          path: 'subscription',
-          element: <ManageSubscription />
-        }
-      ]
-    },
-    {
-      path: 'dashboard',
-      children: [
-        {
-          path: 'transaction',
-          element: <ManageTransaction />
-        }
-      ]
-    },
-    {
       path: 'utils',
       children: [
         {
@@ -89,8 +71,26 @@ const MainRoutes = {
       path: 'utils',
       children: [
         {
-          path: 'util-store',
-          element: <UtilsStore />
+          path: 'util-transaction',
+          element: <ManageTransaction />
+        }
+      ]
+    },
+    {
+      path: 'utils',
+      children: [
+        {
+          path: 'util-subscription',
+          element: <ManageSubscription />
+        }
+      ]
+    },
+    {
+      path: 'utils',
+      children: [
+        {
+          path: 'util-font',
+          element: <EntityFont />
         }
       ]
     },

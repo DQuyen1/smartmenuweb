@@ -390,7 +390,7 @@ const UtilitiesBrandStaff = () => {
               onClick={handleOpen}
               sx={{ mb: 2, color: 'white' }}
             >
-              Add User
+              Register
             </Button>
           </Box>
           {isLoading ? (
@@ -440,7 +440,7 @@ const UtilitiesBrandStaff = () => {
         </Grid>
       </Grid>
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add New User</DialogTitle>
+        <DialogTitle>Register New User</DialogTitle>
         <DialogContent>
           <TextField
             margin="dense"
@@ -480,7 +480,7 @@ const UtilitiesBrandStaff = () => {
           />
           <FormControl fullWidth margin="dense">
             <InputLabel id="role-label">Role</InputLabel>
-            <Select labelId="role-label" name="role" value={newUser.role} onChange={handleChange}>
+            <Select labelId="role-label" name="role" value={newUser.role} onChange={handleChange} label="Role">
               <MenuItem value={1}>Brand Manager</MenuItem>
               <MenuItem value={2}>Store Manager</MenuItem>
             </Select>

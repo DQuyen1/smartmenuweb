@@ -162,9 +162,12 @@ const ManageSubscription = () => {
     if (!selectedSubscription) return;
     setIsLoading(true);
     try {
-      const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Subscriptions/${selectedSubscription.subscriptionId}`, {
-        ...updateSubscriptionData
-      });
+      const response = await axios.put(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Subscriptions/${selectedSubscription.subscriptionId}`,
+        {
+          ...updateSubscriptionData
+        }
+      );
       if (response.status === 200) {
         fetchSubscriptionData();
         Toastify({
@@ -206,7 +209,9 @@ const ManageSubscription = () => {
   const handleDeleteSubscription = async () => {
     if (!selectedSubscription) return;
     try {
-      const response = await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Subscriptions/${selectedSubscription.subscriptionId}`);
+      const response = await axios.delete(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Subscriptions/${selectedSubscription.subscriptionId}`
+      );
       if (response.status === 200) {
         setSubscriptionData(subscriptionData.filter((sub) => sub.subscriptionId !== selectedSubscription.subscriptionId));
         Toastify({
@@ -248,24 +253,24 @@ const ManageSubscription = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-  
+
     if (name === 'price') {
       let priceValue = parseInt(value, 10);
-  
+
       if (isNaN(priceValue)) {
         priceValue = ''; // Handle invalid input (e.g., non-numeric)
       } else if (priceValue > max) {
         priceValue = max; // Automatically set to max if value exceeds max
       }
-  
+
       // Set the price value to state (without enforcing min)
       setNewSubscriptionData((prevState) => ({ ...prevState, [name]: priceValue }));
-  
+
       // Set an error if the price is below the minimum
       if (priceValue < min && priceValue !== '') {
         setValidationErrors((prevErrors) => ({
           ...prevErrors,
-          [name]: `Price must be at least ${min}`,
+          [name]: `Price must be at least ${min}`
         }));
       } else {
         setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
@@ -275,27 +280,27 @@ const ManageSubscription = () => {
       setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
     }
   };
-  
+
   const handleUpdateChange = (event) => {
     const { name, value } = event.target;
-  
+
     if (name === 'price') {
       let priceValue = parseInt(value, 10);
-  
+
       if (isNaN(priceValue)) {
         priceValue = '';
       } else if (priceValue > max) {
         priceValue = max; // Automatically set to max if value exceeds max
       }
-  
+
       // Set the price value to state (without enforcing min)
       setUpdateSubscriptionData((prevState) => ({ ...prevState, [name]: priceValue }));
-  
+
       // Set an error if the price is below the minimum
       if (priceValue < min && priceValue !== '') {
         setValidationErrors((prevErrors) => ({
           ...prevErrors,
-          [name]: `Price must be at least ${min}`,
+          [name]: `Price must be at least ${min}`
         }));
       } else {
         setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
@@ -358,7 +363,7 @@ const ManageSubscription = () => {
       setIsLoading(false);
     }
   };
-  
+
   const formatPrice = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -374,69 +379,66 @@ const ManageSubscription = () => {
   return (
     <>
       <MainCard title="Manage Subscriptions">
-  <Box display="flex" justifyContent="space-between" mb={2}>
-    <TextField
-      label="Search"
-      variant="outlined"
-      value={filter}
-      onChange={(e) => setFilter(e.target.value)}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            <SearchIcon />
-          </InputAdornment>
-        ),
-      }}
-    />
-    <Button
-      variant="contained"
-      color="primary"
-      startIcon={<AddCircleOutlined />}
-      onClick={() => setShowAddSubscriptionDialog(true)}
-    >
-      Add Subscription
-    </Button>
-  </Box>
-  {isLoading ? (
-    <CircularProgress />
-  ) : (
-    <TableContainer component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Description</TableCell>
-            <TableCell>Price</TableCell>
-            <TableCell>Duration</TableCell>
-            {/* <TableCell>Status</TableCell> */}
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {subscriptionData.filter(sub => sub.name.includes(filter)).map(subscription => (
-            <TableRow key={subscription.subscriptionId} hover>
-              <TableCell>{subscription.name}</TableCell>
-              <TableCell>{subscription.description}</TableCell>
-              <TableCell>{formatPrice(subscription.price)}</TableCell>
-              <TableCell>{subscription.dayDuration}</TableCell>
-              {/* <TableCell>
+        <Box display="flex" justifyContent="space-between" mb={2}>
+          <TextField
+            label="Search"
+            variant="outlined"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              )
+            }}
+          />
+          <Button variant="contained" color="primary" startIcon={<AddCircleOutlined />} onClick={() => setShowAddSubscriptionDialog(true)}>
+            Add Subscription
+          </Button>
+        </Box>
+        {isLoading ? (
+          <CircularProgress />
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Description</TableCell>
+                  <TableCell>Price</TableCell>
+                  <TableCell>Duration</TableCell>
+                  {/* <TableCell>Status</TableCell> */}
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {subscriptionData
+                  .filter((sub) => sub.name.includes(filter))
+                  .map((subscription) => (
+                    <TableRow key={subscription.subscriptionId} hover>
+                      <TableCell>{subscription.name}</TableCell>
+                      <TableCell>{subscription.description}</TableCell>
+                      <TableCell>{formatPrice(subscription.price)}</TableCell>
+                      <TableCell>{subscription.dayDuration}</TableCell>
+                      {/* <TableCell>
                 <Chip label={subscription.isActive ? "Active" : "Inactive"} color={subscription.isActive ? "success" : "default"} />
               </TableCell> */}
-              <TableCell>
-                <IconButton onClick={() => handleOpenUpdateDialog(subscription)}>
-                  <Edit />
-                </IconButton>
-                <IconButton onClick={() => handleOpenDeleteConfirmDialog(subscription)}>
-                  <Delete color="error" />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  )}
-</MainCard>
+                      <TableCell>
+                        <IconButton onClick={() => handleOpenUpdateDialog(subscription)}>
+                          <Edit />
+                        </IconButton>
+                        <IconButton onClick={() => handleOpenDeleteConfirmDialog(subscription)}>
+                          <Delete color="error" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </MainCard>
 
       {/* Add Subscription Dialog */}
       <Dialog open={showAddSubscriptionDialog} onClose={handleCloseAddSubscriptionDialog}>

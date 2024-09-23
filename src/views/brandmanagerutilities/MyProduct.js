@@ -295,13 +295,26 @@ const MyProduct = () => {
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
+  
     if (file) {
       formData.append('file', file);
       formData.append('upload_preset', preset_key);
       formData.append('tags', tags);
       formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const imageUrl = result.data.secure_url;
+  
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+  
+        const result = await response.json();
+        const imageUrl = result.secure_url;
+  
         setProductImgPath(imageUrl);
         setNewProduct((prevProduct) => ({
           ...prevProduct,
@@ -311,10 +324,14 @@ const MyProduct = () => {
           ...prevProduct,
           productImgPath: imageUrl
         }));
-        console.log('Result hihi: ', result.data.secure_url);
-      });
+  
+        console.log('Result hihi: ', result.secure_url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
     }
   };
+  
 
   const handleImageUploadLogo = async (event) => {
     const userId = 469;
