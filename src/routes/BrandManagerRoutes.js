@@ -24,6 +24,7 @@ const EntityMenu = Loadable(lazy(() => import('views/entity/Menu')));
 const SamplePage = Loadable(lazy(() => import('views/sample-page')));
 const MyStoreDetails = Loadable(lazy(() => import('views/sample-page/MyStoreDetails')));
 const MyTemplateDetails = Loadable(lazy(() => import('views/sample-page/MyTemplateDetails')));
+const ManageTransaction = Loadable(lazy(() => import('views/dashboard/Transaction')));
 const MyMenuDetails = Loadable(lazy(() => import('views/sample-page/MyMenuDetails')));
 const MyProductDetails = Loadable(lazy(() => import('views/sample-page/MyProductDetails')));
 const MyCollectionDetails = Loadable(lazy(() => import('views/sample-page/MyCollectionDetails')));
@@ -116,6 +117,15 @@ const BrandManagerRoutes = {
         {
           path: 'util-mystore',
           element: <UtilsMyStore />
+        }
+      ]
+    },
+    {
+      path: 'utils',
+      children: [
+        {
+          path: 'util-transaction',
+          element: <ManageTransaction />
         }
       ]
     },
