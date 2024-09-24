@@ -1,5 +1,5 @@
 // assets
-import { IconUsers, IconBuildingStore, IconBrandMedium, IconWindmill, IconPackage } from '@tabler/icons-react';
+import { IconUsers, IconBuildingStore, IconBrandMedium, IconWindmill, IconPackage, IconSquareRoundedPlus, IconLemon, IconTopologyStar3, IconHistory } from '@tabler/icons-react';
 
 // constant
 const icons = {
@@ -7,7 +7,11 @@ const icons = {
   IconBuildingStore,
   IconBrandMedium,
   IconWindmill,
-  IconPackage
+  IconPackage,
+  IconSquareRoundedPlus,
+  IconHistory,
+  IconLemon,
+  IconTopologyStar3
 };
 
 // ==============================|| UTILITIES MENU ITEMS ||============================== //
@@ -54,7 +58,7 @@ const brandManagerUtilities = {
       title: 'Collection',
       type: 'item',
       url: '/utils/util-mycollection',
-      icon: icons.IconPackage,
+      icon: icons.IconTopologyStar3,
       breadcrumbs: false
     },
     {
@@ -62,7 +66,7 @@ const brandManagerUtilities = {
       title: 'Menu',
       type: 'item',
       url: '/utils/util-mymenu',
-      icon: icons.IconPackage,
+      icon: icons.IconLemon,
       breadcrumbs: false
     },
     {
@@ -70,7 +74,15 @@ const brandManagerUtilities = {
       title: 'Template',
       type: 'item',
       url: '/utils/util-mytemplate',
-      icon: icons.IconPackage,
+      icon: icons.IconSquareRoundedPlus,
+      breadcrumbs: false
+    },
+    {
+      id: 'util-mytransaction',
+      title: 'Transaction',
+      type: 'item',
+      url: '/utils/util-transaction',
+      icon: icons.IconHistory,
       breadcrumbs: false
     },
     // {
