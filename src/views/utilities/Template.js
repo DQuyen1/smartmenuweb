@@ -172,41 +172,17 @@ function Template() {
 
   // const handleDimensionChange = (e, type) => {
   //   let value = parseFloat(e.target.value);
+
+  //   value = value.replace(/,/g, '.');
+
   //   let element = editor.canvas.getActiveObject();
 
-  //   switch (type) {
-  //     case 'width':
-  //       setWidth(value);
-  //       element.set('width', value);
-  //       console.log('height');
-  //       editor.canvas.renderAll();
-  //       break;
-  //     case 'height':
-  //       setHeight(value);
-  //       element.set('height', value);
-  //       editor.canvas.renderAll();
-  //       break;
-  //     case 'positionX':
-  //       setPositionX(value);
-  //       element.set('left', value);
-  //       editor.canvas.renderAll();
-  //       break;
-  //     case 'positionY':
-  //       setPositionY(value);
-  //       element.set('top', value);
-  //       editor.canvas.renderAll();
-  //       break;
-  //     default:
-  //       break;
-  //   }
-  // };
+  //   if (!element) return; // Exit if no object is selected
 
-  // const handleDimensionChange = (e, type) => {
-  //   let value = parseFloat(e.target.value);
-  //   let element = editor.canvas.getActiveObject();
-
-  //   if(element.type === 'text') {
-
+  //   // Apply constraints only if the selected element is of type 'text'
+  //   let isValid = true;
+  //   if (element.type === 'text') {
+  //     // Assuming renderLayer is an object with left, top, width, and height
   //     const renderLayerBounds = {
   //       left: selectedRect.left, // Render layer's top-left X position
   //       top: selectedRect.top, // Render layer's top-left Y position
@@ -218,8 +194,6 @@ function Template() {
   //     let newPositionY = element.top;
   //     let newWidth = element.width;
   //     let newHeight = element.height;
-
-  //     let isValid = true; // Flag to check if the input is valid
 
   //     switch (type) {
   //       case 'width':
@@ -293,46 +267,52 @@ function Template() {
   //       default:
   //         break;
   //     }
-
   //   }
 
-  //   // Assuming renderLayer is an object with left, top, width, and height
-
-  //   // Update the UI input, but do not apply the change to the element if it's invalid
+  //   // Update the UI input and object properties regardless of type
   //   switch (type) {
   //     case 'width':
   //       setWidth(value);
-  //       if (isValid) element.set('width', value);
+  //       if (isValid || element.type !== 'text') element.set('width', value); // Apply to all, but check constraints for 'text'
   //       break;
   //     case 'height':
   //       setHeight(value);
-  //       if (isValid) element.set('height', value);
+  //       if (isValid || element.type !== 'text') element.set('height', value); // Apply to all, but check constraints for 'text'
   //       break;
   //     case 'positionX':
   //       setPositionX(value);
-  //       if (isValid) element.set('left', value);
+  //       if (isValid || element.type !== 'text') element.set('left', value); // Apply to all, but check constraints for 'text'
   //       break;
   //     case 'positionY':
   //       setPositionY(value);
-  //       if (isValid) element.set('top', value);
+  //       if (isValid || element.type !== 'text') element.set('top', value); // Apply to all, but check constraints for 'text'
   //       break;
   //     default:
   //       break;
   //   }
 
-  //   editor.canvas.renderAll();
+  //   editor.canvas.renderAll(); // Re-render the canvas
   // };
 
   const handleDimensionChange = (e, type) => {
-    let value = parseFloat(e.target.value);
-    let element = editor.canvas.getActiveObject();
+    let value = e.target.value;
 
+    // Allow both commas and dots in the input without changing the display value
+    // Only replace for parsing
+    const normalizedValue = value.replace(/,/g, '.'); // Replace commas with dots for parsing
+    let parsedValue = parseFloat(normalizedValue);
+
+    // If parsed value is NaN, we should stop further processing
+    if (isNaN(parsedValue)) {
+      return; // Exit if the value is not a number
+    }
+
+    let element = editor.canvas.getActiveObject();
     if (!element) return; // Exit if no object is selected
 
     // Apply constraints only if the selected element is of type 'text'
     let isValid = true;
     if (element.type === 'text') {
-      // Assuming renderLayer is an object with left, top, width, and height
       const renderLayerBounds = {
         left: selectedRect.left, // Render layer's top-left X position
         top: selectedRect.top, // Render layer's top-left Y position
@@ -347,69 +327,33 @@ function Template() {
 
       switch (type) {
         case 'width':
-          newWidth = value;
+          newWidth = parsedValue;
           if (newPositionX + newWidth > renderLayerBounds.right) {
-            Toastify({
-              text: 'Width exceeds the render layer bounds!',
-              className: 'info',
-              gravity: 'top',
-              position: 'right',
-              duration: 3000,
-              style: {
-                background: 'linear-gradient(to right, #ff0000, #ff6347)'
-              }
-            }).showToast();
+            showToast('Width exceeds the render layer bounds!');
             isValid = false;
           }
           break;
 
         case 'height':
-          newHeight = value;
+          newHeight = parsedValue;
           if (newPositionY + newHeight > renderLayerBounds.bottom) {
-            Toastify({
-              text: 'Height exceeds the render layer bounds!',
-              className: 'info',
-              gravity: 'top',
-              position: 'right',
-              duration: 3000,
-              style: {
-                background: 'linear-gradient(to right, #ff0000, #ff6347)'
-              }
-            }).showToast();
+            showToast('Height exceeds the render layer bounds!');
             isValid = false;
           }
           break;
 
         case 'positionX':
-          newPositionX = value;
+          newPositionX = parsedValue;
           if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-            Toastify({
-              text: 'X position exceeds the render layer bounds!',
-              className: 'info',
-              gravity: 'top',
-              position: 'right',
-              duration: 3000,
-              style: {
-                background: 'linear-gradient(to right, #ff0000, #ff6347)'
-              }
-            }).showToast();
+            showToast('X position exceeds the render layer bounds!');
             isValid = false;
           }
           break;
 
         case 'positionY':
-          newPositionY = value;
+          newPositionY = parsedValue;
           if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-            Toastify({
-              text: 'Y position exceeds the render layer bounds!',
-              className: 'info',
-              gravity: 'top',
-              position: 'right',
-              duration: 3000,
-              style: {
-                background: 'linear-gradient(to right, #ff0000, #ff6347)'
-              }
-            }).showToast();
+            showToast('Y position exceeds the render layer bounds!');
             isValid = false;
           }
           break;
@@ -422,20 +366,20 @@ function Template() {
     // Update the UI input and object properties regardless of type
     switch (type) {
       case 'width':
-        setWidth(value);
-        if (isValid || element.type !== 'text') element.set('width', value); // Apply to all, but check constraints for 'text'
+        setWidth(parsedValue);
+        if (isValid || element.type !== 'text') element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'height':
-        setHeight(value);
-        if (isValid || element.type !== 'text') element.set('height', value); // Apply to all, but check constraints for 'text'
+        setHeight(parsedValue);
+        if (isValid || element.type !== 'text') element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionX':
-        setPositionX(value);
-        if (isValid || element.type !== 'text') element.set('left', value); // Apply to all, but check constraints for 'text'
+        setPositionX(parsedValue);
+        if (isValid || element.type !== 'text') element.set('left', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionY':
-        setPositionY(value);
-        if (isValid || element.type !== 'text') element.set('top', value); // Apply to all, but check constraints for 'text'
+        setPositionY(parsedValue);
+        if (isValid || element.type !== 'text') element.set('top', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       default:
         break;
@@ -443,6 +387,22 @@ function Template() {
 
     editor.canvas.renderAll(); // Re-render the canvas
   };
+
+  // Helper function to show toast notifications
+  const showToast = (message) => {
+    Toastify({
+      text: message,
+      className: 'info',
+      gravity: 'top',
+      position: 'right',
+      duration: 3000,
+      style: {
+        background: 'linear-gradient(to right, #ff0000, #ff6347)'
+      }
+    }).showToast();
+  };
+
+  // Helper function to show toast notifications
 
   const handleTabClick = (tab) => {
     setActiveTab(activeTab === tab ? null : tab);
@@ -1270,28 +1230,139 @@ function Template() {
     }
   }, [editor]);
 
+  // const addImage = (file) => {
+  //   const reader = new FileReader();
+  //   const userId = 46;
+  //   const formData = new FormData();
+  //   //const preset_key = process.env.REACT_APP_PRESET_KEY;
+  //   const preset_key = 'xdm798lx';
+  //   const folder = `users/${userId}`;
+  //   const tags = `${userId}`;
+  //   reader.onload = (e) => {
+  //     fabric.Image.fromURL(e.target.result, async (img) => {
+  //       let myImg = img.set({
+  //         left: 100,
+  //         top: 100,
+  //         selectable: true, // Make sure the image is selectable
+  //         evented: true,
+  //         scaleX: 0.5,
+  //         scaleY: 0.5
+  //       });
+
+  //       editor.canvas.add(myImg);
+  //       editor.canvas.renderAll();
+
+  //       myImg.on('mouseup', () => {
+  //         console.log('clicked to images layer');
+  //         setActiveTab('positionSize');
+  //         setSelectedTool('text');
+  //       });
+
+  //       editor.canvas.on('mouse:down', function (options) {
+  //         if (options.target !== rect) {
+  //           setActiveTab(null);
+  //         }
+  //         setSelectedTool(null);
+  //       });
+
+  //       let width = myImg.getScaledWidth();
+  //       let height = myImg.getScaledHeight();
+  //       let positionX = myImg.left;
+  //       let positionY = myImg.top;
+
+  //       formData.append('file', file);
+  //       formData.append('upload_preset', preset_key);
+  //       formData.append('tags', tags);
+  //       formData.append('folder', folder);
+
+  //       try {
+  //         const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+  //           method: 'POST',
+  //           body: formData
+  //         });
+
+  //         const result = await response.json();
+  //         console.log('result: ', result);
+
+  //         const layerItemValue = result.secure_url;
+  //         const { layerId, zIndex } = await createLayer(templateId, 1);
+  //         const layerItemId = await createLayerItem(layerId, layerItemValue);
+
+  //         const public_id = result.public_id;
+
+  //         setAssetImage((preImages) => [public_id, ...preImages]);
+
+  //         console.log('Result hihi: ', result);
+  //         console.log('layerId: ', layerId);
+  //         console.log('zIndex: ', zIndex);
+
+  //         console.log('layerItemId: ', layerItemId);
+
+  //         const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
+
+  //         const { boxItemId, bFontId } = await createBoxItem(
+  //           boxId,
+  //           5,
+  //           positionX,
+  //           positionY,
+  //           width,
+  //           height,
+  //           7,
+  //           JSON.stringify({
+  //             transparency: 100
+  //           })
+  //         );
+
+  //         myImg.boxId = boxId;
+  //         myImg.boxItemId = boxItemId;
+  //         myImg.layerId = layerId;
+
+  //         myImg.bFontId = bFontId;
+
+  //         console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
+  //       } catch (error) {
+  //         console.log('error upload image: ', error);
+  //       }
+  //     });
+  //   };
+
+  //   reader.readAsDataURL(file);
+  // };
+
   const addImage = (file) => {
     const reader = new FileReader();
     const userId = 46;
     const formData = new FormData();
-    //const preset_key = process.env.REACT_APP_PRESET_KEY;
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
+
     reader.onload = (e) => {
       fabric.Image.fromURL(e.target.result, async (img) => {
-        const myImg = img.set({
+        // Set basic properties for the image
+        let myImg = img.set({
           left: 100,
           top: 100,
-          selectable: true, // Make sure the image is selectable
+          selectable: true,
           evented: true,
           scaleX: 0.5,
           scaleY: 0.5
         });
 
+        // Add the image to the canvas
         editor.canvas.add(myImg);
-        editor.canvas.requestRenderAll();
 
+        // Render the canvas right after adding the image
+        editor.canvas.renderAll();
+
+        // Now attach mouse event listeners to the image
+        myImg.on('mouseup', () => {
+          console.log('Image clicked');
+          setActiveTab('positionSize');
+          setSelectedTool('text');
+        });
+
+        // Defer canvas-wide mouse:down event listener until after the image is rendered
         editor.canvas.on('mouse:down', function (options) {
           if (options.target !== rect) {
             setActiveTab(null);
@@ -1299,73 +1370,66 @@ function Template() {
           setSelectedTool(null);
         });
 
-        myImg.on('mouseup', () => {
-          console.log('clicked to images layer');
-          setActiveTab('positionSize');
-          setSelectedTool('text');
-        });
+        // Get the scaled width, height, and position of the image
+        const width = myImg.getScaledWidth();
+        const height = myImg.getScaledHeight();
+        const positionX = myImg.left;
+        const positionY = myImg.top;
 
-        let width = myImg.getScaledWidth();
-        let height = myImg.getScaledHeight();
-        let positionX = myImg.left;
-        let positionY = myImg.top;
-
+        // Prepare form data for image upload to Cloudinary
         formData.append('file', file);
         formData.append('upload_preset', preset_key);
         formData.append('tags', tags);
         formData.append('folder', folder);
 
         try {
+          // Upload image to Cloudinary
           const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
             method: 'POST',
             body: formData
           });
-
           const result = await response.json();
-          console.log('result: ', result);
 
+          // Handle the uploaded result
           const layerItemValue = result.secure_url;
           const { layerId, zIndex } = await createLayer(templateId, 1);
           const layerItemId = await createLayerItem(layerId, layerItemValue);
 
           const public_id = result.public_id;
-
           setAssetImage((preImages) => [public_id, ...preImages]);
 
-          console.log('Result hihi: ', result);
-          console.log('layerId: ', layerId);
-          console.log('zIndex: ', zIndex);
+          console.log('Cloudinary upload result: ', result);
+          console.log('Layer details - layerId:', layerId, 'zIndex:', zIndex, 'layerItemId:', layerItemId);
 
-          console.log('layerItemId: ', layerItemId);
-
+          // Associate the image with the box and layer
           const boxId = await createBox(layerId, positionX, positionY, width, height, 0);
-
           const { boxItemId, bFontId } = await createBoxItem(
             boxId,
-            5,
+            5, // Assuming some default values here
             positionX,
             positionY,
             width,
             height,
-            7,
+            7, // Assuming some default values here
             JSON.stringify({
               transparency: 100
             })
           );
 
+          // Store IDs in the image object for later reference
           myImg.boxId = boxId;
           myImg.boxItemId = boxItemId;
           myImg.layerId = layerId;
-
           myImg.bFontId = bFontId;
 
-          console.log('Response from cloudinary when upload image:', JSON.stringify(layerItemValue));
+          console.log('Box and font IDs added:', { boxId, boxItemId, bFontId });
         } catch (error) {
-          console.log('error upload image: ', error);
+          console.error('Error uploading image:', error);
         }
       });
     };
 
+    // Read the file and trigger the onload event
     reader.readAsDataURL(file);
   };
 
@@ -2369,7 +2433,7 @@ function Template() {
                 textColor: obj.fill,
                 bFontId: obj.bFontId ? obj.bFontId : 5,
                 // fontSize: getFontSizeV2(obj),
-                fontSize: ((obj.fontSize * obj.scaleX) / 1.333).toFixed(1),
+                fontSize: Number(((obj.fontSize * obj.scaleX) / 1.333).toFixed(1)),
                 fontStyle:
                   obj.fontStyle && obj.fontStyle !== 'normal'
                     ? getFontStyleValue(obj.fontStyle)
@@ -2397,7 +2461,7 @@ function Template() {
               JSON.stringify({
                 textColor: obj.fill,
                 bFontId: obj.bFontId ? obj.bFontId : 5,
-                fontSize: ((obj.fontSize * obj.scaleX) / 1.333).toFixed(1),
+                fontSize: Number(((obj.fontSize * obj.scaleX) / 1.333).toFixed(1)),
                 fontStyle: getFontStyleValue(obj.fontStyle),
                 alignment: getAlignmentValue(obj.textAlign),
                 transparency: 100,
@@ -2504,14 +2568,14 @@ function Template() {
   }
 
   const addProductDescription = async () => {
-    let textBox = new fabric.Text(`D ${selectedRect.productCounter}`, {
+    let textBox = new fabric.Textbox(`D ${selectedRect.productCounter}`, {
       left: selectedRect.left + 10,
       top: selectedRect.top + 10,
       // fontSize: fontSize,
       fontSize: 15,
       backgroundColor: getRandomColor(),
       borderColor: 'dark',
-
+      width: 50,
       // width: 100,
       // height: 100,
       fill: 'white',
@@ -2519,7 +2583,8 @@ function Template() {
       // fontStyle: 'normal',
       // textAlign: 'left',
       opacity: 100,
-      productCounter: 1
+      productCounter: 1,
+      editable: false
       // selectionBackgroundColor: 'black'
     });
 
@@ -2582,6 +2647,37 @@ function Template() {
       editor.canvas.renderAll();
     });
 
+    textBox.on('mouseup', function () {
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+      const scaleX = canvasWidth / displayWidth;
+      const scaleY = canvasHeight / displayHeight;
+
+      const scaledWidth = textBox.getScaledWidth();
+      const scaledHeight = textBox.getScaledHeight();
+
+      setHeight((scaledHeight * scaleX).toFixed(1));
+      setWidth((scaledWidth * scaleY).toFixed(1));
+      setPositionX((textBox.left * scaleX).toFixed(1));
+      setPositionY((textBox.top * scaleY).toFixed(1));
+      //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      let canvasFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1);
+      setFontSize((canvasFontSize / 1.333).toFixed(1));
+      setColor(textBox.fill);
+      setRotationAngle(adjustedAngle);
+
+      setActiveTab('positionSize');
+      //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
+      setIsHeaderVisible(true);
+      setSelectedTool('textBox');
+      console.log('selectedRect: ', selectedRect);
+      console.log('click to product desc');
+    });
+
     textBox.rectId = selectedRect.id;
 
     selectedRect.productCounter += 1;
@@ -2639,27 +2735,16 @@ function Template() {
 
       setFontSize((newFontSize / 1.333).toFixed(1));
 
+      setPositionX((textBox.left * scaleX).toFixed(1));
+      setPositionY((textBox.top * scaleY).toFixed(1));
+
       setHeight(newHeight.toFixed(1));
       setWidth(newWidth.toFixed(1));
       setActiveTab('positionSize');
+      setSelectedTool('textBox');
     });
 
-    textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
-      setPositionX(textBox.left.toFixed(1));
-      setPositionY(textBox.top.toFixed(1));
-      //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      let canvasFontSize = (textBox.fontSize * textBox.scaleX).toFixed(1);
-      setFontSize((canvasFontSize / 1.333).toFixed(1));
-      setColor(textBox.fill);
-      setActiveTab('positionSize');
-      setIsHeaderVisible(true);
-      setSelectedTool('text');
-      console.log('selectedRect: ', selectedRect);
-    });
-
-    textBox.on('mousemove', function () {
+    textBox.on('moving', function () {
       setHeight(textBox.height.toFixed(1));
       setWidth(textBox.width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
@@ -2667,8 +2752,8 @@ function Template() {
       // console.log('Move');
 
       // setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
-      //setActiveTab('positionSize');
-      //setSelectedTool('text');
+      setActiveTab('positionSize');
+      setSelectedTool('textBox');
     });
 
     editor.canvas.on('mouse:down', function (options) {
@@ -2680,11 +2765,13 @@ function Template() {
   };
 
   const addProductName = async () => {
-    const textBox = new fabric.Text(`N ${selectedRect.nameCounter} `, {
+    const textBox = new fabric.Textbox(`N ${selectedRect.nameCounter} `, {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
       fill: 'white',
+      editable: false,
+      width: 50,
 
       backgroundColor: getRandomColor()
     });
@@ -2731,6 +2818,17 @@ function Template() {
       editor.canvas.renderAll();
     });
 
+    textBox.on('mouseup', function () {
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setActiveTab('positionSize');
+      setSelectedTool('text');
+    });
+
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
@@ -2764,17 +2862,6 @@ function Template() {
     }
     let height = textBox.height;
     let width = textBox.width;
-
-    textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
-      setPositionX(textBox.left.toFixed(1));
-      setPositionY(textBox.top.toFixed(1));
-      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
-      setIsHeaderVisible(true);
-      setActiveTab('positionSize');
-      setSelectedTool('text');
-    });
 
     editor.canvas.on('mouse:down', function (options) {
       if (options.target !== textBox) {
@@ -2810,15 +2897,16 @@ function Template() {
   };
 
   const addProductPrice = async () => {
-    const textBox = new fabric.Text(`P ${selectedRect.priceCounter} `, {
+    const textBox = new fabric.Textbox(`P ${selectedRect.priceCounter} `, {
       left: selectedRect.left + 20,
       top: selectedRect.top + 20,
       fontSize: 20,
       fill: 'white',
       borderColor: 'dark',
-      width: 200,
-      height: 200,
-      backgroundColor: getRandomColor()
+      width: 50,
+      // height: 200,
+      backgroundColor: getRandomColor(),
+      editable: false
       // selectionBackgroundColor: 'black'
     });
 
@@ -2864,6 +2952,17 @@ function Template() {
       editor.canvas.renderAll();
     });
 
+    textBox.on('mouseup', function () {
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setActiveTab('positionSize');
+      setSelectedTool('text');
+    });
+
     let style = {
       // textColor: textBox.fill,
       textColor: '#ffffff',
@@ -2895,17 +2994,6 @@ function Template() {
     let height = textBox.height;
     let width = textBox.width;
 
-    textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
-      setPositionX(textBox.left.toFixed(1));
-      setPositionY(textBox.top.toFixed(1));
-      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
-      setIsHeaderVisible(true);
-      setActiveTab('positionSize');
-      setSelectedTool('text');
-    });
-
     editor.canvas.on('mouse:down', function (options) {
       if (options.target !== textBox) {
         setIsHeaderVisible(false);
@@ -2925,15 +3013,16 @@ function Template() {
   };
 
   const addProductImage = async () => {
-    const textBox = new fabric.Text(`I ${selectedRect.imageCounter} `, {
+    const textBox = new fabric.Textbox(`I ${selectedRect.imageCounter} `, {
       left: selectedRect.left + 25,
       top: selectedRect.top + 25,
       fontSize: 20,
       fill: color,
       borderColor: 'dark',
-      width: 200,
-      height: 200,
-      backgroundColor: getRandomColor()
+      width: 50,
+      //height: 200,
+      backgroundColor: getRandomColor(),
+      editable: false
       // selectionBackgroundColor: 'black'
     });
     textBox.setControlsVisibility({
@@ -2978,6 +3067,17 @@ function Template() {
       editor.canvas.renderAll();
     });
 
+    textBox.on('mouseup', function () {
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setSelectedTool('text');
+      setActiveTab('positionSize');
+    });
+
     let height = textBox.height;
     let width = textBox.width;
 
@@ -3008,16 +3108,6 @@ function Template() {
       textBox.bFontId = bFontId;
       console.log('boxItemId: ', boxItemId);
     }
-    textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
-      setPositionX(textBox.left.toFixed(1));
-      setPositionY(textBox.top.toFixed(1));
-      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
-      setIsHeaderVisible(true);
-      setSelectedTool('text');
-      setActiveTab('positionSize');
-    });
 
     editor.canvas.on('mouse:down', function (options) {
       if (options.target !== textBox) {
@@ -3043,7 +3133,8 @@ function Template() {
       borderColor: 'dark',
       width: 150,
       height: 100,
-      backgroundColor: getRandomColor()
+      backgroundColor: getRandomColor(),
+      editable: false
       // selectionBackgroundColor: 'black'
     });
 
@@ -3137,7 +3228,7 @@ function Template() {
   };
 
   const addProductHeader = async () => {
-    const textBox = new fabric.Text('Header', {
+    const textBox = new fabric.Textbox('Header', {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
@@ -3147,9 +3238,10 @@ function Template() {
       textAlign: 'center',
       opacity: 1.0,
       borderColor: 'dark',
-      width: 200,
-      height: 200,
-      backgroundColor: getRandomColor()
+      width: 100,
+      //height: 200,
+      backgroundColor: getRandomColor(),
+      editable: false
       // selectionBackgroundColor: 'black'
     });
 
@@ -3196,6 +3288,17 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      setHeight(height.toFixed(1));
+      setWidth(width.toFixed(1));
+      setPositionX(textBox.left.toFixed(1));
+      setPositionY(textBox.top.toFixed(1));
+      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
+      setIsHeaderVisible(true);
+      setActiveTab('positionSize');
+      setSelectedTool('text');
+    });
+
+    textBox.on('mouseup', function () {
       toggleHeaderVisibility();
     });
 
@@ -3235,17 +3338,6 @@ function Template() {
 
     let height = textBox.height;
     let width = textBox.width;
-
-    textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
-      setPositionX(textBox.left.toFixed(1));
-      setPositionY(textBox.top.toFixed(1));
-      setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
-      setIsHeaderVisible(true);
-      setActiveTab('positionSize');
-      setSelectedTool('text');
-    });
 
     editor.canvas.on('mouse:down', function (options) {
       if (options.target !== textBox) {
@@ -3300,15 +3392,79 @@ function Template() {
       .join('');
   };
 
+  // useEffect(() => {
+  //   getAllFont();
+  // }, []);
+
+  // useEffect(() => {
+  //   // Apply dynamic font-face rules when fonts are updated
+  //   if (fonts.length > 0) {
+  //     const fontFaceRule = generateFontFaceRule(fonts);
+  //     const styleElement = document.createElement('style');
+  //     document.head.appendChild(styleElement);
+  //     styleElement.textContent = fontFaceRule;
+  //   }
+  // }, [fonts]);
+
+  // // Load the font dynamically and apply it to the canvas
+  // const loadAndUseFont = (fontName) => {
+  //   const myFont = new FontFaceObserver(fontName);
+
+  //   myFont
+  //     .load()
+  //     .then(() => {
+  //       const activeObject = editor.canvas.getActiveObject();
+  //       if (activeObject) {
+  //         activeObject.set('fontFamily', fontName);
+  //         editor.canvas.requestRenderAll();
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       console.error(`Font loading failed: ${fontName}`, e);
+  //       alert(`Font loading failed: ${fontName}. Please check the font URL or try again later.`);
+  //     });
+  // };
+
+  // const handleFontChange = (event) => {
+  //   const selectedFont = event.target.value;
+  //   setSelectedFont(selectedFont);
+
+  //   const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
+  //   const bFontId = selectedFontData ? selectedFontData.fontId : null;
+  //   console.log('Selected Font:', selectedFont);
+  //   console.log('Selected Font bFontId:', bFontId);
+
+  //   const activeObject = editor.canvas.getActiveObject();
+  //   if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
+  //     activeObject.set({
+  //       fontFamily: selectedFont,
+  //       bFontId: bFontId
+  //     });
+  //     activeObject.fire('modified');
+  //     editor.canvas.requestRenderAll();
+  //   } else {
+  //     // Load and use the font if it's not 'Times New Roman'
+  //     if (selectedFont !== 'Times New Roman') {
+  //       loadAndUseFont(selectedFont);
+  //     }
+  //   }
+  // };
   useEffect(() => {
     getAllFont();
+  }, []);
 
+  useEffect(() => {
     // Apply dynamic font-face rules when fonts are updated
     if (fonts.length > 0) {
       const fontFaceRule = generateFontFaceRule(fonts);
       const styleElement = document.createElement('style');
       document.head.appendChild(styleElement);
       styleElement.textContent = fontFaceRule;
+
+      // Cleanup style element on component unmount
+      return () => {
+        document.head.removeChild(styleElement);
+      };
     }
   }, [fonts]);
 
@@ -3316,19 +3472,43 @@ function Template() {
   const loadAndUseFont = (fontName) => {
     const myFont = new FontFaceObserver(fontName);
 
-    myFont
+    return myFont
       .load()
       .then(() => {
-        const activeObject = editor.canvas.getActiveObject();
-        if (activeObject) {
-          activeObject.set('fontFamily', fontName);
-          editor.canvas.requestRenderAll();
-        }
+        console.log(`Font loaded successfully: ${fontName}`);
       })
       .catch((e) => {
         console.error(`Font loading failed: ${fontName}`, e);
         alert(`Font loading failed: ${fontName}. Please check the font URL or try again later.`);
       });
+  };
+
+  // Handle font change and ensure the font is loaded before applying
+  const handleFontChange = async (event) => {
+    const selectedFont = event.target.value;
+    setSelectedFont(selectedFont);
+
+    const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
+    const bFontId = selectedFontData ? selectedFontData.fontId : null;
+
+    console.log('Selected Font:', selectedFont);
+    console.log('Selected Font bFontId:', bFontId);
+
+    const activeObject = editor.canvas.getActiveObject();
+
+    if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
+      // First, load the font and wait for it to finish loading
+      await loadAndUseFont(selectedFont);
+
+      // Then apply the font to the active object after it has loaded
+      activeObject.set({
+        fontFamily: selectedFont,
+        bFontId: bFontId
+      });
+
+      activeObject.fire('modified');
+      editor.canvas.requestRenderAll();
+    }
   };
 
   const handlePopState = (event) => {
@@ -3355,31 +3535,6 @@ function Template() {
     };
   }, [navigate, currentPath]);
 
-  const handleFontChange = (event) => {
-    const selectedFont = event.target.value;
-    setSelectedFont(selectedFont);
-
-    const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
-    const bFontId = selectedFontData ? selectedFontData.fontId : null;
-    console.log('Selected Font:', selectedFont);
-    console.log('Selected Font bFontId:', bFontId);
-
-    const activeObject = editor.canvas.getActiveObject();
-    if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
-      activeObject.set({
-        fontFamily: selectedFont,
-        bFontId: bFontId
-      });
-      activeObject.fire('modified');
-      editor.canvas.requestRenderAll();
-    } else {
-      // Load and use the font if it's not 'Times New Roman'
-      if (selectedFont !== 'Times New Roman') {
-        loadAndUseFont(selectedFont);
-      }
-    }
-  };
-
   return (
     <div className="app">
       <header className="header">
@@ -3389,7 +3544,7 @@ function Template() {
             alt="Icon"
             style={{ width: '40px', height: '40px', marginRight: '10px' }}
           />
-          <h2 style={{ margin: '0' }}>hhh</h2> {/* Thay thế bằng tên của canvas */}
+          <h2 style={{ margin: '0' }}>SMARTMENU</h2> {/* Thay thế bằng tên của canvas */}
         </div>
         <div className="actions">
           {(selectedTool == 'text' || selectedTool == 'textBox') && (
@@ -3397,12 +3552,12 @@ function Template() {
               {/* <select id="font-family"></select> */}
 
               {/* <select value={selectedFont} onChange={handleFontChange}>
-              {fonts.map((font) => (
-                <option key={font} value={font}>
-                  {font}
-                </option>
-              ))}
-            </select> */}
+            {fonts.map((font) => (
+              <option key={font} value={font}>
+                {font}
+              </option>
+            ))}
+          </select> */}
 
               <select value={selectedFont} onChange={handleFontChange}>
                 {fonts.map((font) => (
@@ -3434,13 +3589,13 @@ function Template() {
               <label htmlFor="font-color">Background Color:</label>
               <input type="color" id="font-color" onChange={(e) => changeBackgroundColor(e)} value={backgroundColor} />
               {/* <Button onClick={() => handleTabClick('positionSize')} style={{ color: 'white' }}>
-          Position & Size
-        </Button> */}
+        Position & Size
+      </Button> */}
               <input type="range" id="opacity" value={opacity} onChange={(e) => changeOpacity(e)} min="0" max="1" step="0.01" />
 
               {/* <button onClick={toggleTextCase} className="case-button">
-              Toggle Case
-            </button> */}
+            Toggle Case
+          </button> */}
             </div>
           )}
           <div className="divider"></div>
@@ -3448,13 +3603,6 @@ function Template() {
             Save
           </button>
           <div className="profile">User</div>
-          <button
-            className="close-btn"
-            style={{ cursor: 'pointer', marginLeft: '20px' }}
-            onClick={() => navigate('/utils/util-mytemplate')}
-          >
-            <img src={close} alt="Close" />
-          </button>
         </div>
       </header>
 
@@ -3478,8 +3626,8 @@ function Template() {
               Render Layer
             </Button>
             {/* <Button onClick={() => handleTabClick('menuCollection')} startIcon={<CloudUploadIcon />} style={{ color: 'white' }}>
-              Menu Collection
-            </Button> */}
+            Menu Collection
+          </Button> */}
           </div>
 
           <div className={`tab-container ${activeTab ? 'open' : ''}`}>
@@ -3494,7 +3642,7 @@ function Template() {
                 {activeSubtab === 'position' && (
                   <div className="subtab-content">
                     {/* {selectedTool == 'rect' && (
-                      <> */}
+                    <> */}
                     <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
                     <div className="position-options">
                       <div className="dimension-options">
@@ -3512,9 +3660,9 @@ function Template() {
                       </div>
                     </div>
                     {/* </>
-                    )} */}
+                  )} */}
                     {/* {selectedTool !== 'text' && (
-                      <> */}
+                    <> */}
                     <div className="position-options">
                       <div className="dimension-options">
                         <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
@@ -3590,7 +3738,7 @@ function Template() {
                       />
                     </div>
                     {/* </>
-                    )} */}
+                  )} */}
                   </div>
                 )}
 
@@ -3602,23 +3750,23 @@ function Template() {
                     <Button onClick={() => addProductName()}>Add Name</Button>
                     <Button onClick={() => addProductPrice()}>Add Price</Button>
                     {/* <Button onClick={() => addProductIcon()} style={{ color: 'black' }}>
-                      Add Icon
-                    </Button>*/}
+                    Add Icon
+                  </Button>*/}
                     <Button onClick={() => addProductHeader()}>Add Header</Button>
                     {/* <label htmlFor="product-quantity" style={{ color: 'white' }}>
-                      Quantity:
-                    </label> */}
+                    Quantity:
+                  </label> */}
                     {/* <input
-                      type="number"
-                      id="product-quantity"
-                      value={quantity}
-                      onChange={handleQuantityChange}
-                      onKeyDown={(e) => {
-                        if (e.key === '-' || e.key === '+') {
-                          e.preventDefault(); // Prevent input of '-' or '+'
-                        }
-                      }}
-                    /> */}
+                    type="number"
+                    id="product-quantity"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    onKeyDown={(e) => {
+                      if (e.key === '-' || e.key === '+') {
+                        e.preventDefault(); // Prevent input of '-' or '+'
+                      }
+                    }}
+                  /> */}
                   </div>
                 )}
               </div>
@@ -3628,7 +3776,7 @@ function Template() {
               <div className="tab">
                 <h4 style={{ color: 'white' }}>Text</h4>
                 {/* <button onClick={() => addText('Heading')}>Heading</button>
-                <button onClick={() => addText('Subheading')}>Subheading</button> */}
+              <button onClick={() => addText('Subheading')}>Subheading</button> */}
                 <button onClick={() => addText('Body Text')}>Body Text</button>
               </div>
             )}
