@@ -19,6 +19,7 @@ const icons = {
 const brandManagerUtilities = {
   id: 'utilities',
   type: 'group',
+  title: 'Management',
   children: [
     {
       id: 'util-staffs',

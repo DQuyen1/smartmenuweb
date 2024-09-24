@@ -920,8 +920,15 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
                               src={groupItem.product.productImgPath}
                               alt={groupItem.product.productName}
                               onError={() => setImgError(true)}
+                              style={{
+                                maxWidth: '100px',
+                                minWidth: '100px',
+                                maxHeight: '100px',
+                                minHeight: '100px',
+                                objectFit: 'contain'
+                              }}
                             />
-                          ) : (
+                          ) : ( 
                             <ImageNotSupported
                               style={{
                                 maxWidth: '100px',

@@ -22,7 +22,8 @@ import {
   InputLabel,
   InputAdornment,
   TablePagination,
-  CircularProgress
+  CircularProgress,
+  DialogContentText
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
@@ -55,6 +56,9 @@ const UtilitiesBrandStaff = () => {
     userId: '',
     storeId: 0
   });
+
+  const [openDialog, setOpenDialog] = React.useState(false);
+
   const navigate = useNavigate();
   const [validationErrors, setValidationErrors] = useState({});
   const [filteredStores, setFilteredStores] = useState([]);
@@ -245,6 +249,7 @@ const UtilitiesBrandStaff = () => {
       }).showToast();
       setIsLoading(true);
       fetchData();
+      setOpenDialog(true);
     } catch (err) {
       setError('Error adding user');
     } finally {
@@ -495,6 +500,7 @@ const UtilitiesBrandStaff = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
       <Dialog open={assignOpen} onClose={handleAssignClose}>
         <DialogTitle>Assign to User</DialogTitle>
         <DialogContent>
@@ -571,6 +577,23 @@ const UtilitiesBrandStaff = () => {
           <Button onClick={handleDeleteUser} color="error" variant="contained" disabled={isLoading}>
             {isLoading ? 'Disabling...' : 'Disable'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title" variant="h3" sx={{ paddingBottom: '20px' }}>
+          Register success
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">Verification mail have been seen to user email</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Ok</Button>
         </DialogActions>
       </Dialog>
     </MainCard>
