@@ -32,6 +32,7 @@ import { useParams } from 'react-router';
 
 import canvasFeatures from 'utils/canvasFeatures';
 import dataHandler from 'utils/dataHandler';
+import { IconStackForward, IconStackBackward, IconStackBack, IconStackFront } from '@tabler/icons-react';
 
 function Template() {
   const { templateId } = useParams();
@@ -3484,7 +3485,7 @@ function Template() {
           <div className={`tab-container ${activeTab ? 'open' : ''}`}>
             {activeTab === 'positionSize' && (
               <div className="tab">
-                {/* <h4 style={{ color: 'white' }}>Position & Size</h4> */}
+                <h4>Custom</h4>
                 <div className="subtabs">
                   <Button onClick={() => handleSubtabClick('position')}>Position</Button>
                   {selectedTool === 'rect' && <div className="subtab-separator"></div>}
@@ -3494,49 +3495,100 @@ function Template() {
                   <div className="subtab-content">
                     {/* {selectedTool == 'rect' && (
                       <> */}
-                    <label htmlFor="width">Width:</label>
-                    <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
-
-                    <label htmlFor="height">Height:</label>
-                    <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
+                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
+                    <div className="position-options">
+                      <div className="dimension-options">
+                        <label htmlFor="width" style={{ marginBottom: '5px', color: 'white' }}>
+                          Width:
+                        </label>
+                        <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
+                      </div>
+                      <div className="subtab-separator"></div>
+                      <div className="dimension-options">
+                        <label htmlFor="height" style={{ marginBottom: '5px', color: 'white' }}>
+                          Height:
+                        </label>
+                        <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
+                      </div>
+                    </div>
                     {/* </>
                     )} */}
                     {/* {selectedTool !== 'text' && (
                       <> */}
-                    <label htmlFor="positionX">Position X:</label>
-                    <input
-                      type="number"
-                      id="positionX"
-                      value={positionX}
-                      onChange={(e) => handleDimensionChange(e, 'positionX')}
-                      min={-Infinity}
-                    />
-
-                    <label htmlFor="positionY">Position Y:</label>
-                    <input
-                      type="number"
-                      id="positionY"
-                      value={positionY}
-                      onChange={(e) => handleDimensionChange(e, 'positionY')}
-                      min={-Infinity}
-                    />
+                    <div className="position-options">
+                      <div className="dimension-options">
+                        <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
+                          Position X:
+                        </label>
+                        <input
+                          type="number"
+                          id="positionX"
+                          value={positionX}
+                          onChange={(e) => handleDimensionChange(e, 'positionX')}
+                          min={-Infinity}
+                        />
+                      </div>
+                      <div className="subtab-separator"></div>
+                      <div className="dimension-options">
+                        <label htmlFor="positionY" style={{ marginBottom: '5px', color: 'white' }}>
+                          Position Y:
+                        </label>
+                        <input
+                          type="number"
+                          id="positionY"
+                          value={positionY}
+                          onChange={(e) => handleDimensionChange(e, 'positionY')}
+                          min={-Infinity}
+                        />
+                      </div>
+                    </div>
+                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Arrange</h5>
                     <div className="button-row">
-                      <button onClick={() => changeZIndex('sendBackward')}>Send Backwards</button>
-                      <button onClick={() => changeZIndex('sendToBack')}>Send to Back</button>
+                      <button
+                        onClick={() => changeZIndex('sendBackward')}
+                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center', width: '125px' }}
+                      >
+                        <IconStackBackward size={30} />
+                        Send Backwards
+                      </button>
+                      <button
+                        onClick={() => changeZIndex('sendToBack')}
+                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                      >
+                        <IconStackBack size={30} />
+                        Send to Back
+                      </button>
                     </div>
                     <div className="button-row">
-                      <button onClick={() => changeZIndex('bringForward')}>Bring Forward</button>
-                      <button onClick={() => changeZIndex('bringToFront')}>Bring to Front</button>
+                      <button
+                        onClick={() => changeZIndex('bringForward')}
+                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                      >
+                        <IconStackForward size={30} />
+                        Bring Forward
+                      </button>
+                      <button
+                        onClick={() => changeZIndex('bringToFront')}
+                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                      >
+                        <IconStackFront size={30} />
+                        Bring to Front
+                      </button>
                     </div>
-                    <label htmlFor="rotationAngle">Rotation Angle:</label>
-                    <input
-                      type="number"
-                      value={rotationAngle}
-                      placeholder="Enter rotation angle"
-                      onChange={handleRotationChange}
-                      min="-180"
-                      max="180"
-                    />
+                    <div className="advanced-options">
+                      <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Advance</h5>
+                      <label htmlFor="rotationAngle" style={{ marginBottom: '5px' }}>
+                        Rotation Angle:
+                      </label>
+                      <input
+                        type="number"
+                        value={rotationAngle}
+                        placeholder="Enter rotation angle"
+                        onChange={handleRotationChange}
+                        min="-180"
+                        max="180"
+                      />
+                    </div>
                     {/* </>
                     )} */}
                   </div>
@@ -3544,6 +3596,7 @@ function Template() {
 
                 {activeSubtab === 'product' && selectedTool === 'rect' && (
                   <div className="subtab-content">
+                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Add elements</h5>
                     <Button onClick={() => addProductDescription()}>Add Description</Button>
                     <Button onClick={() => addProductImage()}>Add Image</Button>
                     <Button onClick={() => addProductName()}>Add Name</Button>
@@ -3573,7 +3626,7 @@ function Template() {
 
             {activeTab === 'text' && (
               <div className="tab">
-                <h4>Text</h4>
+                <h4 style={{ color: 'white' }}>Text</h4>
                 {/* <button onClick={() => addText('Heading')}>Heading</button>
                 <button onClick={() => addText('Subheading')}>Subheading</button> */}
                 <button onClick={() => addText('Body Text')}>Body Text</button>
@@ -3581,7 +3634,7 @@ function Template() {
             )}
             {activeTab === 'background' && (
               <div className="tab">
-                <h4>Background</h4>
+                <h4 style={{ color: 'white' }}>Background</h4>
                 <div className="file-input-wrapper">
                   <input type="file" accept="image/*" onChange={handleBackgroundImageUpload} />
                   <span className="file-input-label">Choose an background...</span>
@@ -3590,7 +3643,7 @@ function Template() {
             )}
             {activeTab === 'images' && (
               <div className="tab narrow-tab">
-                <h4>Image</h4>
+                <h4 style={{ color: 'white' }}>Image</h4>
                 {/* <input type="file" accept="image/*" onChange={handleImageUpload} /> */}
                 <div className="file-input-wrapper">
                   <input type="file" accept="image/*" onChange={handleImageUpload} />

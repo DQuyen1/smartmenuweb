@@ -60,7 +60,7 @@
   border: 1px solid #444;
   border-radius: 8px;
   background-color: transparent;
-  color: black;
+  color: #444;
   font-size: 14px;
   width: 260px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -72,7 +72,7 @@
   border: 1px solid #444;
   border-radius: 8px;
   background-color: transparent;
-  color: black;
+  color: #444;
   font-size: 14px;
   width: 100px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -84,7 +84,7 @@
   border: 1px solid #444;
   border-radius: 8px;
   background-color: transparent;
-  color: black;
+  color: #444;
   width: 60px;
   height: 35px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -100,7 +100,7 @@
 }
 
 .background-options label {
-  color: black; /* Màu chữ trắng */
+  color: #444; /* Màu chữ trắng */
   font-size: 14px;
   width: 110px;
   align-items: center;
@@ -111,7 +111,7 @@
   border: 1px solid #444;
   border-radius: 8px;
   background-color: transparent;
-  color: black;
+  color: #444;
   width: 60px;
   height: 35px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -363,7 +363,7 @@
 .button-row {
   display: flex;
   gap: 10px; /* Add some space between buttons */
-  margin-bottom: 10px; /* Space between rows */
+  margin-bottom: 5px; /* Space between rows */
 }
 
 
@@ -420,7 +420,9 @@
   color: white;
   font-weight: bold;
   font-size: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  text-align: left;
+  font-size: 22px;
 }
 
 .tab button {
@@ -428,7 +430,7 @@
   width: 100%;
   padding: 12px 20px;
   margin-top: 10px;
-  background-color: #292b2f;
+  background-color: #4444448b;
   border: 1px solid #444;
   color: white;
   border-radius: 8px;
@@ -463,9 +465,9 @@
   display: block;
   width: 100%;
   padding: 12px 15px;
-  background-color: #292b2f;
+  background-color: #4444448b;
   border: 1px solid #444;
-  color: #ccc;
+  color: white;
   border-radius: 8px;
   text-align: left;
   font-size: 16px;
@@ -577,6 +579,11 @@
   transform: scale(1.0); /* Scale the image to 110% on hover */
 }
 
+.tab {
+  background-color: black;
+}
+
+
 /* Add necessary styles for new tab and inputs */
 .tab input {
   width: 100%;
@@ -584,7 +591,7 @@
   margin-top: 10px;
   border: 1px solid #dee2e6;
   border-radius: 4px;
-  background-color: #f8f9fa;
+  background-color: #444;
 }
 
 .subtabs {
@@ -598,15 +605,14 @@
 }
 
 .subtab-content {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .subtab-content label {
   color: white; /* Màu chữ vàng cho label */
   font-weight: bold;
   // margin-bottom: 5px;
-  
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .subtab-content input[type="number"] {
@@ -614,27 +620,51 @@
   padding: 10px;
   border: 1px solid #444; /* Đường viền màu tối */
   border-radius: 8px;
-  background-color: #2a2a2c;
-  color: #fff; /* Màu chữ trắng */
+  background-color: #fff;
+  color: #2a2a2c; /* Màu chữ trắng */
   font-size: 16px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: 10px;
+  // margin-bottom: 10px;
   margin-top: 0px;
 }
 
-.subtab-content input[type="number"]:focus {
-  border-color: white; /* Màu viền khi focus */
-  box-shadow: 0 0 5px rgba(255, 204, 0, 0.5); /* Hiệu ứng bóng */
-  outline: none; /* Loại bỏ đường viền mặc định */
-}
+// .subtab-content input[type="number"]:focus {
+//   border-color: white; /* Màu viền khi focus */
+//   box-shadow: 0 0 5px rgba(255, 204, 0, 0.5); /* Hiệu ứng bóng */
+//   outline: none; /* Loại bỏ đường viền mặc định */
+// }
 
-.subtab-content input[type="number"]:hover {
-  border-color: white; /* Thay đổi màu viền khi hover */
-}
+// .subtab-content input[type="number"]:hover {
+//   border-color: white; /* Thay đổi màu viền khi hover */
+// }
 
 .subtab-content input[type="number"]::-webkit-inner-spin-button,
 .subtab-content input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0; /* Ẩn nút tăng giảm của input number */
 }
+
+.position-options {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.position-options .dimension-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.position-options .subtab-separator {
+  width: 13px;
+}
+
+.advanced-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
 
