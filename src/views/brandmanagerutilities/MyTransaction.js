@@ -81,44 +81,24 @@ const ManageTransaction = () => {
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
-      let response;
-      let totalResponse;
-      if(brandId === 'null'){
-        totalResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
-      }else{
-        totalResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
-        
-      }
+      console.log("brandId: ", brandId);
+      const totalResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
+        params: {
+          brandId: brandId,
+          pageSize: 100000000,
+          pageNumber: 1,
+          filter: filter
+        }
+      });
       setTotalCount(totalResponse.data.length);
-      if (brandId === 'null') {
-        response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
-          params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
-            filter: searchTerm
-          }
-        });
-      } else {
-        response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
-          params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
-            filter: searchTerm
-          }
-        });
-      }
+
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
+        params: {
+          pageSize: pageSize,
+          pageNumber: pageNumber + 1,
+          filter: searchTerm
+        }
+      });
 
       const transactionsData = response.data;
 
@@ -251,7 +231,7 @@ const ManageTransaction = () => {
         </Box>
       ) : error ? (
         <Typography color="error">{error}</Typography>
-      ) : (
+      ) : ( 
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
             <TableHead>
