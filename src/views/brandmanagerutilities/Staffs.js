@@ -19,7 +19,8 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  TablePagination
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
@@ -28,6 +29,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useNavigate } from 'react-router-dom';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+import { Delete, DisabledByDefault, DisabledByDefaultRounded, Visibility } from '@mui/icons-material';
+import { set } from 'lodash';
 
 const Staff = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -42,12 +45,15 @@ const Staff = () => {
     email: '',
     role: 2
   });
-  const [, setStores] = useState([]); // State for stores
+  const [stores, setStores] = useState([]); // State for stores
   const [assignData, setAssignData] = useState({
-    brandId: localStorage.getItem('brandId'),
-    userId: '',
-    storeId: ''
+    brandStaffId: 0,
+    userId: 0,
+    storeId: 0
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
   const [validationErrors, setValidationErrors] = useState({});
   const [filteredStores, setFilteredStores] = useState([]);
@@ -94,9 +100,14 @@ const Staff = () => {
     try {
       const [userResponse, brandResponse, allStoresResponse] = await Promise.all([
         axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Users?pageNumber=1&pageSize=1000'),
-        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands/BrandStaff?pageNumber=1&pageSize=1000'),
-        axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores?pageNumber=1&pageSize=1000') // Fetch stores
+        axios.get(
+          `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs?brandId=${brandId}&pageNumber=1&pageSize=1000`
+        ),
+        axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores?brandId=${brandId}&pageNumber=1&pageSize=1000`) // Fetch stores
       ]);
+
+      console.log(brandResponse.data);
+      setBrandData(brandResponse.data);
 
       const filteredUsers = userResponse.data.filter((user) => user.role === 2);
       const userMap = {};
@@ -109,7 +120,7 @@ const Staff = () => {
       allStoresResponse.data.forEach((store) => {
         storesMap[store.storeId] = store.storeName;
       });
-      setStores(storesMap); // Set stores data
+      setStores(allStoresResponse.data); // Set stores data
 
       const updatedBrandData = brandResponse.data
         .filter((brand) => brand.brandId === numericBrandId)
@@ -131,11 +142,8 @@ const Staff = () => {
         });
 
       const allUsers = updatedBrandData.flatMap((brand) => brand.brandStaffs);
-      const brandId = localStorage.getItem('brandId');
       const filteredStores = allStoresResponse.data.filter((store) => store.brandId === brandId);
       setFilteredStores(filteredStores);
-
-      setBrandData(allUsers);
     } catch (err) {
       setError('Error fetching data');
     } finally {
@@ -148,7 +156,7 @@ const Staff = () => {
   }, []);
 
   const handleViewDetails = (staff) => {
-    navigate('/staff-details', { state: { staffId: staff.userId } });
+    navigate('/staff-details', { state: { store: staff } });
   };
 
   const handleOpen = () => {
@@ -173,9 +181,11 @@ const Staff = () => {
 
   const handleAssignChange = async (e) => {
     const { name, value } = e.target;
+    console.log(value);
     setAssignData({ ...assignData, storeId: value });
     setValidationErrors({ ...validationErrors, [name]: '' });
     setError(null);
+    setIsSubmitting(true);
 
     if (name === 'brandId') {
       const storesForBrand = filteredStores.filter((store) => store.brandId === parseInt(value));
@@ -190,14 +200,9 @@ const Staff = () => {
 
     try {
       // Create the new user
-      await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Register', newUser);
+      const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Register', newUser);
 
-      // Login with the newly created user
-      const loginResponse = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Auth/Login', {
-        userName: newUser.userName,
-        password: newUser.password
-      });
-      const userId = loginResponse.data.userId;
+      const userId = response.data.userId;
       setAssignData({ ...assignData, userId });
       setAssignOpen(true);
     } catch (err) {
@@ -211,7 +216,7 @@ const Staff = () => {
   const checkExistingAssignment = async () => {
     try {
       const response = await axios.get(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs?brandId=${assignData.brandId}`
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs?brandStaffId=${assignData.brandStaffId}`
       );
       const existingStoreManagers = response.data.filter((staff) => staff.storeId !== null && staff.storeId === assignData.storeId);
       return existingStoreManagers.length > 0; // If there are any store managers, it means an assignment exists
@@ -222,54 +227,193 @@ const Staff = () => {
   };
 
   const handleAssignSubmit = async () => {
-    if (!validateAssignData()) {
-      return;
-    }
+    // if (!validateAssignData()) {
+    //   return;
+    // }
+    setIsSubmitting(false);
 
     const existingAssignment = await checkExistingAssignment();
     if (existingAssignment) {
       setError('This store already has a Store Manager assigned');
+      setIsSubmitting(true);
       return;
     }
 
-    try {
-      await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs', assignData);
-      Toastify({
-        text: 'created staff successfully!',
-        duration: 3000,
-        gravity: 'top',
-        position: 'right',
-        backgroundColor: 'linear-gradient(to right, #00b09b, #96c93d)'
-      }).showToast();
-      setIsLoading(true);
-      fetchData();
-    } catch (err) {
-      setError('Error assigning user to brand');
-    } finally {
-      setIsLoading(false);
-      handleAssignClose();
+    const data = {
+      userId: assignData.userId,
+      storeId: assignData.storeId
+    };
+
+    axios
+      .put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs/${assignData.brandStaffId}`, data)
+      .then((response) => {
+        Toastify({
+          text: 'Assigned staff successfully!',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          backgroundColor: 'linear-gradient(to right, #00b09b, #96c93d)'
+        }).showToast();
+        fetchData();
+        console.log('Response:', response.data);
+        handleAssignClose();
+        setIsSubmitting(true);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        setIsSubmitting(false);
+        setError('Error assigning user to brand');
+      });
+
+    // try {
+    //   axios.put(, data);
+
+    //   console.log(data);
+    //   setIsLoading(true);
+
+    //   fetchData();
+    // } catch (err) {
+    //   setError('Error assigning user to brand');
+    // } finally {
+    //   setIsLoading(false);
+    //   handleAssignClose();
+    // }
+  };
+
+  const handleAssignOpen = (brand) => {
+    setAssignData({ ...assignData, userId: brand.userId, brandStaffId: brand.brandStaffId });
+    setAssignOpen(true);
+  };
+
+  // const handleSearchChange = (e) => {
+  //   setSearchQuery(e.target.value);
+  // };
+
+  // Paginated
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to the first page when changing rows per page
+  };
+
+  // Searching
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredBrandData, setFilteredBrandData] = useState([]);
+
+  useEffect(() => {
+    const results = brandData.filter(
+      (brand) =>
+        brand.user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        brand.user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBrandData(results);
+  }, [searchTerm, brandData]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  const handleChangeRoleSelect = (e) => {
+    const { value } = e.target;
+
+    switch (value) {
+      case 0:
+        setFilteredBrandData(brandData);
+        break;
+      case 1:
+        setFilteredBrandData(brandData.filter((brand) => brand.user.role === 1));
+        break;
+      case 2:
+        setFilteredBrandData(brandData.filter((brand) => brand.user.role === 2));
+        break;
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
+  const handleChangeStoreSelect = (e) => {
+    const { value } = e.target;
+    if (value === 0) {
+      setFilteredBrandData(brandData);
+    } else {
+      setFilteredBrandData(brandData.filter((brand) => brand.storeId === value));
+    }
   };
 
-  // Filter the staff based on the search query
-  const filteredStaff = brandData.filter(
-    (staff) =>
-      staff.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      staff.storeName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [deleteData, setDeleteData] = useState(0);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState([]);
+
+  const handleDeleteOpen = (brand) => {
+    setDeleteData(brand.brandStaffId);
+    setOpenDeleteDialog({
+      ...openDeleteDialog,
+      [brand.brandStaffId]: true
+    });
+  };
+
+  const handleSubmitDeleteBrandStaff = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    axios
+      .delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs/${deleteData}`)
+      .then((response) => {
+        Toastify({
+          text: 'Deleted staff successfully!',
+          duration: 3000,
+          gravity: 'top',
+          position: 'right',
+          color: 'white',
+          backgroundColor: '#00E676'
+        }).showToast();
+        fetchData();
+        console.log('Response:', response.data);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        setIsSubmitting(false);
+        setError('Error deleting staff');
+      });
+  };
 
   return (
     <MainCard title="Brand Staffs">
       <Grid container spacing={gridSpacing}>
         <Grid item xs={12}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <TextField label="Search" variant="outlined" value={searchQuery} onChange={handleSearchChange} sx={{ marginBottom: '16px' }} />
-            <Button variant="contained" color="primary" onClick={handleOpen}>
+          <Box justifyContent="space-between" alignItems="center">
+            <TextField label="Search" variant="outlined" value={searchTerm} onChange={handleSearchChange} sx={{ marginBottom: '16px' }} />
+            <FormControl sx={{ marginLeft: '1rem' }}>
+              <InputLabel id="roleSelect">Role</InputLabel>
+              <Select
+                labelId="roleSelect"
+                id="roleSelect"
+                sx={{ minWidth: '150px' }}
+                defaultValue={0}
+                label="Age"
+                onChange={handleChangeRoleSelect}
+              >
+                <MenuItem value={0}>All</MenuItem>
+                <MenuItem value={1}>Brand Manager</MenuItem>
+                <MenuItem value={2}>Store Manager</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl sx={{ marginLeft: '1rem' }}>
+              <InputLabel id="storeSelect">Store</InputLabel>
+              <Select labelId="storeSelect" sx={{ minWidth: '210px' }} id="storeSelect" defaultValue={0} onChange={handleChangeStoreSelect}>
+                <MenuItem value={0}>All</MenuItem>
+                {stores.map((store) => (
+                  <MenuItem key={store.storeId} value={store.storeId}>
+                    {store.storeName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Button variant="contained" color="primary" sx={{ float: 'right' }} onClick={handleOpen}>
               Add Staff
             </Button>
           </Box>
@@ -279,125 +423,212 @@ const Staff = () => {
               <CircularProgress />
             </Box>
           ) : brandData.length > 0 ? (
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>User Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Store</TableCell>
-                    <TableCell>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredStaff.map((staff) => (
-                    <TableRow key={staff.userId} hover>
-                      <TableCell>{staff.userName}</TableCell>
-                      <TableCell>{staff.email}</TableCell>
-                      <TableCell>{staff.storeName}</TableCell>
-                      <TableCell>
-                        <Button size="small" color="primary" onClick={() => handleViewDetails(staff)}>
-                          View Details
-                        </Button>
-                      </TableCell>
+            <>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Role</TableCell>
+                      <TableCell>User Name</TableCell>
+                      <TableCell>Email</TableCell>
+                      <TableCell>Store</TableCell>
+                      <TableCell>Actions</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {filteredBrandData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((brand) => (
+                      <TableRow key={brand.user.userId} hover>
+                        <TableCell>{brand.user.role === 1 ? 'Brand Manager' : 'Store Manager'}</TableCell>
+                        <TableCell>{brand.user.userName}</TableCell>
+                        <TableCell>{brand.user.email}</TableCell>
+                        {brand.storeId === null && brand.user.isDeleted === false ? (
+                          <TableCell>
+                            <Button
+                              size="small"
+                              sx={{ color: 'white' }}
+                              color="success"
+                              onClick={() => handleAssignOpen(brand)}
+                              variant="contained"
+                            >
+                              Assign
+                            </Button>
+                          </TableCell>
+                        ) : (
+                          <TableCell>
+                            {stores.filter((store) => store.storeId === brand.storeId).map((store) => store.storeName) || 'N/A'}
+                          </TableCell>
+                        )}
+                        <TableCell>
+                          <Button
+                            variant="outlined"
+                            color="info"
+                            size="small"
+                            onClick={() => handleViewDetails(brand)}
+                            startIcon={<Visibility />}
+                            sx={{
+                              color: 'info.main',
+                              borderColor: 'info.main',
+                              '&:hover': {
+                                backgroundColor: 'info.light'
+                              },
+                              marginRight: '0.5rem'
+                            }}
+                          >
+                            View Details
+                          </Button>
+                          {/* <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
+                            Disable
+                          </Button> */}
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            size="small"
+                            onClick={() => handleDeleteOpen(brand)}
+                            startIcon={<Delete />}
+                            sx={{
+                              color: 'error.main',
+                              borderColor: 'error.main',
+                              '&:hover': {
+                                backgroundColor: 'error.light'
+                              }
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </TableCell>
+
+                        <Dialog
+                          open={openDeleteDialog[brand.brandStaffId] || false}
+                          onClose={() => {
+                            setOpenDeleteDialog({ ...openDeleteDialog, [brand.brandStaffId]: false }), setIsSubmitting(false);
+                          }}
+                        >
+                          <DialogTitle sx={{ minWidth: '15rem' }} variant="h3">
+                            Delete
+                          </DialogTitle>
+                          <DialogContent>
+                            Delete brand staff <b>{brand.user.userName}</b>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setOpenDeleteDialog(false)} color="secondary">
+                              Cancel
+                            </Button>
+
+                            <Button onClick={(e) => handleSubmitDeleteBrandStaff(e)} disabled={isSubmitting}>
+                              OK
+                            </Button>
+                          </DialogActions>
+                        </Dialog>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <TablePagination
+                rowsPerPageOptions={[5, 10, 25]}
+                component="div"
+                count={brandData.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+
+              <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Add New User</DialogTitle>
+                <DialogContent>
+                  <TextField
+                    margin="dense"
+                    label="User Name"
+                    name="userName"
+                    type="text"
+                    fullWidth
+                    value={newUser.userName}
+                    onChange={handleChange}
+                    error={!!validationErrors.userName}
+                    helperText={validationErrors.userName}
+                    required
+                  />
+                  <TextField
+                    margin="dense"
+                    label="Password"
+                    name="password"
+                    type="password"
+                    fullWidth
+                    value={newUser.password}
+                    onChange={handleChange}
+                    error={!!validationErrors.password}
+                    helperText={validationErrors.password}
+                    required
+                  />
+                  <TextField
+                    margin="dense"
+                    label="Email"
+                    name="email"
+                    type="email"
+                    fullWidth
+                    value={newUser.email}
+                    onChange={handleChange}
+                    error={!!validationErrors.email}
+                    helperText={validationErrors.email}
+                    required
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose} color="secondary">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSubmit} color="primary">
+                    Submit
+                  </Button>
+                </DialogActions>
+              </Dialog>
+
+              <Dialog open={assignOpen} onClose={handleAssignClose}>
+                <DialogTitle>Assign Store to User</DialogTitle>
+                <DialogContent>
+                  <FormControl fullWidth margin="dense">
+                    <InputLabel id="store-label">Store</InputLabel>
+                    <Select
+                      labelId="store-label"
+                      name="storeId"
+                      defaultValue="0"
+                      value={assignData.storeId}
+                      onChange={handleAssignChange}
+                      error={!!validationErrors.storeId}
+                    >
+                      <MenuItem value="0" disabled>
+                        Choose store
+                      </MenuItem>
+                      {stores.map((store) => (
+                        <MenuItem key={store.storeId} value={store.storeId}>
+                          {store.storeName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {validationErrors.storeId && (
+                      <Typography variant="caption" color="error">
+                        {validationErrors.storeId}
+                      </Typography>
+                    )}
+                  </FormControl>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleAssignClose} color="secondary">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAssignSubmit} color="primary" disabled={!isSubmitting}>
+                    Assign
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
           ) : (
             <Typography>No staff data found.</Typography>
           )}
         </Grid>
       </Grid>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Add New User</DialogTitle>
-        <DialogContent>
-          <TextField
-            margin="dense"
-            label="User Name"
-            name="userName"
-            type="text"
-            fullWidth
-            value={newUser.userName}
-            onChange={handleChange}
-            error={!!validationErrors.userName}
-            helperText={validationErrors.userName}
-            required
-          />
-          <TextField
-            margin="dense"
-            label="Password"
-            name="password"
-            type="password"
-            fullWidth
-            value={newUser.password}
-            onChange={handleChange}
-            error={!!validationErrors.password}
-            helperText={validationErrors.password}
-            required
-          />
-          <TextField
-            margin="dense"
-            label="Email"
-            name="email"
-            type="email"
-            fullWidth
-            value={newUser.email}
-            onChange={handleChange}
-            error={!!validationErrors.email}
-            helperText={validationErrors.email}
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} color="primary">
-            Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={assignOpen} onClose={handleAssignClose}>
-        <DialogTitle>Assign Brand to User</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel id="store-label">Store</InputLabel>
-            <Select
-              labelId="store-label"
-              name="storeId"
-              value={assignData.storeId}
-              onChange={handleAssignChange}
-              error={!!validationErrors.storeId}
-            >
-              {filteredStores.map((store) => (
-                <MenuItem key={store.storeId} value={store.storeId}>
-                  {store.storeName}
-                </MenuItem>
-              ))}
-            </Select>
-            {validationErrors.storeId && (
-              <Typography variant="caption" color="error">
-                {validationErrors.storeId}
-              </Typography>
-            )}
-          </FormControl>
-          {error && (
-            <Typography variant="caption" color="error">
-              {error}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAssignClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleAssignSubmit} color="primary">
-            Assign
-          </Button>
-        </DialogActions>
-      </Dialog>
     </MainCard>
   );
 };

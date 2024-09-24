@@ -16,7 +16,8 @@ import {
   InputLabel,
   CircularProgress,
   TextField,
-  InputAdornment
+  InputAdornment,
+  Divider
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -27,7 +28,8 @@ import MainCard from 'ui-component/cards/MainCard';
 
 const BrandStaffDetails = () => {
   const location = useLocation();
-  const { staffId } = location.state;
+  const { store } = location.state;
+  console.log(store);
   const [userData, setUserData] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
@@ -35,11 +37,11 @@ const BrandStaffDetails = () => {
   const [brands, setBrands] = useState([]);
   const [, setStores] = useState([]);
   const [brandStaffId, setBrandStaffId] = useState(null);
-  const [assignData, setAssignData] = useState({
-    brandId: '',
-    userId: staffId,
-    storeId: 0
-  });
+  // const [assignData, setAssignData] = useState({
+  //   brandId: '',
+  //   userId: staffId,
+  //   storeId: 0
+  // });
   const [filteredStores, setFilteredStores] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -48,52 +50,20 @@ const BrandStaffDetails = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Users?userId=${staffId}`);
-      setUserData(response.data[0]);
-      const existingBrandStaff = await axios.get(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs?userId=${staffId}`
+      const response = await axios.get(
+        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores/StoreStaffs/${store.storeId}?userId=${store.userId}`
       );
-      if (existingBrandStaff.data.length > 0) {
-        const brandId = existingBrandStaff.data[0].brandId;
-        const brandResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?brandId=${brandId}`);
-        setBrandStaffId(existingBrandStaff.data[0].brandStaffId);
-        if (existingBrandStaff.data[0].storeId !== null) {
-          const storeId = existingBrandStaff.data[0].storeId;
-          const storeResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores?storeId=${storeId}`);
-          setUserData((prevUserData) => ({
-            ...prevUserData,
-            brandName: brandResponse.data[0].brandName,
-            storeName: storeResponse.data[0].storeName
-          }));
-        }
-        setUserData((prevUserData) => ({
-          ...prevUserData,
-          brandName: brandResponse.data[0].brandName
-        }));
-      } else {
-        setUserData((prevUserData) => ({
-          ...prevUserData,
-          brandName: 'Unassigned',
-          storeName: 'Unassigned'
-        }));
-      }
-      const allBrandsResponse = await axios.get(
-        'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?pageNumber=1&pageSize=1000'
-      );
-      setBrands(allBrandsResponse.data);
-      const allStoresResponse = await axios.get(
-        'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Stores?pageNumber=1&pageSize=1000'
-      );
-      setStores(allStoresResponse.data);
+      setUserData(response.data);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUserData();
-  }, [staffId]);
+  }, [store]);
 
   const handleClickShowPassword = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
@@ -207,24 +177,54 @@ const BrandStaffDetails = () => {
     }
   };
 
+  const getRole = (role) => {
+    switch (role) {
+      case 1:
+        return 'Brand Manager';
+      case 2:
+        return 'Store Manager';
+      default:
+        return 'User';
+    }
+  };
+
   return (
-    <MainCard title="User Details">
+    <MainCard>
+      <Box sx={{ position: 'relative', mb: 2 }}>
+        <Button variant="contained" onClick={() => navigate(-1)} sx={{ textAlign: 'left', zIndex: 1, position: 'absolute' }}>
+          Go Back
+        </Button>
+        <Typography
+          variant="h1"
+          sx={{
+            textAlign: 'center',
+            width: '100%',
+            position: 'relative'
+          }}
+        >
+          Menu Details
+        </Typography>
+      </Box>
       {isLoading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
           <CircularProgress />
         </Box>
       ) : (
-        <Box sx={{ flexGrow: 1 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Paper elevation={3} sx={{ padding: 2 }}>
-                <Box component="form" noValidate autoComplete="off">
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      {userData?.role === 2 && (
+        <>
+          <Box sx={{ flexGrow: 1 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                {/* User info */}
+                <Paper elevation={3} sx={{ padding: 2 }}>
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', paddingBottom: '1rem', color: 'gray' }}>
+                    User Info
+                  </Typography>
+                  <Box component="form" noValidate autoComplete="off">
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
                         <TextField
-                          label="Store Name"
-                          value={userData?.storeName}
+                          label="Username"
+                          value={userData?.staffs[0].user.userName}
                           variant="outlined"
                           fullWidth
                           margin="normal"
@@ -236,25 +236,24 @@ const BrandStaffDetails = () => {
                             }
                           }}
                         />
-                      )}
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        label="Brand"
-                        value={userData?.userName}
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        disabled
-                        sx={{
-                          '& .MuiInputBase-input.Mui-disabled': {
-                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
-                            color: 'black' // Dùng cho các trình duyệt khác
-                          }
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Store"
+                          value={getRole(userData?.staffs[0].user.role)}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      {/* <Grid item xs={6}>
                       <TextField
                         label="Password"
                         value={showPassword ? userData?.password : '********'}
@@ -279,26 +278,118 @@ const BrandStaffDetails = () => {
                           }
                         }}
                       />
+                    </Grid> */}
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Email"
+                          value={userData?.staffs[0].user.email}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
                     </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        label="Email"
-                        value={userData?.email}
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        disabled
-                        sx={{
-                          '& .MuiInputBase-input.Mui-disabled': {
-                            WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
-                            color: 'black' // Dùng cho các trình duyệt khác
-                          }
-                        }}
-                      />
+                  </Box>
+
+                  <Divider />
+
+                  {/* Store info */}
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', paddingTop: '1rem', color: 'gray' }}>
+                    Store Info
+                  </Typography>
+                  <Box component="form" noValidate autoComplete="off">
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Store Code"
+                          value={userData?.storeCode}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Store Name"
+                          value={userData?.storeName}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Email Contact"
+                          value={userData?.storeContactEmail}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Contact Number"
+                          value={userData?.storeContactNumber}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <TextField
+                          label="Email Contact"
+                          value={userData?.storeLocation}
+                          variant="outlined"
+                          fullWidth
+                          margin="normal"
+                          disabled
+                          sx={{
+                            '& .MuiInputBase-input.Mui-disabled': {
+                              WebkitTextFillColor: 'black', // Dùng cho Chrome và Safari
+                              color: 'black' // Dùng cho các trình duyệt khác
+                            }
+                          }}
+                        />
+                      </Grid>
                     </Grid>
-                  </Grid>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  </Box>
+                  {/* <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Button variant="contained" color="primary" onClick={() => navigate(-1)}>
                     Back
                   </Button>
@@ -312,93 +403,15 @@ const BrandStaffDetails = () => {
                       Delete Brand Staff
                     </Button>
                   )}
-                </Box>
-              </Paper>
+                </Box> */}
+                </Paper>
+
+                {/* Store info */}
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        </>
       )}
-      <Dialog open={assignOpen} onClose={handleAssignClose}>
-        <DialogTitle>Assign Brand to User</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth margin="dense">
-            <InputLabel id="brand-label">Brand</InputLabel>
-            <Select
-              labelId="brand-label"
-              name="brandId"
-              value={assignData.brandId}
-              onChange={handleAssignChange}
-              error={!!validationErrors.brandId}
-            >
-              {brands.map((brand) => (
-                <MenuItem key={brand.brandId} value={brand.brandId}>
-                  {brand.brandName}
-                </MenuItem>
-              ))}
-            </Select>
-            {validationErrors.brandId && (
-              <Typography variant="caption" color="error">
-                {validationErrors.brandId}
-              </Typography>
-            )}
-          </FormControl>
-          {userData?.role === 2 && (
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="store-label">Store</InputLabel>
-              <Select
-                labelId="store-label"
-                name="storeId"
-                value={assignData.storeId}
-                onChange={handleAssignChange}
-                error={!!validationErrors.storeId}
-              >
-                {filteredStores.map((store) => (
-                  <MenuItem key={store.storeId} value={store.storeId}>
-                    {store.storeName}
-                  </MenuItem>
-                ))}
-              </Select>
-              {validationErrors.storeId && (
-                <Typography variant="caption" color="error">
-                  {validationErrors.storeId}
-                </Typography>
-              )}
-            </FormControl>
-          )}
-          {error && (
-            <Typography variant="caption" color="error">
-              {error}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAssignClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleAssignSubmit} color="primary">
-            Assign
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={deleteOpen} onClose={handleDeleteClose}>
-        <DialogTitle>Delete Brand Staff</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">Are you sure you want to delete this Brand Staff?</Typography>
-          {error && (
-            <Typography variant="caption" color="error">
-              {error}
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteClose} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteSubmit} color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </MainCard>
   );
 };

@@ -7,6 +7,7 @@ import {
   InputAdornment,
   InputLabel,
   OutlinedInput,
+  TextField,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -27,6 +28,7 @@ import axios from 'axios';
 const AuthForgotPassword = () => {
   const theme = useTheme();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
 
   return (
     <AuthWrapper1>
@@ -35,6 +37,9 @@ const AuthForgotPassword = () => {
           <Grid container justifyContent="center" alignItems="center" sx={{ minHeight: 'calc(100vh - 68px)' }}>
             <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
               <AuthCardWrapper>
+                <Button  onClick={() => navigate(-1)} sx={{ textAlign: 'left', zIndex: 1, position: 'absolute', color: '#676FD0' }}>
+                  Go Back
+                </Button>
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
                   <Grid item sx={{ mb: 3 }}>
                     <Link to="#">
