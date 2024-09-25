@@ -23,7 +23,8 @@ import {
   FormHelperText,
   InputAdornment,
   Typography,
-  Divider
+  Divider,
+  TablePagination
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -372,6 +373,36 @@ const MyProduct = () => {
     }
   };
 
+  // Pagination
+
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // State for rows per page
+
+  // Function to handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  // Function to handle rows per page change
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page after changing rows per page
+  };
+
+  // Searching
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  useEffect(() => {
+    const results = products.filter((product) => product.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+    setFilteredProducts(results);
+  }, [searchTerm, products]);
+
   return (
     <>
       <MainCard>
@@ -390,11 +421,11 @@ const MyProduct = () => {
             My Products
           </Typography>
         </Box>
-        <Divider/>
+        <Divider />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 2 }}>
           <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+            value={searchTerm}
+            onChange={handleSearchChange}
             variant="outlined"
             sx={{ marginBottom: '16px' }}
             InputProps={{
@@ -421,85 +452,95 @@ const MyProduct = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products
-                .filter((product) => product.productName.toLowerCase().includes(filter.toLowerCase()))
-                .map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>{product.productName}</TableCell>
-                    <TableCell>{product.productDescription}</TableCell>
-                    <TableCell>
-                      {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      {product.productImgPath ? (
-                        <a href={product.productImgPath} target="_blank" rel="noreferrer">
-                          <img
-                            src={product.productImgPath}
-                            alt={`${product.productName}`}
-                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                          />
-                        </a>
-                      ) : (
-                        'No Image'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<Visibility />}
-                          onClick={() => handleViewDetails(product)}
-                          sx={{
-                            color: 'primary.main',
-                            borderColor: 'primary.main',
-                            '&:hover': {
-                              backgroundColor: 'primary.light'
-                            }
-                          }}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<Edit />}
-                          onClick={() => handleOpenEditDialog(product)}
-                          sx={{
-                            color: 'primary.main',
-                            borderColor: 'primary.main',
-                            '&:hover': {
-                              backgroundColor: 'primary.light'
-                            }
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<Delete />}
-                          onClick={() => handleOpenConfirmDialog(product.productId)}
-                          sx={{
-                            color: 'error.main',
-                            borderColor: 'error.main',
-                            '&:hover': {
-                              backgroundColor: 'error.light'
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+                <TableRow key={product.productId}>
+                  <TableCell>{product.productName}</TableCell>
+                  <TableCell>{product.productDescription}</TableCell>
+                  <TableCell>
+                    {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
+                  </TableCell>
+                  <TableCell>
+                    {product.productImgPath ? (
+                      <a href={product.productImgPath} target="_blank" rel="noreferrer">
+                        <img
+                          src={product.productImgPath}
+                          alt={`${product.productName}`}
+                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                        />
+                      </a>
+                    ) : (
+                      'No Image'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        startIcon={<Visibility />}
+                        onClick={() => handleViewDetails(product)}
+                        sx={{
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.light'
+                          }
+                        }}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        startIcon={<Edit />}
+                        onClick={() => handleOpenEditDialog(product)}
+                        sx={{
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.light'
+                          }
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<Delete />}
+                        onClick={() => handleOpenConfirmDialog(product.productId)}
+                        sx={{
+                          color: 'error.main',
+                          borderColor: 'error.main',
+                          '&:hover': {
+                            backgroundColor: 'error.light'
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Pagination */}
+        <TablePagination
+          sx={{ display: 'flex', justifyContent: 'flex-end' }}
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredProducts.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </MainCard>
 
       <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
