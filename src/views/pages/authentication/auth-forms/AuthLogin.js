@@ -111,16 +111,11 @@ const FirebaseLogin = ({ ...others }) => {
             // }
           } catch (error) {
             // Handle login error
-            let errorMessage = 'Login failed. Please try again.';
+            let errorMessage = '';
             if (error.response) {
               // Nếu API trả về lỗi (4xx/5xx)
-              if (error.response.status === 400) {
-                errorMessage = 'Username or password is incorrect.';
-              } else if (error.response.status === 500) {
-                errorMessage = 'Server error. Please try again later.';
-              } else if (error.response.data && error.response.data.error) {
-                errorMessage = error.response.data.error;
-              }
+              console.log(error.response.data.error);
+              errorMessage = error.response.data.error;
             } else if (error.request) {
               // Nếu không nhận được phản hồi từ server
               errorMessage = 'No response from server. Please try again.';

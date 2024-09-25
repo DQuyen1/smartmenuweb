@@ -26,6 +26,7 @@ import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+import { integerPropType } from '@mui/utils';
 
 function TablePaginationActions(props) {
   const theme = useTheme();
@@ -80,45 +81,22 @@ const ManageTransaction = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const brandId = localStorage.getItem('brandId');
-      let response;
-      let totalResponse;
-      if(brandId === 'null'){
-        totalResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
-      }else{
-        totalResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
+        const brandId = 24;
         
-      }
+        console.log("brandId:", brandId);
+      const totalResponse = await axios.get(`'https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/24`, {
+
+      });
+      console.log("total: ", totalResponse);
       setTotalCount(totalResponse.data.length);
-      if (brandId === 'null') {
-        response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
-          params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
-            filter: searchTerm
-          }
-        });
-      } else {
-        response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
-          params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
-            filter: searchTerm
-          }
-        });
-      }
+
+      const response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
+        params: {
+          pageSize: pageSize,
+          pageNumber: pageNumber + 1,
+          filter: searchTerm
+        }
+      });
 
       const transactionsData = response.data;
 
@@ -251,7 +229,7 @@ const ManageTransaction = () => {
         </Box>
       ) : error ? (
         <Typography color="error">{error}</Typography>
-      ) : (
+      ) : ( 
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
             <TableHead>
