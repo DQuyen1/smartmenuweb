@@ -1150,7 +1150,9 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
             <>
               {/* Body */}
               <TableBody>
-                {filteredProductGroups.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {filteredProductGroups
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => (
                   <Row key={index} row={row} />
                 ))}
               </TableBody>
@@ -1164,7 +1166,7 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
         sx={{ display: 'flex', justifyContent: 'flex-end' }}
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={productGroups.length}
+        count={filteredProductGroups.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

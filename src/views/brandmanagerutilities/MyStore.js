@@ -22,7 +22,8 @@ import {
   Typography,
   InputAdornment,
   CircularProgress,
-  Box
+  Box,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import Toastify from 'toastify-js';
@@ -167,16 +168,40 @@ const MyStore = () => {
     navigate(`/my-store-details`, { state: { storeId: store.storeId } });
   };
 
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
+  // Pagination
+
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // State for rows per page
+
+  // Function to handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
   };
 
-  const filteredStoreData = storeData.filter(
-    (store) =>
-      store.storeCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.storeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.storeLocation.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Function to handle rows per page change
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page after changing rows per page
+  };
+
+  // Searching
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredStoreData, setFilteredStoreData] = useState([]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  useEffect(() => {
+    const results = storeData.filter(
+      (store) =>
+        store.storeCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        store.storeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        store.storeLocation.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredStoreData(results);
+  }, [searchTerm, storeData]);
 
   return (
     <div>
@@ -184,7 +209,7 @@ const MyStore = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <TextField
             variant="outlined"
-            value={searchQuery}
+            value={searchTerm}
             onChange={handleSearchChange}
             sx={{ marginBottom: '16px' }}
             InputProps={{
@@ -210,49 +235,63 @@ const MyStore = () => {
             <CircularProgress />
           </Typography>
         ) : (
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Store Code</TableCell>
-                  <TableCell>Store Name</TableCell>
-                  <TableCell>Location</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredStoreData.map((store) => (
-                  <TableRow key={store.storeId}>
-                    <TableCell>{store.storeCode}</TableCell>
-                    <TableCell>{store.storeName}</TableCell>
-                    <TableCell>{store.storeLocation}</TableCell>
-                    <TableCell>
-                      <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>
-                        {store.storeStatus ? 'Active' : 'Inactive'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="contained"
-                        color="error"
-                        size="small"
-                        onClick={() => {
-                          setStoreToDelete(store);
-                          setShowDeleteConfirmDialog(true);
-                        }}
-                      >
-                        Delete
-                      </Button>
-                      <Button variant="contained" size="small" onClick={() => handleViewDetails(store)}>
-                        View Details
-                      </Button>
-                    </TableCell>
+          <>
+            <TableContainer component={Paper}>
+              <Table sx={{ minWidth: 650 }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Store Code</TableCell>
+                    <TableCell>Store Name</TableCell>
+                    <TableCell>Location</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {filteredStoreData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((store) => (
+                    <TableRow key={store.storeId}>
+                      <TableCell>{store.storeCode}</TableCell>
+                      <TableCell>{store.storeName}</TableCell>
+                      <TableCell>{store.storeLocation}</TableCell>
+                      <TableCell>
+                        <Typography style={{ color: store.storeStatus ? 'green' : 'red' }}>
+                          {store.storeStatus ? 'Active' : 'Inactive'}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ display: 'flex', gap: 1 }}>
+                        <Button variant="contained" size="small" onClick={() => handleViewDetails(store)}>
+                          View Details
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          onClick={() => {
+                            setStoreToDelete(store);
+                            setShowDeleteConfirmDialog(true);
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Pagination */}
+            <TablePagination
+              sx={{ display: 'flex', justifyContent: 'flex-end' }}
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredStoreData.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </>
         )}
         <Dialog
           open={showAddStoreDialog}
