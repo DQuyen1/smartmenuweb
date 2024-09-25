@@ -85,7 +85,7 @@ function Template() {
   const dataConvert = new dataHandler();
 
   const currentPath = location.pathname;
-
+  const [loading, setLoading] = useState(false);
   // const cloudName = import.meta.env.VITE_CLOUD_NAME;
   // const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
 
@@ -170,130 +170,6 @@ function Template() {
     box_item_service.deleteBoxItem(boxItemId);
   };
 
-  // const handleDimensionChange = (e, type) => {
-  //   let value = parseFloat(e.target.value);
-
-  //   value = value.replace(/,/g, '.');
-
-  //   let element = editor.canvas.getActiveObject();
-
-  //   if (!element) return; // Exit if no object is selected
-
-  //   // Apply constraints only if the selected element is of type 'text'
-  //   let isValid = true;
-  //   if (element.type === 'text') {
-  //     // Assuming renderLayer is an object with left, top, width, and height
-  //     const renderLayerBounds = {
-  //       left: selectedRect.left, // Render layer's top-left X position
-  //       top: selectedRect.top, // Render layer's top-left Y position
-  //       right: selectedRect.left + selectedRect.width, // Render layer's width
-  //       bottom: selectedRect.top + selectedRect.height // Render layer's height
-  //     };
-
-  //     let newPositionX = element.left;
-  //     let newPositionY = element.top;
-  //     let newWidth = element.width;
-  //     let newHeight = element.height;
-
-  //     switch (type) {
-  //       case 'width':
-  //         newWidth = value;
-  //         if (newPositionX + newWidth > renderLayerBounds.right) {
-  //           Toastify({
-  //             text: 'Width exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'height':
-  //         newHeight = value;
-  //         if (newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           Toastify({
-  //             text: 'Height exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionX':
-  //         newPositionX = value;
-  //         if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-  //           Toastify({
-  //             text: 'X position exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionY':
-  //         newPositionY = value;
-  //         if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           Toastify({
-  //             text: 'Y position exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       default:
-  //         break;
-  //     }
-  //   }
-
-  //   // Update the UI input and object properties regardless of type
-  //   switch (type) {
-  //     case 'width':
-  //       setWidth(value);
-  //       if (isValid || element.type !== 'text') element.set('width', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'height':
-  //       setHeight(value);
-  //       if (isValid || element.type !== 'text') element.set('height', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionX':
-  //       setPositionX(value);
-  //       if (isValid || element.type !== 'text') element.set('left', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionY':
-  //       setPositionY(value);
-  //       if (isValid || element.type !== 'text') element.set('top', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   editor.canvas.renderAll(); // Re-render the canvas
-  // };
-
   const handleDimensionChange = (e, type) => {
     let value = e.target.value;
 
@@ -312,6 +188,35 @@ function Template() {
 
     // Apply constraints only if the selected element is of type 'text'
     let isValid = true;
+
+    if (element.type === 'image') {
+      const originalWidth = element.originalWidth; // Use original dimensions
+      const originalHeight = element.originalHeight;
+
+      switch (type) {
+        case 'width':
+          element.scaleX = parsedValue / originalWidth; // Update scale
+          break;
+        case 'height':
+          element.scaleY = parsedValue / originalHeight; // Update scale
+          break;
+        case 'positionX':
+          element.left = parsedValue;
+          break;
+        case 'positionY':
+          element.top = parsedValue;
+          break;
+        default:
+          break;
+      }
+
+      // Update the width and height properties accordingly
+      // element.set({
+      //   width: newWidth,
+      //   height: newHeight
+      // });
+    }
+
     if (element.type === 'text') {
       const renderLayerBounds = {
         left: selectedRect.left, // Render layer's top-left X position
@@ -367,11 +272,13 @@ function Template() {
     switch (type) {
       case 'width':
         setWidth(parsedValue);
-        if (isValid || element.type !== 'text') element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
+        if (isValid || element.type !== 'text') element.set({ scaleX: 1 });
+        element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'height':
         setHeight(parsedValue);
-        if (isValid || element.type !== 'text') element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
+        if (isValid || element.type !== 'text') element.set({ scaleY: 1 });
+        element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionX':
         setPositionX(parsedValue);
@@ -1355,18 +1262,68 @@ function Template() {
         // Render the canvas right after adding the image
         editor.canvas.renderAll();
 
+        img.originalWidth = img.width;
+        img.originalHeight = img.height;
+
         // Now attach mouse event listeners to the image
         myImg.on('mouseup', () => {
+          let adjustedAngle = myImg.angle;
+          if (adjustedAngle > 180) {
+            adjustedAngle -= 360;
+          } else if (adjustedAngle < -180) {
+            adjustedAngle += 360;
+          }
+
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+
+          const scaledWidth = myImg.getScaledWidth();
+          const scaledHeight = myImg.getScaledHeight();
+
+          setHeight((scaledHeight * scaleX).toFixed(1));
+          setWidth((scaledWidth * scaleY).toFixed(1));
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+          setRotationAngle(adjustedAngle);
+
           console.log('Image clicked');
           setActiveTab('positionSize');
-          setSelectedTool('text');
+          setSelectedTool('rect');
+        });
+
+        myImg.on('moving', function () {
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+          setActiveTab('positionSize');
+          setSelectedTool('rect');
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+        });
+
+        myImg.on('scaling', function () {
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+
+          const scaledWidth = myImg.getScaledWidth();
+          const scaledHeight = myImg.getScaledHeight();
+
+          setActiveTab('positionSize');
+
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+
+          setHeight((scaledHeight * scaleX).toFixed(1));
+          setWidth((scaledWidth * scaleY).toFixed(1));
+
+          setIsHeaderVisible(true);
+
+          setSelectedTool('textBox');
         });
 
         // Defer canvas-wide mouse:down event listener until after the image is rendered
         editor.canvas.on('mouse:down', function (options) {
-          if (options.target !== rect) {
-            setActiveTab(null);
-          }
+          setActiveTab(null);
+
           setSelectedTool(null);
         });
 
@@ -1452,30 +1409,11 @@ function Template() {
     editor.canvas.renderAll();
   };
 
-  // const changeFontSize = (e) => {
-  //   const inputValue = e.target.value;
-  //   const newFontSize = inputValue;
-
-  //   // Set the state for the raw input value (if needed)
-  //   setFontSize(inputValue);
-
-  //   console.log('FontSize (converted): ', newFontSize);
-  //   const activeObject = editor.canvas.getActiveObject();
-
-  //   if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
-  //     activeObject.set('fontSize', newFontSize * 1.333);
-  //     console.log('real fontsize: ', activeObject.fontSize);
-
-  //     activeObject.fire('modified');
-  //     editor.canvas.renderAll();
-  //   }
-  // };
-
   const changeFontSize = (e) => {
-    const inputValue = e.target.value; // Font size from the input
+    const inputValue = e.target.value; // Get font size from the input
     const canvasFontSize = parseFloat(inputValue); // Parse the input as a number
 
-    // Set the state for the raw input value
+    // Set the state for the input value
     setFontSize(inputValue);
 
     const activeObject = editor.canvas.getActiveObject();
@@ -1484,21 +1422,33 @@ function Template() {
       // Convert canvas font size to Fabric.js font size
       let fabricFontSize = canvasFontSize * 1.333;
 
+      const originalHeight = activeObject.getScaledHeight();
+
       // Set the converted font size in Fabric.js
       activeObject.set('fontSize', fabricFontSize);
 
+      // Reset scaleX and scaleY to prevent stretching after changing font size
       activeObject.set({
         scaleX: 1,
         scaleY: 1
       });
 
+      // Calculate the new width and height based on the text content with the new font size
+      activeObject.set({
+        width: activeObject.width * activeObject.scaleX,
+        height: activeObject.height * activeObject.scaleY
+        //height: originalHeight
+      });
+
+      // Adjust the object to the new width and height without extra scaling
+      editor.canvas.renderAll();
+
       // Log the actual font size being set
       console.log('Canvas Font Size: ', canvasFontSize);
       console.log('FabricJS Font Size (converted): ', fabricFontSize);
 
-      // Trigger the 'modified' event and re-render the canvas
+      // Trigger the 'modified' event to ensure everything is updated
       activeObject.fire('modified');
-      editor.canvas.renderAll();
     }
   };
 
@@ -1890,7 +1840,10 @@ function Template() {
       fontSize: defaultFontSize,
       fontFamily: selectedFont,
       editable: true,
-      angle: 0
+      angle: 0,
+      noScaleCache: false, // Prevent Fabric.js from automatically adjusting the text size
+      lockScalingX: true, // Lock horizontal scaling
+      lockScalingY: true
     });
     // addToUndoStack();
 
@@ -1947,12 +1900,16 @@ function Template() {
     });
 
     text.on('mouseup', function () {
+      const adjustedWidth = text.width * text.scaleX; // Scale back width
+      const adjustedHeight = text.height * text.scaleY;
+
       let adjustedAngle = text.angle;
       if (adjustedAngle > 180) {
         adjustedAngle -= 360;
       } else if (adjustedAngle < -180) {
         adjustedAngle += 360;
       }
+
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
 
@@ -1964,8 +1921,11 @@ function Template() {
 
       setColor(text.fill);
 
-      setHeight((scaledHeight * scaleX).toFixed(1));
-      setWidth((scaledWidth * scaleY).toFixed(1));
+      // setHeight((scaledHeight * scaleX).toFixed(1));
+      // setWidth((scaledWidth * scaleY).toFixed(1));
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
       setPositionX((text.left * scaleX).toFixed(1));
       setPositionY((text.top * scaleY).toFixed(1));
       setRotationAngle(adjustedAngle);
@@ -2660,8 +2620,14 @@ function Template() {
       const scaledWidth = textBox.getScaledWidth();
       const scaledHeight = textBox.getScaledHeight();
 
-      setHeight((scaledHeight * scaleX).toFixed(1));
-      setWidth((scaledWidth * scaleY).toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+
+      // setHeight((scaledHeight * scaleX).toFixed(1));
+      // setWidth((scaledWidth * scaleY).toFixed(1));
       setPositionX((textBox.left * scaleX).toFixed(1));
       setPositionY((textBox.top * scaleY).toFixed(1));
       //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
@@ -2716,9 +2682,29 @@ function Template() {
       console.log('boxItemId: ', boxItemId);
     }
 
+    // setTimeout(async () => {
+    //   const { boxItemId, bFontId } = await createBoxItem(
+    //     boxId,
+    //     5,
+    //     textBox.left,
+    //     textBox.top,
+    //     textBox.width,
+    //     textBox.height,
+    //     3,
+    //     JSON.stringify(style)
+    //   );
+
+    //   // Assign the returned values to the textBox properties after the delay
+    //   textBox.boxItemId = boxItemId;
+    //   textBox.boxItemType = 3;
+    //   // textBox.bFontId = bFontId; // Uncomment if you need to set this
+
+    //   console.log('boxItemId: ', boxItemId);
+    // }, 5000); // Delay of 5000 milliseconds (5 seconds)
+
     textBox.on('modified', function () {
-      console.log('fontId: ', textBox.bFontId);
-      console.log('color: ', textBox.fill);
+      // console.log('fontId: ', textBox.bFontId);
+      // console.log('color: ', textBox.fill);
     });
 
     textBox.on('scaling', function () {
@@ -2819,8 +2805,13 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -2953,8 +2944,13 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3068,8 +3064,13 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3288,8 +3289,13 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3519,6 +3525,14 @@ function Template() {
     }
   };
 
+  const handleSave = () => {
+    setLoading(true);
+    setTimeout(() => {
+      getAllCanvasProperties();
+      setLoading(false); // Reset loading state after fetching properties
+    }, 3000); // Delay for 3 seconds
+  };
+
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       event.preventDefault();
@@ -3599,12 +3613,17 @@ function Template() {
             </div>
           )}
           <div className="divider"></div>
-          <button className="save-btn" onClick={() => getAllCanvasProperties()}>
+          <button className="save-btn" onClick={handleSave}>
             Save
           </button>
-          <div className="profile">User</div>
+          {/* <div className="profile">User</div> */}
         </div>
       </header>
+      {loading && (
+        <div className="loading-indicator">
+          <div className="spinner"></div>
+        </div>
+      )}
 
       <div className="main">
         <div className="sidebar-container">
