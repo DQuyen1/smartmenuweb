@@ -579,17 +579,25 @@ function Template() {
       setTimeout(() => {
         if (activeObjectType === 'textbox') {
           const layerId = activeObject.layerId;
-          deleteText(layerId);
+          const boxItemId = activeObject.boxItemId;
+
+          if (layerId) {
+            deleteText(layerId);
+          } else if (boxItemId) {
+            deleteBoxItem(boxItemId);
+          }
         } else if (activeObjectType === 'rect') {
           const layerId = activeObject.layerId;
           deleteRenderLayer(layerId);
         } else if (activeObjectType === 'image') {
           const layerId = activeObject.layerId;
           deleteImage(layerId);
-        } else if (activeObjectType === 'text') {
-          const boxItemId = activeObject.boxItemId;
-          deleteBoxItem(boxItemId);
         }
+
+        // else if (activeObjectType === 'text') {
+        //   const boxItemId = activeObject.boxItemId;
+
+        // }
 
         console.log('Deleted after 7 seconds: ', activeObjectType);
       }, 7000); // Delay of 7 seconds (7000 milliseconds)
