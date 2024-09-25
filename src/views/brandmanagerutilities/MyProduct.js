@@ -21,7 +21,9 @@ import {
   MenuItem,
   Input,
   FormHelperText,
-  InputAdornment
+  InputAdornment,
+  Typography,
+  Divider
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -43,7 +45,7 @@ const MyProduct = () => {
     productName: '',
     productDescription: '',
     productPriceCurrency: '',
-    productImgPath: '',
+    productImgPath: ''
     // productLogoPath: ''
   });
   const [productToEdit, setProductToEdit] = useState({
@@ -51,7 +53,7 @@ const MyProduct = () => {
     productName: '',
     productDescription: '',
     productPriceCurrency: '',
-    productImgPath: '',
+    productImgPath: ''
     // productLogoPath: ''
   });
   const [productToDelete, setProductToDelete] = useState(null);
@@ -157,7 +159,7 @@ const MyProduct = () => {
       productName: '',
       productDescription: '',
       productPriceCurrency: '',
-      productImgPath: null,
+      productImgPath: null
       // productLogoPath: null
     });
     setValidationErrors({});
@@ -184,7 +186,7 @@ const MyProduct = () => {
       const payload = {
         ...newProduct,
         productPriceCurrency: parseFloat(newProduct.productPriceCurrency),
-        productImgPath: productImgPath,
+        productImgPath: productImgPath
         // productLogoPath: productLogoPath
       };
       console.log('payload:', payload);
@@ -241,7 +243,7 @@ const MyProduct = () => {
       const payload = {
         ...productToEdit,
         productPriceCurrency: parseFloat(productToEdit.productPriceCurrency),
-        productImgPath: productImgPath,
+        productImgPath: productImgPath
         // productLogoPath: productLogoPath
       };
       await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToEdit.productId}`, payload);
@@ -260,7 +262,6 @@ const MyProduct = () => {
     } finally {
       setIsSubmitting(false);
     }
-    
   };
 
   const handleOpenConfirmDialog = (productId) => {
@@ -302,7 +303,7 @@ const MyProduct = () => {
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
-  
+
     if (file) {
       formData.append('file', file);
       formData.append('upload_preset', preset_key);
@@ -310,20 +311,20 @@ const MyProduct = () => {
       formData.append('folder', folder);
 
       setIsSubmitting(true);
-  
+
       try {
         const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
           method: 'POST',
           body: formData
         });
-  
+
         if (!response.ok) {
           throw new Error('Failed to upload image');
         }
-  
+
         const result = await response.json();
         const imageUrl = result.secure_url;
-  
+
         setProductImgPath(imageUrl);
         setNewProduct((prevProduct) => ({
           ...prevProduct,
@@ -333,20 +334,16 @@ const MyProduct = () => {
           ...prevProduct,
           productImgPath: imageUrl
         }));
-        
-        
-  
+
         console.log('Result hihi: ', result.secure_url);
       } catch (error) {
         console.error('Error uploading image:', error);
       } finally {
         // Set isSubmitting to false after image upload completes
-        setIsSubmitting(false); 
+        setIsSubmitting(false);
       }
-      
     }
   };
-  
 
   const handleImageUploadLogo = async (event) => {
     const userId = 469;
@@ -364,11 +361,11 @@ const MyProduct = () => {
         const imageUrl = result.data.secure_url;
         // setProductLogoPath(imageUrl);
         setNewProduct((prevProduct) => ({
-          ...prevProduct,
+          ...prevProduct
           // productLogoPath: imageUrl
         }));
         setProductToEdit((prevProduct) => ({
-          ...prevProduct,
+          ...prevProduct
           // productLogoPath: imageUrl
         }));
       });
@@ -377,9 +374,25 @@ const MyProduct = () => {
 
   return (
     <>
-      <MainCard title="My Products">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-      <TextField
+      <MainCard>
+        <Box sx={{ position: 'relative', mb: 2 }}>
+          <Button variant="contained" onClick={() => navigate(-1)} sx={{ textAlign: 'left', zIndex: 1, position: 'absolute' }}>
+            Go Back
+          </Button>
+          <Typography
+            variant="h1"
+            sx={{
+              textAlign: 'center',
+              width: '100%',
+              position: 'relative'
+            }}
+          >
+            My Products
+          </Typography>
+        </Box>
+        <Divider/>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 2 }}>
+          <TextField
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             variant="outlined"
@@ -419,18 +432,20 @@ const MyProduct = () => {
                     </TableCell>
                     <TableCell>
                       {product.productImgPath ? (
-                        <img
-                          src={product.productImgPath}
-                          alt={`${product.productName}`}
-                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
-                        />
+                        <a href={product.productImgPath} target="_blank" rel="noreferrer">
+                          <img
+                            src={product.productImgPath}
+                            alt={`${product.productName}`}
+                            style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                          />
+                        </a>
                       ) : (
                         'No Image'
                       )}
                     </TableCell>
                     <TableCell>
                       <div style={{ display: 'flex', gap: '12px' }}>
-                      <Button
+                        <Button
                           variant="outlined"
                           color="primary"
                           size="small"
@@ -562,7 +577,9 @@ const MyProduct = () => {
           <Button onClick={handleCloseAddDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddProduct} disabled={isSubmitting}>Add</Button>
+          <Button onClick={handleAddProduct} disabled={isSubmitting}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -639,7 +656,9 @@ const MyProduct = () => {
           <Button onClick={handleCloseEditDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>Update</Button>
+          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>
+            Update
+          </Button>
         </DialogActions>
       </Dialog>
 
