@@ -51,6 +51,7 @@ const UtilitiesBrand = () => {
   const [filter, setFilter] = useState('');
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [brandImage, setBrandImage] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateNewBrandData = () => {
     const errors = {};
@@ -85,7 +86,7 @@ const UtilitiesBrand = () => {
   const checkBrandNameExists = async (brandName) => {
     try {
       const response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands?searchString=${brandName}`);
-      return response.data.length > 0; // Assuming the API returns a list of matching brands
+      return response.data.length > 0;
     } catch (error) {
       console.error('Error checking brand name:', error);
       setError('Error checking brand name.');
@@ -116,6 +117,7 @@ const UtilitiesBrand = () => {
 
     setIsLoading(true);
     try {
+      setIsSubmitting(true);
       const response = await axios.post('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands', {
         ...newBrandData,
         brandImage: brandImage
@@ -159,6 +161,7 @@ const UtilitiesBrand = () => {
       }).showToast();
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -170,6 +173,7 @@ const UtilitiesBrand = () => {
 
     setIsLoading(true);
     try {
+      setIsSubmitting(true);
       const response = await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Brands/${selectedBrand.brandId}`, {
         ...updateBrandData,
         brandImage: brandImage
@@ -208,6 +212,8 @@ const UtilitiesBrand = () => {
         backgroundColor: 'linear-gradient(to right, #ff0000, #ff6347)'
       }).showToast();
     } finally {
+
+      setIsSubmitting(false);
       setIsLoading(false);
     }
   };
@@ -328,26 +334,32 @@ const UtilitiesBrand = () => {
     const folder = `users/${userId}`;
     const tags = `${userId}`;
     if (file) {
-      // const url = URL.createObjectURL(file);
-      formData.append('file', file);
-      formData.append('upload_preset', preset_key);
-      formData.append('tags', tags);
-      formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const imageUrl = result.data.secure_url;
+        formData.append('file', file);
+        formData.append('upload_preset', preset_key);
+        formData.append('tags', tags);
+        formData.append('folder', folder);
+
+        setIsSubmitting(true);
+
+        const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        const imageUrl = result.secure_url;
         setBrandImage(imageUrl);
         setNewBrandData((prevBrandData) => ({
-          ...prevBrandData,
-          brandImage: imageUrl
+            ...prevBrandData,
+            brandImage: imageUrl
         }));
         setUpdateBrandData((prevBrandData) => ({
-          ...prevBrandData,
-          brandImage: imageUrl
+            ...prevBrandData,
+            brandImage: imageUrl
         }));
-        console.log('Result hihi: ', result.data.secure_url);
-      });
+        console.log('Result hihi: ', result.secure_url);
     }
-  };
+};
 
   return (
     <>
