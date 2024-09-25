@@ -916,19 +916,21 @@ const MyMenuProductGroupDetails = ({ menuDataId }) => {
 
                         <TableCell>
                           {groupItem.product.productImgPath !== null && !imgError ? (
-                            <img
-                              src={groupItem.product.productImgPath}
-                              alt={groupItem.product.productName}
-                              onError={() => setImgError(true)}
-                              style={{
-                                maxWidth: '100px',
-                                minWidth: '100px',
-                                maxHeight: '100px',
-                                minHeight: '100px',
-                                objectFit: 'contain'
-                              }}
-                            />
-                          ) : ( 
+                            <a href={groupItem.product.productImgPath} target="_blank" rel="noreferrer">
+                              <img
+                                src={groupItem.product.productImgPath}
+                                alt={groupItem.product.productName}
+                                onError={() => setImgError(true)}
+                                style={{
+                                  maxWidth: '100px',
+                                  minWidth: '100px',
+                                  maxHeight: '100px',
+                                  minHeight: '100px',
+                                  objectFit: 'contain'
+                                }}
+                              />
+                            </a>
+                          ) : (
                             <ImageNotSupported
                               style={{
                                 maxWidth: '100px',

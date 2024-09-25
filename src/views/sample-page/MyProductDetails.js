@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MainCard from 'ui-component/cards/MainCard';
 import axios from 'axios';
 import {
@@ -23,18 +23,24 @@ import {
   TableRow,
   IconButton,
   Paper,
-  Grid
+  Grid,
+  NativeSelect,
+  FormControl,
+  InputLabel,
+  Divider
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleOutlined from '@mui/icons-material/AddCircleOutlined';
+import { set } from 'lodash';
 
 const MyProductDetails = () => {
   const location = useLocation();
   const { productData } = location.state || {};
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [successMessage, setSuccessMessage] = React.useState('');
+  const [openSnackBar, setOpenSnackBar] = React.useState(false);
   const [productSizePrices, setProductSizePrices] = useState([]); // Initialize as an array
   const [editingSizePrice, setEditingSizePrice] = useState(null);
   const [showAddSizePriceDialog, setShowAddSizePriceDialog] = useState(false);
@@ -44,6 +50,8 @@ const MyProductDetails = () => {
   });
   const [categories, setCategories] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const validateNewSizePriceData = () => {
     const errors = {};
@@ -81,17 +89,20 @@ const MyProductDetails = () => {
     if (!validateNewSizePriceData()) {
       return;
     }
+    setErrorMessage('');
+    setSuccessMessage('');
+    setIsSubmitting(false);
 
     const existingSizeTypes = productSizePrices.map((sizePrice) => sizePrice.productSizeType);
     const newSizeType = parseInt(newSizePriceData.productSizeType, 10);
 
     if (newSizeType === 3 && existingSizeTypes.some((type) => type !== 3)) {
-      setSnackbarMessage('Cannot add Normal size when "S", "M", or "L" sizes exist.');
-      setOpenSnackbar(true);
+      setErrorMessage('Cannot add Normal size when "S", "M", or "L" sizes exist.');
+      setOpenSnackBar(true);
       return;
     } else if (newSizeType !== 3 && existingSizeTypes.includes(3)) {
-      setSnackbarMessage(`Cannot add "${getProductSizeType(newSizeType)}" size when Normal size exists.`);
-      setOpenSnackbar(true);
+      setErrorMessage(`Cannot add "${getProductSizeType(newSizeType)}" size when Normal size exists.`);
+      setOpenSnackBar(true);
       return;
     }
 
@@ -102,18 +113,15 @@ const MyProductDetails = () => {
         price: parseFloat(newSizePriceData.price)
       });
 
-      if (response.status === 201) {
-        setProductSizePrices((prevData) => [...prevData, response.data]);
-        setOpenSnackbar(true);
-        setSnackbarMessage('Size price added successfully!');
-        setShowAddSizePriceDialog(false);
-      } else {
-        console.error('Error adding size price:', response);
-        setSnackbarMessage('Error adding size price.');
-      }
+      setProductSizePrices((prevData) => [...prevData, response.data]);
+      setSuccessMessage('Size price added successfully!');
+      setOpenSnackBar(true);
+      setShowAddSizePriceDialog(false);
     } catch (error) {
       console.error('Error adding product group item:', error);
-      setSnackbarMessage('An error occurred while creating the size price.');
+      setErrorMessage(error.response.data.error);
+      setOpenSnackBar(true);
+      setIsSubmitting(true);
     }
   };
 
@@ -122,6 +130,14 @@ const MyProductDetails = () => {
     setNewSizePriceData((prevState) => ({ ...prevState, [name]: value }));
     setValidationErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
   };
+
+  useEffect(() => {
+    if (newSizePriceData.productSizeType !== '' && newSizePriceData.price !== '') {
+      setIsSubmitting(true);
+    } else {
+      setIsSubmitting(false);
+    }
+  }, [newSizePriceData]);
 
   useEffect(() => {
     if (productData?.productId) {
@@ -160,19 +176,19 @@ const MyProductDetails = () => {
   if (!productData) return <p>Product data not found.</p>;
 
   const handleDeleteSizePrice = async (sizePriceId) => {
+    setErrorMessage('');
+    setSuccessMessage('');
+
     try {
-      const response = await axios.delete(
-        `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${sizePriceId}`
-      );
-      if (response.status === 200) {
-        setProductSizePrices((prevPrices) => prevPrices.filter((p) => p.productSizePriceId !== sizePriceId));
-        setOpenSnackbar(true);
-        setSnackbarMessage('Size price deleted successfully!');
-      } else {
-        console.error('Error deleting size price:', response);
-      }
+      await axios.delete(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${sizePriceId}`);
+
+      setProductSizePrices((prevPrices) => prevPrices.filter((p) => p.productSizePriceId !== sizePriceId));
+      setOpenSnackBar(true);
+      setSuccessMessage('Size price deleted successfully!');
     } catch (error) {
       console.error('Error deleting size price:', error);
+      setErrorMessage(error.response.data.error);
+      setOpenSnackBar(true);
     }
   };
 
@@ -186,6 +202,9 @@ const MyProductDetails = () => {
 
   const handleSaveSizePrice = async () => {
     try {
+      setErrorMessage('');
+      setSuccessMessage('');
+
       const response = await axios.put(
         `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices/${editingSizePrice.productSizePriceId}`,
         {
@@ -194,24 +213,37 @@ const MyProductDetails = () => {
         }
       );
 
-      if (response.status === 200) {
-        setProductSizePrices((prevPrices) =>
-          prevPrices.map((sizePrice) => (sizePrice.productSizePriceId === editingSizePrice.productSizePriceId ? response.data : sizePrice))
-        );
-        setOpenSnackbar(true);
-        setSnackbarMessage('Size price updated successfully!');
-      } else {
-        console.error('Error updating size price:', response);
-      }
+      setProductSizePrices((prevPrices) =>
+        prevPrices.map((sizePrice) => (sizePrice.productSizePriceId === editingSizePrice.productSizePriceId ? response.data : sizePrice))
+      );
+      setSuccessMessage('Size price updated successfully!');
+      setOpenSnackBar(true);
+      setEditingSizePrice(null);
     } catch (error) {
       console.error('Error updating size price:', error);
-    } finally {
-      setEditingSizePrice(null);
+      setErrorMessage(error.response.data.error);
+      setOpenSnackBar(true);
     }
   };
 
   return (
-    <MainCard title="Product Details">
+    <MainCard>
+      <Box sx={{ position: 'relative', mb: 2 }}>
+        <Button variant="contained" onClick={() => navigate(-1)} sx={{ textAlign: 'left', zIndex: 1, position: 'absolute' }}>
+          Go Back
+        </Button>
+        <Typography
+          variant="h1"
+          sx={{
+            textAlign: 'center',
+            width: '100%',
+            position: 'relative'
+          }}
+        >
+          Product Details
+        </Typography>
+      </Box>
+      <Divider />
       <Stack spacing={2}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Box component="form" noValidate autoComplete="off">
@@ -280,89 +312,111 @@ const MyProductDetails = () => {
               </Grid>
             </Grid>
           </Box>
-          <Typography variant="subtitle1">Size Prices:</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button variant="contained" color="primary" onClick={() => setShowAddSizePriceDialog(true)} startIcon={<AddCircleOutlined />}>
-              Add Size Price
-            </Button>
+
+          <Divider />
+
+          <Box sx={{ padding: 2, borderRadius: 2, border: '1px solid lightgrey' }}>
+            <Typography variant="h1" sx={{ textAlign: 'center' }}>
+              Size Prices
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button variant="contained" color="primary" onClick={() => setShowAddSizePriceDialog(true)} startIcon={<AddCircleOutlined />}>
+                Add Size Price
+              </Button>
+            </Box>
+
+            <TableContainer component={Paper}>
+              <Table aria-label="size prices table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Size</TableCell>
+                    <TableCell>Price</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredProductSizePrices
+                    .sort((a, b) => a.productSizeType - b.productSizeType)
+                    .map((sizePrice) => (
+                      <TableRow key={sizePrice.productSizePriceId} >
+                        <TableCell sx={{ minWidth: '100px' }}>{getProductSizeType(sizePrice.productSizeType)}</TableCell>
+                        <TableCell sx={{maxWidth: '100px'}}>
+                          {editingSizePrice?.productSizePriceId === sizePrice.productSizePriceId ? (
+                            <TextField 
+                              type="number"
+                              sx={{padding: 0}}
+                              InputProps={{ inputProps: { min: 1 } }}
+                              value={editingSizePrice.price}
+                              onChange={(e) => setEditingSizePrice({ ...editingSizePrice, price: e.target.value })}
+                              autoFocus
+                              onBlur={handleSaveSizePrice}
+                            />
+                          ) : (
+                            `${
+                              productData.productPriceCurrency === 1
+                                ? sizePrice.price.toLocaleString('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                  })
+                                : sizePrice.price.toLocaleString('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD'
+                                  })
+                            }`
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editingSizePrice?.productSizePriceId === sizePrice.productSizePriceId ? (
+                            <IconButton onClick={handleCancelEdit} color="primary">
+                              <CloseIcon />
+                            </IconButton>
+                          ) : (
+                            <IconButton onClick={() => handleEditSizePrice(sizePrice)} color="primary">
+                              <EditIcon />
+                            </IconButton>
+                          )}
+                          <IconButton onClick={() => handleDeleteSizePrice(sizePrice.productSizePriceId)} color="error">
+                            <DeleteIcon />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {filteredProductSizePrices.length === 0 && <p>No size prices found</p>}
           </Box>
-          <TableContainer component={Paper}>
-            <Table aria-label="size prices table">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Size</TableCell>
-                  <TableCell align="right">Price</TableCell>
-                  <TableCell align="center"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredProductSizePrices
-                  .sort((a, b) => a.productSizeType - b.productSizeType)
-                  .map((sizePrice) => (
-                    <TableRow key={sizePrice.productSizePriceId}>
-                      <TableCell>{getProductSizeType(sizePrice.productSizeType)}</TableCell>
-                      <TableCell align="right">
-                        {editingSizePrice?.productSizePriceId === sizePrice.productSizePriceId ? (
-                          <TextField
-                            type="number"
-                            InputProps={{ inputProps: { min: 1 } }}
-                            value={editingSizePrice.price}
-                            onChange={(e) => setEditingSizePrice({ ...editingSizePrice, price: e.target.value })}
-                            autoFocus
-                            onBlur={handleSaveSizePrice}
-                          />
-                        ) : (
-                          `$${sizePrice.price}`
-                        )}
-                      </TableCell>
-                      <TableCell align="center">
-                        {editingSizePrice?.productSizePriceId === sizePrice.productSizePriceId ? (
-                          <IconButton onClick={handleCancelEdit} color="primary">
-                            <CloseIcon />
-                          </IconButton>
-                        ) : (
-                          <IconButton onClick={() => handleEditSizePrice(sizePrice)} color="primary">
-                            <EditIcon />
-                          </IconButton>
-                        )}
-                        <IconButton onClick={() => handleDeleteSizePrice(sizePrice.productSizePriceId)} color="error">
-                          <DeleteIcon />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          {filteredProductSizePrices.length === 0 && <p>No size prices found</p>}
         </Box>
 
         <Dialog open={showAddSizePriceDialog} onClose={() => setShowAddSizePriceDialog(false)}>
           <DialogTitle>Add New Size Price</DialogTitle>
           <DialogContent>
             <DialogContentText>Enter the size and price details:</DialogContentText>
-            <TextField
-              margin="dense"
-              id="size-select"
-              name="productSizeType"
-              label="Size"
-              type="number"
-              fullWidth
-              variant="outlined"
-              value={newSizePriceData.productSizeType}
-              onChange={handleAddSizePriceChange}
-              select
-              SelectProps={{ native: true }}
-              required
-              error={!!validationErrors.productSizeType}
-              helperText={validationErrors.productSizeType}
-            >
-              <option value="" disabled></option>
-              <option value={0}>S</option>
-              <option value={1}>M</option>
-              <option value={2}>L</option>
-              <option value={3}>Normal</option>
-            </TextField>
+            <FormControl>
+              <TextField
+                margin="dense"
+                id="size-select"
+                name="productSizeType"
+                label="Size"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={newSizePriceData.productSizeType}
+                onChange={handleAddSizePriceChange}
+                select
+                SelectProps={{ native: true }}
+                required
+                error={!!validationErrors.productSizeType}
+                helperText={validationErrors.productSizeType}
+                defaultValue={''}
+              >
+                <option value="" hidden disabled></option>
+                <option value={0}>S</option>
+                <option value={1}>M</option>
+                <option value={2}>L</option>
+                <option value={3}>Normal</option>
+              </TextField>
+            </FormControl>
             <TextField
               margin="dense"
               name="price"
@@ -388,20 +442,35 @@ const MyProductDetails = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleAddSizePrice} variant="contained">
+            <Button onClick={handleAddSizePrice} variant="contained" disabled={!isSubmitting}>
               Add
             </Button>
           </DialogActions>
         </Dialog>
       </Stack>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert severity={snackbarMessage ? 'success' : 'error'}>{snackbarMessage}</Alert>
-      </Snackbar>
+      {/* Snackbar  message */}
+      <Box sx={{ width: 500 }}>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+          autoHideDuration={4000}
+          open={openSnackBar}
+          onClose={() => setOpenSnackBar(false)}
+          // message={errorMessage}
+          // key={groupItem.productId}
+        >
+          <Alert
+            onClose={() => setOpenSnackBar(false)}
+            severity={errorMessage === '' ? 'success' : 'error'}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {errorMessage === '' ? successMessage : errorMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
     </MainCard>
   );
 };
