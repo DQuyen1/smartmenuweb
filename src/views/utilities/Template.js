@@ -99,19 +99,19 @@ function Template() {
   const displayWidth = templateType === 0 ? canvasWidth : 608;
   const displayHeight = templateType === 0 ? canvasHeight : 720;
 
-  const defaultCanvasWidth = 608;
-  const defaultCanvasHeight = 1080;
-  const defaultDisplayWidth = 608;
-  const defaultDisplayHeight = 800;
+  // const defaultCanvasWidth = 608;
+  // const defaultCanvasHeight = 1080;
+  // const defaultDisplayWidth = 608;
+  // const defaultDisplayHeight = 800;
 
-  const lowestZIndex = 1;
+  // const lowestZIndex = 1;
 
-  const [canvasDimensions, setCanvasDimensions] = useState({
-    canvasWidth: defaultCanvasWidth,
-    canvasHeight: defaultCanvasHeight,
-    displayWidth: defaultDisplayWidth,
-    displayHeight: defaultDisplayHeight
-  });
+  // const [canvasDimensions, setCanvasDimensions] = useState({
+  //   canvasWidth: defaultCanvasWidth,
+  //   canvasHeight: defaultCanvasHeight,
+  //   displayWidth: defaultDisplayWidth,
+  //   displayHeight: defaultDisplayHeight
+  // });
 
   // const fonts = ['Pacifico', 'Edoz', 'Open Sans'];
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -357,9 +357,17 @@ function Template() {
       const value = await font_service.getAll();
       setFonts(value); // Update fonts state with the fetched value
       // console.log('Updated fonts: ', value);
+
+      console.log('Updated fonts: ', value);
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
+  };
+
+  const findFontNameById = (bFontId) => {
+    const font = fonts.find((font) => font.fontId === bFontId);
+
+    return font ? font.fontName : 'Times New Roman';
   };
 
   const updateLayerItem = async (layerItemId, layerItemType, layerItemValue) => {
@@ -1142,6 +1150,7 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
+      //loadCanvas(420);
     }
   }, [editor]);
 
@@ -1657,16 +1666,24 @@ function Template() {
   };
 
   const toggleItalic = () => {
-    let element = editor.canvas.getActiveObject();
+    // let element = editor.canvas.getActiveObject();
 
-    if (element && (element.type === 'text' || element.type === 'textbox')) {
-      const currentFontStyle = element.fontStyle;
+    // if (element && (element.type === 'text' || element.type === 'textbox')) {
+    //   const currentFontStyle = element.fontStyle;
 
-      // Toggle between 'italic' and 'normal'
-      const newFontStyle = currentFontStyle === 'italic' ? 'normal' : 'italic';
-      element.set('fontStyle', newFontStyle);
+    //   // Toggle between 'italic' and 'normal'
+    //   const newFontStyle = currentFontStyle === 'italic' ? 'normal' : 'italic';
+    //   element.set('fontStyle', newFontStyle);
 
-      // Re-render the canvas to apply the change
+    //   // Re-render the canvas to apply the change
+    //   editor.canvas.renderAll();
+    // }
+
+    const o = editor.canvas.getActiveObject();
+    if (o) {
+      setIsItalic((prev) => !prev);
+      o.set('fontStyle', !isItalic ? 'italic' : 'normal');
+      //o.fire('modified');
       editor.canvas.renderAll();
     }
   };
@@ -1846,12 +1863,10 @@ function Template() {
       // textAlign: textAlign,
       //fontFamily: selectedFont,
       fontSize: defaultFontSize,
-      fontFamily: selectedFont,
+      fontFamily: 'times new roman',
       editable: true,
       angle: 0,
-      noScaleCache: false, // Prevent Fabric.js from automatically adjusting the text size
-      lockScalingX: true, // Lock horizontal scaling
-      lockScalingY: true
+      bFontId: 14
     });
     // addToUndoStack();
 
@@ -1908,6 +1923,22 @@ function Template() {
     });
 
     text.on('mouseup', function () {
+      const fontName = findFontNameById(text.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = text.fontWeight === 'bold' ? true : false;
+      const isItalic = text.fontStyle === 'italic' ? true : false;
+      const textAlign = text.textAlign;
+      console.log('text font style: ', text.fontStyle);
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      console.log('italic: ', isItalic);
+
       const adjustedWidth = text.width * text.scaleX; // Scale back width
       const adjustedHeight = text.height * text.scaleY;
 
@@ -1917,6 +1948,7 @@ function Template() {
       } else if (adjustedAngle < -180) {
         adjustedAngle += 360;
       }
+      console.log('bfontid: ', text.bFontId);
 
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
@@ -2546,13 +2578,14 @@ function Template() {
       width: 50,
       // width: 100,
       // height: 100,
-      fill: 'white',
+      fill: '#FFFFFF',
       // fontFamily: 'Arial',
       // fontStyle: 'normal',
       // textAlign: 'left',
       opacity: 100,
       productCounter: 1,
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -2616,6 +2649,19 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
       let adjustedAngle = textBox.angle;
       if (adjustedAngle > 180) {
         adjustedAngle -= 360;
@@ -2763,10 +2809,10 @@ function Template() {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
-      fill: 'white',
+      fill: '#FFFFFF',
       editable: false,
       width: 50,
-
+      bFontId: 14,
       backgroundColor: getRandomColor()
     });
 
@@ -2813,6 +2859,29 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+      setColor(textBox.fill);
+
       const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
       const adjustedHeight = textBox.height * textBox.scaleY;
 
@@ -2900,12 +2969,13 @@ function Template() {
       left: selectedRect.left + 20,
       top: selectedRect.top + 20,
       fontSize: 20,
-      fill: 'white',
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 50,
       // height: 200,
       backgroundColor: getRandomColor(),
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -2952,6 +3022,28 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+      setColor(textBox.fill);
+
       const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
       const adjustedHeight = textBox.height * textBox.scaleY;
 
@@ -3021,12 +3113,13 @@ function Template() {
       left: selectedRect.left + 25,
       top: selectedRect.top + 25,
       fontSize: 20,
-      fill: color,
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 50,
       //height: 200,
       backgroundColor: getRandomColor(),
       editable: false
+
       // selectionBackgroundColor: 'black'
     });
     textBox.setControlsVisibility({
@@ -3072,6 +3165,15 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+
       const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
       const adjustedHeight = textBox.height * textBox.scaleY;
 
@@ -3138,7 +3240,7 @@ function Template() {
       left: 100,
       top: 150,
       fontSize: 20,
-      fill: color,
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 150,
       height: 100,
@@ -3241,8 +3343,8 @@ function Template() {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
-      fill: color,
-      fontFamily: 'Arial',
+      fill: '#FFFFFF',
+      fontFamily: 'times new roman',
       fontStyle: 'normal', // fontStyle: 'normal', 'italic', or 'bold'
       textAlign: 'center',
       opacity: 1.0,
@@ -3250,7 +3352,8 @@ function Template() {
       width: 100,
       //height: 200,
       backgroundColor: getRandomColor(),
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -3297,6 +3400,29 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setColor(textBox.fill);
+      setRotationAngle(adjustedAngle);
+
       const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
       const adjustedHeight = textBox.height * textBox.scaleY;
 
@@ -3406,63 +3532,6 @@ function Template() {
       .join('');
   };
 
-  // useEffect(() => {
-  //   getAllFont();
-  // }, []);
-
-  // useEffect(() => {
-  //   // Apply dynamic font-face rules when fonts are updated
-  //   if (fonts.length > 0) {
-  //     const fontFaceRule = generateFontFaceRule(fonts);
-  //     const styleElement = document.createElement('style');
-  //     document.head.appendChild(styleElement);
-  //     styleElement.textContent = fontFaceRule;
-  //   }
-  // }, [fonts]);
-
-  // // Load the font dynamically and apply it to the canvas
-  // const loadAndUseFont = (fontName) => {
-  //   const myFont = new FontFaceObserver(fontName);
-
-  //   myFont
-  //     .load()
-  //     .then(() => {
-  //       const activeObject = editor.canvas.getActiveObject();
-  //       if (activeObject) {
-  //         activeObject.set('fontFamily', fontName);
-  //         editor.canvas.requestRenderAll();
-  //       }
-  //     })
-  //     .catch((e) => {
-  //       console.error(`Font loading failed: ${fontName}`, e);
-  //       alert(`Font loading failed: ${fontName}. Please check the font URL or try again later.`);
-  //     });
-  // };
-
-  // const handleFontChange = (event) => {
-  //   const selectedFont = event.target.value;
-  //   setSelectedFont(selectedFont);
-
-  //   const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
-  //   const bFontId = selectedFontData ? selectedFontData.fontId : null;
-  //   console.log('Selected Font:', selectedFont);
-  //   console.log('Selected Font bFontId:', bFontId);
-
-  //   const activeObject = editor.canvas.getActiveObject();
-  //   if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
-  //     activeObject.set({
-  //       fontFamily: selectedFont,
-  //       bFontId: bFontId
-  //     });
-  //     activeObject.fire('modified');
-  //     editor.canvas.requestRenderAll();
-  //   } else {
-  //     // Load and use the font if it's not 'Times New Roman'
-  //     if (selectedFont !== 'Times New Roman') {
-  //       loadAndUseFont(selectedFont);
-  //     }
-  //   }
-  // };
   useEffect(() => {
     getAllFont();
   }, []);
@@ -3598,8 +3667,37 @@ function Template() {
                 max="150" // Set maximum value if needed
               />
               <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
-              <button onClick={toggleBold}>B</button>
-              <button onClick={toggleItalic}>I</button>
+              <button
+                onClick={toggleBold}
+                style={{
+                  color: isBold ? 'white' : 'black',
+                  backgroundColor: isBold ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isBold ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                B
+              </button>
+              {/* <button
+                onClick={toggleItalic}
+                style={{
+                  color: isItalic ? 'white' : 'black',
+                  backgroundColor: isItalic ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isItalic ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                I
+              </button> */}
+
+              <button
+                onClick={toggleItalic}
+                style={{
+                  color: isItalic ? 'white' : 'black',
+                  backgroundColor: isItalic ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isItalic ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                I
+              </button>
               <button onClick={cycleTextAlign} className="align-button">
                 {getTextAlignIcon()}
               </button>
@@ -3666,108 +3764,105 @@ function Template() {
                   {selectedTool === 'rect' && <div className="subtab-separator"></div>}
                   {selectedTool === 'rect' && <Button onClick={() => handleSubtabClick('product')}>Product</Button>}
                 </div>
-                {activeSubtab === 'position' && (
-                  <div className="subtab-content">
-                    {/* {selectedTool == 'rect' && (
+                {/* {activeSubtab === 'position' && ( */}
+                <div className="subtab-content">
+                  {/* {selectedTool == 'rect' && (
                     <> */}
-                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
-                    <div className="position-options">
-                      <div className="dimension-options">
-                        <label htmlFor="width" style={{ marginBottom: '5px', color: 'white' }}>
-                          Width:
-                        </label>
-                        <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
-                      </div>
-                      <div className="subtab-separator"></div>
-                      <div className="dimension-options">
-                        <label htmlFor="height" style={{ marginBottom: '5px', color: 'white' }}>
-                          Height:
-                        </label>
-                        <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
-                      </div>
+                  <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
+                  <div className="position-options">
+                    <div className="dimension-options">
+                      <label htmlFor="width" style={{ marginBottom: '5px', color: 'white' }}>
+                        Width:
+                      </label>
+                      <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
                     </div>
-                    {/* </>
+                    <div className="subtab-separator"></div>
+                    <div className="dimension-options">
+                      <label htmlFor="height" style={{ marginBottom: '5px', color: 'white' }}>
+                        Height:
+                      </label>
+                      <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
+                    </div>
+                  </div>
+                  {/* </>
                   )} */}
-                    {/* {selectedTool !== 'text' && (
+                  {/* {selectedTool !== 'text' && (
                     <> */}
-                    <div className="position-options">
-                      <div className="dimension-options">
-                        <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
-                          Position X:
-                        </label>
-                        <input
-                          type="number"
-                          id="positionX"
-                          value={positionX}
-                          onChange={(e) => handleDimensionChange(e, 'positionX')}
-                          min={-Infinity}
-                        />
-                      </div>
-                      <div className="subtab-separator"></div>
-                      <div className="dimension-options">
-                        <label htmlFor="positionY" style={{ marginBottom: '5px', color: 'white' }}>
-                          Position Y:
-                        </label>
-                        <input
-                          type="number"
-                          id="positionY"
-                          value={positionY}
-                          onChange={(e) => handleDimensionChange(e, 'positionY')}
-                          min={-Infinity}
-                        />
-                      </div>
-                    </div>
-                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Arrange</h5>
-                    <div className="button-row">
-                      <button
-                        onClick={() => changeZIndex('sendBackward')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center', width: '125px' }}
-                      >
-                        <IconStackBackward size={30} />
-                        Send Backwards
-                      </button>
-                      <button
-                        onClick={() => changeZIndex('sendToBack')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackBack size={30} />
-                        Send to Back
-                      </button>
-                    </div>
-                    <div className="button-row">
-                      <button
-                        onClick={() => changeZIndex('bringForward')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackForward size={30} />
-                        Bring Forward
-                      </button>
-                      <button
-                        onClick={() => changeZIndex('bringToFront')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackFront size={30} />
-                        Bring to Front
-                      </button>
-                    </div>
-                    <div className="advanced-options">
-                      <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Advance</h5>
-                      <label htmlFor="rotationAngle" style={{ marginBottom: '5px' }}>
-                        Rotation Angle:
+                  <div className="position-options">
+                    <div className="dimension-options">
+                      <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
+                        Position X:
                       </label>
                       <input
                         type="number"
-                        value={rotationAngle}
-                        placeholder="Enter rotation angle"
-                        onChange={handleRotationChange}
-                        min="-180"
-                        max="180"
+                        id="positionX"
+                        value={positionX}
+                        onChange={(e) => handleDimensionChange(e, 'positionX')}
+                        min={-Infinity}
                       />
                     </div>
-                    {/* </>
-                  )} */}
+                    <div className="subtab-separator"></div>
+                    <div className="dimension-options">
+                      <label htmlFor="positionY" style={{ marginBottom: '5px', color: 'white' }}>
+                        Position Y:
+                      </label>
+                      <input
+                        type="number"
+                        id="positionY"
+                        value={positionY}
+                        onChange={(e) => handleDimensionChange(e, 'positionY')}
+                        min={-Infinity}
+                      />
+                    </div>
                   </div>
-                )}
+                  <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Arrange</h5>
+                  <div className="button-row">
+                    <button
+                      onClick={() => changeZIndex('sendBackward')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center', width: '125px' }}
+                    >
+                      <IconStackBackward size={30} />
+                      Send Backwards
+                    </button>
+                    <button onClick={() => changeZIndex('sendToBack')} style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
+                      <IconStackBack size={30} />
+                      Send to Back
+                    </button>
+                  </div>
+                  <div className="button-row">
+                    <button
+                      onClick={() => changeZIndex('bringForward')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <IconStackForward size={30} />
+                      Bring Forward
+                    </button>
+                    <button
+                      onClick={() => changeZIndex('bringToFront')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <IconStackFront size={30} />
+                      Bring to Front
+                    </button>
+                  </div>
+                  <div className="advanced-options">
+                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Advance</h5>
+                    <label htmlFor="rotationAngle" style={{ marginBottom: '5px' }}>
+                      Rotation Angle:
+                    </label>
+                    <input
+                      type="number"
+                      value={rotationAngle}
+                      placeholder="Enter rotation angle"
+                      onChange={handleRotationChange}
+                      min="-180"
+                      max="180"
+                    />
+                  </div>
+                  {/* </>
+                  )} */}
+                </div>
+                {/* //)} */}
 
                 {activeSubtab === 'product' && selectedTool === 'rect' && (
                   <div className="subtab-content">
