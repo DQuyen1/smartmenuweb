@@ -96,8 +96,8 @@ function Template() {
   // const userId = localStorage.getItem('userId');
   const canvasWidth = location.state.templateWidth;
   const canvasHeight = location.state.templateHeight;
-  const displayWidth = templateType === 0 ? canvasWidth : 608;
-  const displayHeight = templateType === 0 ? canvasHeight : 720;
+  const displayWidth = templateType === 0 ? canvasWidth : 720;
+  const displayHeight = templateType === 0 ? canvasHeight : 1080;
 
   // const defaultCanvasWidth = 608;
   // const defaultCanvasHeight = 1080;
