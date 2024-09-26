@@ -23,7 +23,8 @@ import {
   InputAdornment,
   Box,
   Typography,
-  Grid
+  Grid,
+  TablePagination
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Visibility, Delete, Edit } from '@mui/icons-material';
@@ -252,6 +253,22 @@ const MyCategory = () => {
     return categoryNameMatch || brandIdMatch;
   });
 
+  // Pagination
+
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // State for rows per page
+
+  // Function to handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  // Function to handle rows per page change
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page after changing rows per page
+  };
+
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
@@ -271,7 +288,7 @@ const MyCategory = () => {
                 }}
                 sx={{
                   width: '500px',
-                  mr: 60, // Set a fixed width (adjust as needed)
+                  mr: 100, // Set a fixed width (adjust as needed)
                   '& .MuiOutlinedInput-root': {
                     borderRadius: 2,
                     paddingRight: 1
@@ -284,6 +301,7 @@ const MyCategory = () => {
                 onClick={() => setShowAddCategoryDialog(true)}
                 startIcon={<AddCircleOutlined />}
                 sx={{
+                  textAlign: 'end',
                   borderRadius: 2,
                   boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                   textTransform: 'none',
@@ -304,73 +322,89 @@ const MyCategory = () => {
             ) : error ? (
               <p>{error}</p>
             ) : (
-              <TableContainer component={Paper} sx={{ maxHeight: 450, overflowY: 'auto' }}>
-                <Table stickyHeader aria-label="sticky table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Category Name</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredCategoryData.map((category) => (
-                      <TableRow key={category.categoryId}>
-                        <TableCell>{category.categoryName}</TableCell>
-                        <TableCell sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            onClick={() => handleProductPage(category.categoryId)}
-                            startIcon={<Visibility />}
-                            sx={{
-                              color: 'primary.main',
-                              borderColor: 'primary.main',
-                              '&:hover': {
-                                backgroundColor: 'primary.light'
-                              }
-                            }}
-                          >
-                            View List Product
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            onClick={() => handleEditClick(category)}
-                            startIcon={<Edit />}
-                            sx={{
-                              color: 'primary.main',
-                              borderColor: 'primary.main',
-                              '&:hover': {
-                                backgroundColor: 'primary.light'
-                              }
-                            }}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDelete(category.categoryId)}
-                            startIcon={<Delete />}
-                            sx={{
-                              color: 'error.main',
-                              borderColor: 'error.main',
-                              '&:hover': {
-                                backgroundColor: 'error.light'
-                              }
-                            }}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
+              <>
+                <TableContainer component={Paper} sx={{ maxHeight: 450, overflowY: 'auto' }}>
+                  <Table stickyHeader aria-label="sticky table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Category Name</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {filteredCategoryData
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((category) => (
+                        <TableRow key={category.categoryId}>
+                          <TableCell>{category.categoryName}</TableCell>
+                          <TableCell sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                              variant="outlined"
+                              color="primary"
+                              size="small"
+                              onClick={() => handleProductPage(category.categoryId)}
+                              startIcon={<Visibility />}
+                              sx={{
+                                color: 'primary.main',
+                                borderColor: 'primary.main',
+                                '&:hover': {
+                                  backgroundColor: 'primary.light'
+                                }
+                              }}
+                            >
+                              View List Product
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="primary"
+                              size="small"
+                              onClick={() => handleEditClick(category)}
+                              startIcon={<Edit />}
+                              sx={{
+                                color: 'primary.main',
+                                borderColor: 'primary.main',
+                                '&:hover': {
+                                  backgroundColor: 'primary.light'
+                                }
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDelete(category.categoryId)}
+                              startIcon={<Delete />}
+                              sx={{
+                                color: 'error.main',
+                                borderColor: 'error.main',
+                                '&:hover': {
+                                  backgroundColor: 'error.light'
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                {/* Pagination */}
+                <TablePagination
+                  sx={{ display: 'flex', justifyContent: 'flex-end' }}
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredCategoryData.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </>
             )}
           </MainCard>
         </Grid>

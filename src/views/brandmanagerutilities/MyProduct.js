@@ -21,7 +21,10 @@ import {
   MenuItem,
   Input,
   FormHelperText,
-  InputAdornment
+  InputAdornment,
+  Typography,
+  Divider,
+  TablePagination
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -43,7 +46,7 @@ const MyProduct = () => {
     productName: '',
     productDescription: '',
     productPriceCurrency: '',
-    productImgPath: '',
+    productImgPath: ''
     // productLogoPath: ''
   });
   const [productToEdit, setProductToEdit] = useState({
@@ -51,7 +54,7 @@ const MyProduct = () => {
     productName: '',
     productDescription: '',
     productPriceCurrency: '',
-    productImgPath: '',
+    productImgPath: ''
     // productLogoPath: ''
   });
   const [productToDelete, setProductToDelete] = useState(null);
@@ -157,7 +160,7 @@ const MyProduct = () => {
       productName: '',
       productDescription: '',
       productPriceCurrency: '',
-      productImgPath: null,
+      productImgPath: null
       // productLogoPath: null
     });
     setValidationErrors({});
@@ -184,7 +187,7 @@ const MyProduct = () => {
       const payload = {
         ...newProduct,
         productPriceCurrency: parseFloat(newProduct.productPriceCurrency),
-        productImgPath: productImgPath,
+        productImgPath: productImgPath
         // productLogoPath: productLogoPath
       };
       console.log('payload:', payload);
@@ -241,7 +244,7 @@ const MyProduct = () => {
       const payload = {
         ...productToEdit,
         productPriceCurrency: parseFloat(productToEdit.productPriceCurrency),
-        productImgPath: productImgPath,
+        productImgPath: productImgPath
         // productLogoPath: productLogoPath
       };
       await axios.put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Products/${productToEdit.productId}`, payload);
@@ -260,7 +263,6 @@ const MyProduct = () => {
     } finally {
       setIsSubmitting(false);
     }
-    
   };
 
   const handleOpenConfirmDialog = (productId) => {
@@ -302,7 +304,7 @@ const MyProduct = () => {
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
-  
+
     if (file) {
       formData.append('file', file);
       formData.append('upload_preset', preset_key);
@@ -310,20 +312,20 @@ const MyProduct = () => {
       formData.append('folder', folder);
 
       setIsSubmitting(true);
-  
+
       try {
         const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
           method: 'POST',
           body: formData
         });
-  
+
         if (!response.ok) {
           throw new Error('Failed to upload image');
         }
-  
+
         const result = await response.json();
         const imageUrl = result.secure_url;
-  
+
         setProductImgPath(imageUrl);
         setNewProduct((prevProduct) => ({
           ...prevProduct,
@@ -333,20 +335,16 @@ const MyProduct = () => {
           ...prevProduct,
           productImgPath: imageUrl
         }));
-        
-        
-  
+
         console.log('Result hihi: ', result.secure_url);
       } catch (error) {
         console.error('Error uploading image:', error);
       } finally {
         // Set isSubmitting to false after image upload completes
-        setIsSubmitting(false); 
+        setIsSubmitting(false);
       }
-      
     }
   };
-  
 
   const handleImageUploadLogo = async (event) => {
     const userId = 469;
@@ -364,24 +362,70 @@ const MyProduct = () => {
         const imageUrl = result.data.secure_url;
         // setProductLogoPath(imageUrl);
         setNewProduct((prevProduct) => ({
-          ...prevProduct,
+          ...prevProduct
           // productLogoPath: imageUrl
         }));
         setProductToEdit((prevProduct) => ({
-          ...prevProduct,
+          ...prevProduct
           // productLogoPath: imageUrl
         }));
       });
     }
   };
 
+  // Pagination
+
+  const [page, setPage] = useState(0); // State for current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // State for rows per page
+
+  // Function to handle page change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  // Function to handle rows per page change
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page after changing rows per page
+  };
+
+  // Searching
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(0); // Reset to first page when searching
+  };
+
+  useEffect(() => {
+    const results = products.filter((product) => product.productName.toLowerCase().includes(searchTerm.toLowerCase()));
+    setFilteredProducts(results);
+  }, [searchTerm, products]);
+
   return (
     <>
-      <MainCard title="My Products">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-      <TextField
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
+      <MainCard>
+        <Box sx={{ position: 'relative', mb: 2 }}>
+          <Button variant="contained" onClick={() => navigate(-1)} sx={{ textAlign: 'left', zIndex: 1, position: 'absolute' }}>
+            Go Back
+          </Button>
+          <Typography
+            variant="h1"
+            sx={{
+              textAlign: 'center',
+              width: '100%',
+              position: 'relative'
+            }}
+          >
+            My Products
+          </Typography>
+        </Box>
+        <Divider />
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, pt: 2 }}>
+          <TextField
+            value={searchTerm}
+            onChange={handleSearchChange}
             variant="outlined"
             sx={{ marginBottom: '16px' }}
             InputProps={{
@@ -408,83 +452,95 @@ const MyProduct = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products
-                .filter((product) => product.productName.toLowerCase().includes(filter.toLowerCase()))
-                .map((product) => (
-                  <TableRow key={product.productId}>
-                    <TableCell>{product.productName}</TableCell>
-                    <TableCell>{product.productDescription}</TableCell>
-                    <TableCell>
-                      {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
-                    </TableCell>
-                    <TableCell>
-                      {product.productImgPath ? (
+              {filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+                <TableRow key={product.productId}>
+                  <TableCell>{product.productName}</TableCell>
+                  <TableCell>{product.productDescription}</TableCell>
+                  <TableCell>
+                    {(product.productPriceCurrency === 0 ? 'USD' : product.productPriceCurrency === 1 ? 'VND' : null) ?? 'Unknown'}
+                  </TableCell>
+                  <TableCell>
+                    {product.productImgPath ? (
+                      <a href={product.productImgPath} target="_blank" rel="noreferrer">
                         <img
                           src={product.productImgPath}
                           alt={`${product.productName}`}
                           style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                         />
-                      ) : (
-                        'No Image'
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div style={{ display: 'flex', gap: '12px' }}>
+                      </a>
+                    ) : (
+                      'No Image'
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div style={{ display: 'flex', gap: '12px' }}>
                       <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<Visibility />}
-                          onClick={() => handleViewDetails(product)}
-                          sx={{
-                            color: 'primary.main',
-                            borderColor: 'primary.main',
-                            '&:hover': {
-                              backgroundColor: 'primary.light'
-                            }
-                          }}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"
-                          startIcon={<Edit />}
-                          onClick={() => handleOpenEditDialog(product)}
-                          sx={{
-                            color: 'primary.main',
-                            borderColor: 'primary.main',
-                            '&:hover': {
-                              backgroundColor: 'primary.light'
-                            }
-                          }}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          size="small"
-                          startIcon={<Delete />}
-                          onClick={() => handleOpenConfirmDialog(product.productId)}
-                          sx={{
-                            color: 'error.main',
-                            borderColor: 'error.main',
-                            '&:hover': {
-                              backgroundColor: 'error.light'
-                            }
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        startIcon={<Visibility />}
+                        onClick={() => handleViewDetails(product)}
+                        sx={{
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.light'
+                          }
+                        }}
+                      >
+                        View
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        startIcon={<Edit />}
+                        onClick={() => handleOpenEditDialog(product)}
+                        sx={{
+                          color: 'primary.main',
+                          borderColor: 'primary.main',
+                          '&:hover': {
+                            backgroundColor: 'primary.light'
+                          }
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        size="small"
+                        startIcon={<Delete />}
+                        onClick={() => handleOpenConfirmDialog(product.productId)}
+                        sx={{
+                          color: 'error.main',
+                          borderColor: 'error.main',
+                          '&:hover': {
+                            backgroundColor: 'error.light'
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Pagination */}
+        <TablePagination
+          sx={{ display: 'flex', justifyContent: 'flex-end' }}
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={filteredProducts.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </MainCard>
 
       <Dialog open={openAddDialog} onClose={handleCloseAddDialog}>
@@ -562,7 +618,9 @@ const MyProduct = () => {
           <Button onClick={handleCloseAddDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddProduct} disabled={isSubmitting}>Add</Button>
+          <Button onClick={handleAddProduct} disabled={isSubmitting}>
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -639,7 +697,9 @@ const MyProduct = () => {
           <Button onClick={handleCloseEditDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>Update</Button>
+          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>
+            Update
+          </Button>
         </DialogActions>
       </Dialog>
 

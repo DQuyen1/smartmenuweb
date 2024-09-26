@@ -906,30 +906,21 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
                         </TableCell>
 
                         <TableCell>
-                          <IconButton
-                            aria-label="expand row"
-                            size="small"
-                            onClick={() => setOpenNested(openNested === groupItemIndex ? -1 : groupItemIndex)}
-                          >
-                            Sizes
-                            {openNested === groupItemIndex ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                          </IconButton>
-                        </TableCell>
-
-                        <TableCell>
                           {groupItem.product.productImgPath !== null && !imgError ? (
-                            <img
-                              src={groupItem.product.productImgPath}
-                              alt={groupItem.product.productName}
-                              onError={() => setImgError(true)}
-                              style={{
-                                maxWidth: '100px',
-                                minWidth: '100px',
-                                maxHeight: '100px',
-                                minHeight: '100px',
-                                objectFit: 'contain'
-                              }}
-                            />
+                            <a href={groupItem.product.productImgPath} target="_blank" rel="noreferrer">
+                              <img
+                                src={groupItem.product.productImgPath}
+                                alt={groupItem.product.productName}
+                                onError={() => setImgError(true)}
+                                style={{
+                                  maxWidth: '100px',
+                                  minWidth: '100px',
+                                  maxHeight: '150px',
+                                  minHeight: '150px',
+                                  objectFit: 'fill'
+                                }}
+                              />
+                            </a>
                           ) : (
                             <ImageNotSupported
                               style={{
@@ -1159,7 +1150,9 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
             <>
               {/* Body */}
               <TableBody>
-                {filteredProductGroups.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {filteredProductGroups
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((row, index) => (
                   <Row key={index} row={row} />
                 ))}
               </TableBody>
@@ -1173,7 +1166,7 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
         sx={{ display: 'flex', justifyContent: 'flex-end' }}
         rowsPerPageOptions={[5, 10, 25]}
         component="div"
-        count={productGroups.length}
+        count={filteredProductGroups.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
