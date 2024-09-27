@@ -35,44 +35,43 @@ const ManageTransaction = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedDate, setSelectedDate] = useState('');
 
-  const fetchTransactionData = async (pageNumber, pageSize) => {
+  const fetchTransactionData = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const brandId = localStorage.getItem('brandId');
       let response;
-      let totalResponse;
-      if (brandId === 'null') {
-        totalResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
-      } else {
-        totalResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
-          params: {
-            pageSize: 100000000,
-            pageNumber: 1,
-            filter: filter
-          }
-        });
-      }
-      setTotalCount(totalResponse.data.length);
+      // if (brandId === 'null') {
+      //   totalResponse = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
+      //     params: {
+      //       pageSize: 100000000,
+      //       pageNumber: 1,
+      //       filter: filter
+      //     }
+      //   });
+      // } else {
+      //   totalResponse = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
+      //     params: {
+      //       pageSize: 100000000,
+      //       pageNumber: 1,
+      //       filter: filter
+      //     }
+      //   });
+      // }
+      // setTotalCount(totalResponse.data.length);
       if (brandId === 'null') {
         response = await axios.get('https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions', {
           params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
+            pageSize: 100000,
+            pageNumber: 1,
             filter: searchTerm
           }
         });
       } else {
         response = await axios.get(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Transactions/brand/${brandId}`, {
           params: {
-            pageSize: pageSize,
-            pageNumber: pageNumber + 1,
+            pageSize: 100000,
+            pageNumber: 1,
             filter: searchTerm
           }
         });
