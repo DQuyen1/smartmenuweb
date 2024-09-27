@@ -465,7 +465,7 @@ const MyProduct = () => {
                         <img
                           src={product.productImgPath}
                           alt={`${product.productName}`}
-                          style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                          style={{ width: '100px', height: '150px', objectFit: 'contain' }}
                         />
                       </a>
                     ) : (

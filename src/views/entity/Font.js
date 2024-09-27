@@ -185,7 +185,7 @@ const EntityFont = () => {
         ) : (
           <>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-              <Button
+              {/* <Button
                 variant="contained"
                 color="success"
                 onClick={handleUploadClick}
@@ -193,7 +193,7 @@ const EntityFont = () => {
                 sx={{ mb: 2, color: 'white' }}
               >
                 Upload Font
-              </Button>
+              </Button> */}
             </Box>
             <Grid container spacing={gridSpacing}>
               {fontData.map(renderFontCard)}
