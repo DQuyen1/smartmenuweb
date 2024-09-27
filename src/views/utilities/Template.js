@@ -85,7 +85,7 @@ function Template() {
   const dataConvert = new dataHandler();
 
   const currentPath = location.pathname;
-
+  const [loading, setLoading] = useState(false);
   // const cloudName = import.meta.env.VITE_CLOUD_NAME;
   // const uploadPreset = import.meta.env.VITE_UPLOAD_PRESET;
 
@@ -96,22 +96,22 @@ function Template() {
   // const userId = localStorage.getItem('userId');
   const canvasWidth = location.state.templateWidth;
   const canvasHeight = location.state.templateHeight;
-  const displayWidth = templateType === 0 ? canvasWidth : 608;
-  const displayHeight = templateType === 0 ? canvasHeight : 720;
+  const displayWidth = templateType === 0 ? canvasWidth : 720;
+  const displayHeight = templateType === 0 ? canvasHeight : 1080;
 
-  const defaultCanvasWidth = 608;
-  const defaultCanvasHeight = 1080;
-  const defaultDisplayWidth = 608;
-  const defaultDisplayHeight = 800;
+  // const defaultCanvasWidth = 608;
+  // const defaultCanvasHeight = 1080;
+  // const defaultDisplayWidth = 608;
+  // const defaultDisplayHeight = 800;
 
-  const lowestZIndex = 1;
+  // const lowestZIndex = 1;
 
-  const [canvasDimensions, setCanvasDimensions] = useState({
-    canvasWidth: defaultCanvasWidth,
-    canvasHeight: defaultCanvasHeight,
-    displayWidth: defaultDisplayWidth,
-    displayHeight: defaultDisplayHeight
-  });
+  // const [canvasDimensions, setCanvasDimensions] = useState({
+  //   canvasWidth: defaultCanvasWidth,
+  //   canvasHeight: defaultCanvasHeight,
+  //   displayWidth: defaultDisplayWidth,
+  //   displayHeight: defaultDisplayHeight
+  // });
 
   // const fonts = ['Pacifico', 'Edoz', 'Open Sans'];
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -170,130 +170,6 @@ function Template() {
     box_item_service.deleteBoxItem(boxItemId);
   };
 
-  // const handleDimensionChange = (e, type) => {
-  //   let value = parseFloat(e.target.value);
-
-  //   value = value.replace(/,/g, '.');
-
-  //   let element = editor.canvas.getActiveObject();
-
-  //   if (!element) return; // Exit if no object is selected
-
-  //   // Apply constraints only if the selected element is of type 'text'
-  //   let isValid = true;
-  //   if (element.type === 'text') {
-  //     // Assuming renderLayer is an object with left, top, width, and height
-  //     const renderLayerBounds = {
-  //       left: selectedRect.left, // Render layer's top-left X position
-  //       top: selectedRect.top, // Render layer's top-left Y position
-  //       right: selectedRect.left + selectedRect.width, // Render layer's width
-  //       bottom: selectedRect.top + selectedRect.height // Render layer's height
-  //     };
-
-  //     let newPositionX = element.left;
-  //     let newPositionY = element.top;
-  //     let newWidth = element.width;
-  //     let newHeight = element.height;
-
-  //     switch (type) {
-  //       case 'width':
-  //         newWidth = value;
-  //         if (newPositionX + newWidth > renderLayerBounds.right) {
-  //           Toastify({
-  //             text: 'Width exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'height':
-  //         newHeight = value;
-  //         if (newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           Toastify({
-  //             text: 'Height exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionX':
-  //         newPositionX = value;
-  //         if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-  //           Toastify({
-  //             text: 'X position exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionY':
-  //         newPositionY = value;
-  //         if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           Toastify({
-  //             text: 'Y position exceeds the render layer bounds!',
-  //             className: 'info',
-  //             gravity: 'top',
-  //             position: 'right',
-  //             duration: 3000,
-  //             style: {
-  //               background: 'linear-gradient(to right, #ff0000, #ff6347)'
-  //             }
-  //           }).showToast();
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       default:
-  //         break;
-  //     }
-  //   }
-
-  //   // Update the UI input and object properties regardless of type
-  //   switch (type) {
-  //     case 'width':
-  //       setWidth(value);
-  //       if (isValid || element.type !== 'text') element.set('width', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'height':
-  //       setHeight(value);
-  //       if (isValid || element.type !== 'text') element.set('height', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionX':
-  //       setPositionX(value);
-  //       if (isValid || element.type !== 'text') element.set('left', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionY':
-  //       setPositionY(value);
-  //       if (isValid || element.type !== 'text') element.set('top', value); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   editor.canvas.renderAll(); // Re-render the canvas
-  // };
-
   const handleDimensionChange = (e, type) => {
     let value = e.target.value;
 
@@ -312,6 +188,35 @@ function Template() {
 
     // Apply constraints only if the selected element is of type 'text'
     let isValid = true;
+
+    if (element.type === 'image') {
+      const originalWidth = element.originalWidth; // Use original dimensions
+      const originalHeight = element.originalHeight;
+
+      switch (type) {
+        case 'width':
+          element.scaleX = parsedValue / originalWidth; // Update scale
+          break;
+        case 'height':
+          element.scaleY = parsedValue / originalHeight; // Update scale
+          break;
+        case 'positionX':
+          element.left = parsedValue;
+          break;
+        case 'positionY':
+          element.top = parsedValue;
+          break;
+        default:
+          break;
+      }
+
+      // Update the width and height properties accordingly
+      // element.set({
+      //   width: newWidth,
+      //   height: newHeight
+      // });
+    }
+
     if (element.type === 'text') {
       const renderLayerBounds = {
         left: selectedRect.left, // Render layer's top-left X position
@@ -367,11 +272,13 @@ function Template() {
     switch (type) {
       case 'width':
         setWidth(parsedValue);
-        if (isValid || element.type !== 'text') element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
+        if (isValid || element.type !== 'text') element.set({ scaleX: 1 });
+        element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'height':
         setHeight(parsedValue);
-        if (isValid || element.type !== 'text') element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
+        if (isValid || element.type !== 'text') element.set({ scaleY: 1 });
+        element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionX':
         setPositionX(parsedValue);
@@ -450,9 +357,17 @@ function Template() {
       const value = await font_service.getAll();
       setFonts(value); // Update fonts state with the fetched value
       // console.log('Updated fonts: ', value);
+
+      console.log('Updated fonts: ', value);
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
+  };
+
+  const findFontNameById = (bFontId) => {
+    const font = fonts.find((font) => font.fontId === bFontId);
+
+    return font ? font.fontName : 'Times New Roman';
   };
 
   const updateLayerItem = async (layerItemId, layerItemType, layerItemValue) => {
@@ -672,17 +587,25 @@ function Template() {
       setTimeout(() => {
         if (activeObjectType === 'textbox') {
           const layerId = activeObject.layerId;
-          deleteText(layerId);
+          const boxItemId = activeObject.boxItemId;
+
+          if (layerId) {
+            deleteText(layerId);
+          } else if (boxItemId) {
+            deleteBoxItem(boxItemId);
+          }
         } else if (activeObjectType === 'rect') {
           const layerId = activeObject.layerId;
           deleteRenderLayer(layerId);
         } else if (activeObjectType === 'image') {
           const layerId = activeObject.layerId;
           deleteImage(layerId);
-        } else if (activeObjectType === 'text') {
-          const boxItemId = activeObject.boxItemId;
-          deleteBoxItem(boxItemId);
         }
+
+        // else if (activeObjectType === 'text') {
+        //   const boxItemId = activeObject.boxItemId;
+
+        // }
 
         console.log('Deleted after 7 seconds: ', activeObjectType);
       }, 7000); // Delay of 7 seconds (7000 milliseconds)
@@ -1227,6 +1150,7 @@ function Template() {
   useEffect(() => {
     if (editor) {
       editor.canvas.preserveObjectStacking = true;
+      //loadCanvas(420);
     }
   }, [editor]);
 
@@ -1355,18 +1279,68 @@ function Template() {
         // Render the canvas right after adding the image
         editor.canvas.renderAll();
 
+        img.originalWidth = img.width;
+        img.originalHeight = img.height;
+
         // Now attach mouse event listeners to the image
         myImg.on('mouseup', () => {
+          let adjustedAngle = myImg.angle;
+          if (adjustedAngle > 180) {
+            adjustedAngle -= 360;
+          } else if (adjustedAngle < -180) {
+            adjustedAngle += 360;
+          }
+
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+
+          const scaledWidth = myImg.getScaledWidth();
+          const scaledHeight = myImg.getScaledHeight();
+
+          setHeight((scaledHeight * scaleX).toFixed(1));
+          setWidth((scaledWidth * scaleY).toFixed(1));
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+          setRotationAngle(adjustedAngle);
+
           console.log('Image clicked');
           setActiveTab('positionSize');
-          setSelectedTool('text');
+          setSelectedTool('rect');
+        });
+
+        myImg.on('moving', function () {
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+          setActiveTab('positionSize');
+          setSelectedTool('rect');
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+        });
+
+        myImg.on('scaling', function () {
+          const scaleX = canvasWidth / displayWidth;
+          const scaleY = canvasHeight / displayHeight;
+
+          const scaledWidth = myImg.getScaledWidth();
+          const scaledHeight = myImg.getScaledHeight();
+
+          setActiveTab('positionSize');
+
+          setPositionX((myImg.left * scaleX).toFixed(1));
+          setPositionY((myImg.top * scaleY).toFixed(1));
+
+          setHeight((scaledHeight * scaleX).toFixed(1));
+          setWidth((scaledWidth * scaleY).toFixed(1));
+
+          setIsHeaderVisible(true);
+
+          setSelectedTool('textBox');
         });
 
         // Defer canvas-wide mouse:down event listener until after the image is rendered
         editor.canvas.on('mouse:down', function (options) {
-          if (options.target !== rect) {
-            setActiveTab(null);
-          }
+          setActiveTab(null);
+
           setSelectedTool(null);
         });
 
@@ -1452,30 +1426,11 @@ function Template() {
     editor.canvas.renderAll();
   };
 
-  // const changeFontSize = (e) => {
-  //   const inputValue = e.target.value;
-  //   const newFontSize = inputValue;
-
-  //   // Set the state for the raw input value (if needed)
-  //   setFontSize(inputValue);
-
-  //   console.log('FontSize (converted): ', newFontSize);
-  //   const activeObject = editor.canvas.getActiveObject();
-
-  //   if (activeObject && (activeObject.type === 'textbox' || activeObject.type === 'text')) {
-  //     activeObject.set('fontSize', newFontSize * 1.333);
-  //     console.log('real fontsize: ', activeObject.fontSize);
-
-  //     activeObject.fire('modified');
-  //     editor.canvas.renderAll();
-  //   }
-  // };
-
   const changeFontSize = (e) => {
-    const inputValue = e.target.value; // Font size from the input
+    const inputValue = e.target.value; // Get font size from the input
     const canvasFontSize = parseFloat(inputValue); // Parse the input as a number
 
-    // Set the state for the raw input value
+    // Set the state for the input value
     setFontSize(inputValue);
 
     const activeObject = editor.canvas.getActiveObject();
@@ -1484,21 +1439,33 @@ function Template() {
       // Convert canvas font size to Fabric.js font size
       let fabricFontSize = canvasFontSize * 1.333;
 
+      const originalHeight = activeObject.getScaledHeight();
+
       // Set the converted font size in Fabric.js
       activeObject.set('fontSize', fabricFontSize);
 
+      // Reset scaleX and scaleY to prevent stretching after changing font size
       activeObject.set({
         scaleX: 1,
         scaleY: 1
       });
 
+      // Calculate the new width and height based on the text content with the new font size
+      activeObject.set({
+        width: activeObject.width * activeObject.scaleX,
+        height: activeObject.height * activeObject.scaleY
+        //height: originalHeight
+      });
+
+      // Adjust the object to the new width and height without extra scaling
+      editor.canvas.renderAll();
+
       // Log the actual font size being set
       console.log('Canvas Font Size: ', canvasFontSize);
       console.log('FabricJS Font Size (converted): ', fabricFontSize);
 
-      // Trigger the 'modified' event and re-render the canvas
+      // Trigger the 'modified' event to ensure everything is updated
       activeObject.fire('modified');
-      editor.canvas.renderAll();
     }
   };
 
@@ -1699,16 +1666,24 @@ function Template() {
   };
 
   const toggleItalic = () => {
-    let element = editor.canvas.getActiveObject();
+    // let element = editor.canvas.getActiveObject();
 
-    if (element && (element.type === 'text' || element.type === 'textbox')) {
-      const currentFontStyle = element.fontStyle;
+    // if (element && (element.type === 'text' || element.type === 'textbox')) {
+    //   const currentFontStyle = element.fontStyle;
 
-      // Toggle between 'italic' and 'normal'
-      const newFontStyle = currentFontStyle === 'italic' ? 'normal' : 'italic';
-      element.set('fontStyle', newFontStyle);
+    //   // Toggle between 'italic' and 'normal'
+    //   const newFontStyle = currentFontStyle === 'italic' ? 'normal' : 'italic';
+    //   element.set('fontStyle', newFontStyle);
 
-      // Re-render the canvas to apply the change
+    //   // Re-render the canvas to apply the change
+    //   editor.canvas.renderAll();
+    // }
+
+    const o = editor.canvas.getActiveObject();
+    if (o) {
+      setIsItalic((prev) => !prev);
+      o.set('fontStyle', !isItalic ? 'italic' : 'normal');
+      //o.fire('modified');
       editor.canvas.renderAll();
     }
   };
@@ -1888,9 +1863,10 @@ function Template() {
       // textAlign: textAlign,
       //fontFamily: selectedFont,
       fontSize: defaultFontSize,
-      fontFamily: selectedFont,
+      fontFamily: 'times new roman',
       editable: true,
-      angle: 0
+      angle: 0,
+      bFontId: 14
     });
     // addToUndoStack();
 
@@ -1947,12 +1923,33 @@ function Template() {
     });
 
     text.on('mouseup', function () {
+      const fontName = findFontNameById(text.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = text.fontWeight === 'bold' ? true : false;
+      const isItalic = text.fontStyle === 'italic' ? true : false;
+      const textAlign = text.textAlign;
+      console.log('text font style: ', text.fontStyle);
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      console.log('italic: ', isItalic);
+
+      const adjustedWidth = text.width * text.scaleX; // Scale back width
+      const adjustedHeight = text.height * text.scaleY;
+
       let adjustedAngle = text.angle;
       if (adjustedAngle > 180) {
         adjustedAngle -= 360;
       } else if (adjustedAngle < -180) {
         adjustedAngle += 360;
       }
+      console.log('bfontid: ', text.bFontId);
+
       const scaleX = canvasWidth / displayWidth;
       const scaleY = canvasHeight / displayHeight;
 
@@ -1964,8 +1961,11 @@ function Template() {
 
       setColor(text.fill);
 
-      setHeight((scaledHeight * scaleX).toFixed(1));
-      setWidth((scaledWidth * scaleY).toFixed(1));
+      // setHeight((scaledHeight * scaleX).toFixed(1));
+      // setWidth((scaledWidth * scaleY).toFixed(1));
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
       setPositionX((text.left * scaleX).toFixed(1));
       setPositionY((text.top * scaleY).toFixed(1));
       setRotationAngle(adjustedAngle);
@@ -2578,13 +2578,14 @@ function Template() {
       width: 50,
       // width: 100,
       // height: 100,
-      fill: 'white',
+      fill: '#FFFFFF',
       // fontFamily: 'Arial',
       // fontStyle: 'normal',
       // textAlign: 'left',
       opacity: 100,
       productCounter: 1,
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -2648,6 +2649,19 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
       let adjustedAngle = textBox.angle;
       if (adjustedAngle > 180) {
         adjustedAngle -= 360;
@@ -2660,8 +2674,14 @@ function Template() {
       const scaledWidth = textBox.getScaledWidth();
       const scaledHeight = textBox.getScaledHeight();
 
-      setHeight((scaledHeight * scaleX).toFixed(1));
-      setWidth((scaledWidth * scaleY).toFixed(1));
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+
+      // setHeight((scaledHeight * scaleX).toFixed(1));
+      // setWidth((scaledWidth * scaleY).toFixed(1));
       setPositionX((textBox.left * scaleX).toFixed(1));
       setPositionY((textBox.top * scaleY).toFixed(1));
       //setActiveTab(activeTab === 'positionSize' ? null : 'positionSize');
@@ -2716,9 +2736,29 @@ function Template() {
       console.log('boxItemId: ', boxItemId);
     }
 
+    // setTimeout(async () => {
+    //   const { boxItemId, bFontId } = await createBoxItem(
+    //     boxId,
+    //     5,
+    //     textBox.left,
+    //     textBox.top,
+    //     textBox.width,
+    //     textBox.height,
+    //     3,
+    //     JSON.stringify(style)
+    //   );
+
+    //   // Assign the returned values to the textBox properties after the delay
+    //   textBox.boxItemId = boxItemId;
+    //   textBox.boxItemType = 3;
+    //   // textBox.bFontId = bFontId; // Uncomment if you need to set this
+
+    //   console.log('boxItemId: ', boxItemId);
+    // }, 5000); // Delay of 5000 milliseconds (5 seconds)
+
     textBox.on('modified', function () {
-      console.log('fontId: ', textBox.bFontId);
-      console.log('color: ', textBox.fill);
+      // console.log('fontId: ', textBox.bFontId);
+      // console.log('color: ', textBox.fill);
     });
 
     textBox.on('scaling', function () {
@@ -2769,10 +2809,10 @@ function Template() {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
-      fill: 'white',
+      fill: '#FFFFFF',
       editable: false,
       width: 50,
-
+      bFontId: 14,
       backgroundColor: getRandomColor()
     });
 
@@ -2819,8 +2859,36 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+      setColor(textBox.fill);
+
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -2901,12 +2969,13 @@ function Template() {
       left: selectedRect.left + 20,
       top: selectedRect.top + 20,
       fontSize: 20,
-      fill: 'white',
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 50,
       // height: 200,
       backgroundColor: getRandomColor(),
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -2953,8 +3022,35 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+      setColor(textBox.fill);
+
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3017,12 +3113,13 @@ function Template() {
       left: selectedRect.left + 25,
       top: selectedRect.top + 25,
       fontSize: 20,
-      fill: color,
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 50,
       //height: 200,
       backgroundColor: getRandomColor(),
       editable: false
+
       // selectionBackgroundColor: 'black'
     });
     textBox.setControlsVisibility({
@@ -3068,8 +3165,22 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setRotationAngle(adjustedAngle);
+
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3129,7 +3240,7 @@ function Template() {
       left: 100,
       top: 150,
       fontSize: 20,
-      fill: color,
+      fill: '#FFFFFF',
       borderColor: 'dark',
       width: 150,
       height: 100,
@@ -3232,8 +3343,8 @@ function Template() {
       left: selectedRect.left + 15,
       top: selectedRect.top + 15,
       fontSize: 20,
-      fill: color,
-      fontFamily: 'Arial',
+      fill: '#FFFFFF',
+      fontFamily: 'times new roman',
       fontStyle: 'normal', // fontStyle: 'normal', 'italic', or 'bold'
       textAlign: 'center',
       opacity: 1.0,
@@ -3241,7 +3352,8 @@ function Template() {
       width: 100,
       //height: 200,
       backgroundColor: getRandomColor(),
-      editable: false
+      editable: false,
+      bFontId: 14
       // selectionBackgroundColor: 'black'
     });
 
@@ -3288,8 +3400,36 @@ function Template() {
     });
 
     textBox.on('mouseup', function () {
-      setHeight(height.toFixed(1));
-      setWidth(width.toFixed(1));
+      const fontName = findFontNameById(textBox.bFontId);
+
+      setSelectedFont(fontName);
+
+      const isBold = textBox.fontWeight === 'bold' ? true : false;
+      const isItalic = textBox.fontStyle === 'italic' ? true : false;
+      const textAlign = textBox.textAlign;
+
+      setTextAlign(textAlign);
+
+      setIsBold(isBold);
+      setIsItalic(isItalic);
+
+      let adjustedAngle = textBox.angle;
+      if (adjustedAngle > 180) {
+        adjustedAngle -= 360;
+      } else if (adjustedAngle < -180) {
+        adjustedAngle += 360;
+      }
+
+      setColor(textBox.fill);
+      setRotationAngle(adjustedAngle);
+
+      const adjustedWidth = textBox.width * textBox.scaleX; // Scale back width
+      const adjustedHeight = textBox.height * textBox.scaleY;
+
+      setWidth(adjustedWidth.toFixed(1));
+      setHeight(adjustedHeight.toFixed(1));
+      // setHeight(height.toFixed(1));
+      // setWidth(width.toFixed(1));
       setPositionX(textBox.left.toFixed(1));
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
@@ -3392,63 +3532,6 @@ function Template() {
       .join('');
   };
 
-  // useEffect(() => {
-  //   getAllFont();
-  // }, []);
-
-  // useEffect(() => {
-  //   // Apply dynamic font-face rules when fonts are updated
-  //   if (fonts.length > 0) {
-  //     const fontFaceRule = generateFontFaceRule(fonts);
-  //     const styleElement = document.createElement('style');
-  //     document.head.appendChild(styleElement);
-  //     styleElement.textContent = fontFaceRule;
-  //   }
-  // }, [fonts]);
-
-  // // Load the font dynamically and apply it to the canvas
-  // const loadAndUseFont = (fontName) => {
-  //   const myFont = new FontFaceObserver(fontName);
-
-  //   myFont
-  //     .load()
-  //     .then(() => {
-  //       const activeObject = editor.canvas.getActiveObject();
-  //       if (activeObject) {
-  //         activeObject.set('fontFamily', fontName);
-  //         editor.canvas.requestRenderAll();
-  //       }
-  //     })
-  //     .catch((e) => {
-  //       console.error(`Font loading failed: ${fontName}`, e);
-  //       alert(`Font loading failed: ${fontName}. Please check the font URL or try again later.`);
-  //     });
-  // };
-
-  // const handleFontChange = (event) => {
-  //   const selectedFont = event.target.value;
-  //   setSelectedFont(selectedFont);
-
-  //   const selectedFontData = fonts.find((font) => font.fontName === selectedFont);
-  //   const bFontId = selectedFontData ? selectedFontData.fontId : null;
-  //   console.log('Selected Font:', selectedFont);
-  //   console.log('Selected Font bFontId:', bFontId);
-
-  //   const activeObject = editor.canvas.getActiveObject();
-  //   if ((activeObject && activeObject.type === 'textbox') || activeObject.type === 'text') {
-  //     activeObject.set({
-  //       fontFamily: selectedFont,
-  //       bFontId: bFontId
-  //     });
-  //     activeObject.fire('modified');
-  //     editor.canvas.requestRenderAll();
-  //   } else {
-  //     // Load and use the font if it's not 'Times New Roman'
-  //     if (selectedFont !== 'Times New Roman') {
-  //       loadAndUseFont(selectedFont);
-  //     }
-  //   }
-  // };
   useEffect(() => {
     getAllFont();
   }, []);
@@ -3519,6 +3602,14 @@ function Template() {
     }
   };
 
+  const handleSave = () => {
+    setLoading(true);
+    setTimeout(() => {
+      getAllCanvasProperties();
+      setLoading(false); // Reset loading state after fetching properties
+    }, 3000); // Delay for 3 seconds
+  };
+
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       event.preventDefault();
@@ -3576,8 +3667,37 @@ function Template() {
                 max="150" // Set maximum value if needed
               />
               <input type="color" id="font-color" onChange={(e) => changeColor(e)} value={color} />
-              <button onClick={toggleBold}>B</button>
-              <button onClick={toggleItalic}>I</button>
+              <button
+                onClick={toggleBold}
+                style={{
+                  color: isBold ? 'white' : 'black',
+                  backgroundColor: isBold ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isBold ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                B
+              </button>
+              {/* <button
+                onClick={toggleItalic}
+                style={{
+                  color: isItalic ? 'white' : 'black',
+                  backgroundColor: isItalic ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isItalic ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                I
+              </button> */}
+
+              <button
+                onClick={toggleItalic}
+                style={{
+                  color: isItalic ? 'white' : 'black',
+                  backgroundColor: isItalic ? 'black' : 'white', // Change background when bold is active
+                  fontWeight: isItalic ? 'bold' : 'normal' // Optionally bolden the button text too
+                }}
+              >
+                I
+              </button>
               <button onClick={cycleTextAlign} className="align-button">
                 {getTextAlignIcon()}
               </button>
@@ -3599,12 +3719,17 @@ function Template() {
             </div>
           )}
           <div className="divider"></div>
-          <button className="save-btn" onClick={() => getAllCanvasProperties()}>
+          <button className="save-btn" onClick={handleSave}>
             Save
           </button>
-          <div className="profile">User</div>
+          {/* <div className="profile">User</div> */}
         </div>
       </header>
+      {loading && (
+        <div className="loading-indicator">
+          <div className="spinner"></div>
+        </div>
+      )}
 
       <div className="main">
         <div className="sidebar-container">
@@ -3639,108 +3764,105 @@ function Template() {
                   {selectedTool === 'rect' && <div className="subtab-separator"></div>}
                   {selectedTool === 'rect' && <Button onClick={() => handleSubtabClick('product')}>Product</Button>}
                 </div>
-                {activeSubtab === 'position' && (
-                  <div className="subtab-content">
-                    {/* {selectedTool == 'rect' && (
+                {/* {activeSubtab === 'position' && ( */}
+                <div className="subtab-content">
+                  {/* {selectedTool == 'rect' && (
                     <> */}
-                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
-                    <div className="position-options">
-                      <div className="dimension-options">
-                        <label htmlFor="width" style={{ marginBottom: '5px', color: 'white' }}>
-                          Width:
-                        </label>
-                        <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
-                      </div>
-                      <div className="subtab-separator"></div>
-                      <div className="dimension-options">
-                        <label htmlFor="height" style={{ marginBottom: '5px', color: 'white' }}>
-                          Height:
-                        </label>
-                        <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
-                      </div>
+                  <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Position</h5>
+                  <div className="position-options">
+                    <div className="dimension-options">
+                      <label htmlFor="width" style={{ marginBottom: '5px', color: 'white' }}>
+                        Width:
+                      </label>
+                      <input type="number" id="width" value={width} onChange={(e) => handleDimensionChange(e, 'width')} />
                     </div>
-                    {/* </>
+                    <div className="subtab-separator"></div>
+                    <div className="dimension-options">
+                      <label htmlFor="height" style={{ marginBottom: '5px', color: 'white' }}>
+                        Height:
+                      </label>
+                      <input type="number" id="height" value={height} onChange={(e) => handleDimensionChange(e, 'height')} />
+                    </div>
+                  </div>
+                  {/* </>
                   )} */}
-                    {/* {selectedTool !== 'text' && (
+                  {/* {selectedTool !== 'text' && (
                     <> */}
-                    <div className="position-options">
-                      <div className="dimension-options">
-                        <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
-                          Position X:
-                        </label>
-                        <input
-                          type="number"
-                          id="positionX"
-                          value={positionX}
-                          onChange={(e) => handleDimensionChange(e, 'positionX')}
-                          min={-Infinity}
-                        />
-                      </div>
-                      <div className="subtab-separator"></div>
-                      <div className="dimension-options">
-                        <label htmlFor="positionY" style={{ marginBottom: '5px', color: 'white' }}>
-                          Position Y:
-                        </label>
-                        <input
-                          type="number"
-                          id="positionY"
-                          value={positionY}
-                          onChange={(e) => handleDimensionChange(e, 'positionY')}
-                          min={-Infinity}
-                        />
-                      </div>
-                    </div>
-                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Arrange</h5>
-                    <div className="button-row">
-                      <button
-                        onClick={() => changeZIndex('sendBackward')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center', width: '125px' }}
-                      >
-                        <IconStackBackward size={30} />
-                        Send Backwards
-                      </button>
-                      <button
-                        onClick={() => changeZIndex('sendToBack')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackBack size={30} />
-                        Send to Back
-                      </button>
-                    </div>
-                    <div className="button-row">
-                      <button
-                        onClick={() => changeZIndex('bringForward')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackForward size={30} />
-                        Bring Forward
-                      </button>
-                      <button
-                        onClick={() => changeZIndex('bringToFront')}
-                        style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
-                      >
-                        <IconStackFront size={30} />
-                        Bring to Front
-                      </button>
-                    </div>
-                    <div className="advanced-options">
-                      <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Advance</h5>
-                      <label htmlFor="rotationAngle" style={{ marginBottom: '5px' }}>
-                        Rotation Angle:
+                  <div className="position-options">
+                    <div className="dimension-options">
+                      <label htmlFor="positionX" style={{ marginBottom: '5px', color: 'white' }}>
+                        Position X:
                       </label>
                       <input
                         type="number"
-                        value={rotationAngle}
-                        placeholder="Enter rotation angle"
-                        onChange={handleRotationChange}
-                        min="-180"
-                        max="180"
+                        id="positionX"
+                        value={positionX}
+                        onChange={(e) => handleDimensionChange(e, 'positionX')}
+                        min={-Infinity}
                       />
                     </div>
-                    {/* </>
-                  )} */}
+                    <div className="subtab-separator"></div>
+                    <div className="dimension-options">
+                      <label htmlFor="positionY" style={{ marginBottom: '5px', color: 'white' }}>
+                        Position Y:
+                      </label>
+                      <input
+                        type="number"
+                        id="positionY"
+                        value={positionY}
+                        onChange={(e) => handleDimensionChange(e, 'positionY')}
+                        min={-Infinity}
+                      />
+                    </div>
                   </div>
-                )}
+                  <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Arrange</h5>
+                  <div className="button-row">
+                    <button
+                      onClick={() => changeZIndex('sendBackward')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center', width: '125px' }}
+                    >
+                      <IconStackBackward size={30} />
+                      Send Backwards
+                    </button>
+                    <button onClick={() => changeZIndex('sendToBack')} style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}>
+                      <IconStackBack size={30} />
+                      Send to Back
+                    </button>
+                  </div>
+                  <div className="button-row">
+                    <button
+                      onClick={() => changeZIndex('bringForward')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <IconStackForward size={30} />
+                      Bring Forward
+                    </button>
+                    <button
+                      onClick={() => changeZIndex('bringToFront')}
+                      style={{ fontSize: '12px', display: 'flex', alignItems: 'center' }}
+                    >
+                      <IconStackFront size={30} />
+                      Bring to Front
+                    </button>
+                  </div>
+                  <div className="advanced-options">
+                    <h5 style={{ color: 'white', textAlign: 'left', fontSize: '16px', marginBottom: '10px' }}>Advance</h5>
+                    <label htmlFor="rotationAngle" style={{ marginBottom: '5px' }}>
+                      Rotation Angle:
+                    </label>
+                    <input
+                      type="number"
+                      value={rotationAngle}
+                      placeholder="Enter rotation angle"
+                      onChange={handleRotationChange}
+                      min="-180"
+                      max="180"
+                    />
+                  </div>
+                  {/* </>
+                  )} */}
+                </div>
+                {/* //)} */}
 
                 {activeSubtab === 'product' && selectedTool === 'rect' && (
                   <div className="subtab-content">

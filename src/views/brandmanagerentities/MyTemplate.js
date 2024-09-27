@@ -159,8 +159,8 @@ const MyTemplate = () => {
     if (name === 'templateOrientation') {
       setNewTemplateData((prevState) => ({
         ...prevState,
-        templateWidth: value === 'vertical' ? 608 : 1080,
-        templateHeight: value === 'vertical' ? 720 : 720,
+        templateWidth: value === 'vertical' ? 720 : 1080,
+        templateHeight: value === 'vertical' ? 1080 : 720,
         templateType: value === 'vertical' ? 1 : 0, // Correct the order for horizontal
         [name]: value
       }));
