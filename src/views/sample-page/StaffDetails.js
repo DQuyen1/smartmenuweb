@@ -202,7 +202,7 @@ const BrandStaffDetails = () => {
             position: 'relative'
           }}
         >
-          Menu Details
+          Staff Details
         </Typography>
       </Box>
       {isLoading ? (
@@ -224,7 +224,7 @@ const BrandStaffDetails = () => {
                       <Grid item xs={6}>
                         <TextField
                           label="Username"
-                          value={userData?.staffs[0].user.userName}
+                          value={store.user.userName}
                           variant="outlined"
                           fullWidth
                           margin="normal"
@@ -240,7 +240,7 @@ const BrandStaffDetails = () => {
                       <Grid item xs={6}>
                         <TextField
                           label="Store"
-                          value={getRole(userData?.staffs[0].user.role)}
+                          value={getRole(store.user.role)}
                           variant="outlined"
                           fullWidth
                           margin="normal"
@@ -282,7 +282,7 @@ const BrandStaffDetails = () => {
                       <Grid item xs={6}>
                         <TextField
                           label="Email"
-                          value={userData?.staffs[0].user.email}
+                          value={store.user.email}
                           variant="outlined"
                           fullWidth
                           margin="normal"

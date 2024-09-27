@@ -24,7 +24,10 @@ import {
   InputAdornment,
   Typography,
   Divider,
-  TablePagination
+  TablePagination,
+  Snackbar,
+  Alert,
+  DialogContentText
 } from '@mui/material';
 import { Edit, Delete, Add, Visibility } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
@@ -178,12 +181,49 @@ const MyProduct = () => {
     }));
   };
 
-  const handleAddProduct = async () => {
-    if (!validateNewProductData()) {
-      return;
+  // ERROR HANDLING
+  const [errorInput, setErrorInput] = useState('');
+  useEffect(() => {
+    if (newProduct.productName.length < 5 || newProduct.productDescription.length > 50) {
+      setErrorInput('Product name must be 5-50 characters long');
+      setIsSubmitting(false);
+    } else if (newProduct.productDescription.length < 5 || newProduct.productName.length > 200) {
+      setErrorInput('Product description must be 5-200 characters long');
+      setIsSubmitting(false);
+    } else if (newProduct.productPriceCurrency === '') {
+      setErrorInput('Product price currency is required');
+      setIsSubmitting(false);
+    } else {
+      setErrorInput('');
+      if (productImgPath === false) {
+        setIsSubmitting(false);
+      } else {
+        setIsSubmitting(true);
+      }
     }
-    try {
+  }, [newProduct]);
+
+  useEffect(() => {
+    if (productToEdit.productName?.length < 5 || productToEdit.productName?.length > 50) {
+      setErrorInput('Product name must be 5-50 characters long');
+      setIsSubmitting(false);
+    } else if (productToEdit.productDescription?.length < 5 || productToEdit.productDescription?.length > 200) {
+      setErrorInput('Product description must be 5-200 characters long');
+      setIsSubmitting(false);
+    } else if (productToEdit.productPriceCurrency === '') {
+      setErrorInput('Product price currency is required');
+      setIsSubmitting(false);
+    } else {
+      setErrorInput('');
       setIsSubmitting(true);
+    }
+  }, [productToEdit]);
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+
+    try {
+      setIsSubmitting(false);
       const payload = {
         ...newProduct,
         productPriceCurrency: parseFloat(newProduct.productPriceCurrency),
@@ -205,7 +245,7 @@ const MyProduct = () => {
       console.error('Error adding product:', error);
       setError(error.message);
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(true);
     }
   };
 
@@ -218,7 +258,13 @@ const MyProduct = () => {
   };
 
   const handleCloseEditDialog = () => {
-    setProductToEdit(null);
+    setProductToEdit({
+      categoryId: categoryId,
+      productName: '',
+      productDescription: '',
+      productPriceCurrency: '',
+      productImgPath: ''
+    });
     setOpenEditDialog(false);
     setValidationErrors({});
   };
@@ -240,7 +286,7 @@ const MyProduct = () => {
       return;
     }
     try {
-      setIsSubmitting(true);
+      setIsSubmitting(false);
       const payload = {
         ...productToEdit,
         productPriceCurrency: parseFloat(productToEdit.productPriceCurrency),
@@ -255,13 +301,23 @@ const MyProduct = () => {
           categoryId
         }
       });
+
+      
       setProducts(response.data);
-      handleCloseEditDialog();
+
     } catch (error) {
       console.error('Error updating product:', error);
       setError(error.message);
     } finally {
-      setIsSubmitting(false);
+      handleCloseEditDialog();
+      setProductToEdit({
+        categoryId: categoryId,
+        productName: '',
+        productDescription: '',
+        productPriceCurrency: '',
+        productImgPath: ''
+      });
+      setIsSubmitting(true);
     }
   };
 
@@ -311,8 +367,6 @@ const MyProduct = () => {
       formData.append('tags', tags);
       formData.append('folder', folder);
 
-      setIsSubmitting(true);
-
       try {
         const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
           method: 'POST',
@@ -331,45 +385,56 @@ const MyProduct = () => {
           ...prevProduct,
           productImgPath: imageUrl
         }));
-        setProductToEdit((prevProduct) => ({
-          ...prevProduct,
-          productImgPath: imageUrl
-        }));
+        // setProductToEdit((prevProduct) => ({
+        //   ...prevProduct,
+        //   productImgPath: imageUrl
+        // }));
 
         console.log('Result hihi: ', result.secure_url);
       } catch (error) {
         console.error('Error uploading image:', error);
-      } finally {
-        // Set isSubmitting to false after image upload completes
-        setIsSubmitting(false);
       }
     }
   };
 
-  const handleImageUploadLogo = async (event) => {
+  const handleImageUploadEdit = async (event) => {
     const userId = 469;
     const file = event.target.files[0];
     const formData = new FormData();
     const preset_key = 'xdm798lx';
     const folder = `users/${userId}`;
     const tags = `${userId}`;
+
     if (file) {
       formData.append('file', file);
       formData.append('upload_preset', preset_key);
       formData.append('tags', tags);
       formData.append('folder', folder);
-      axios.post('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', formData).then(async (result) => {
-        const imageUrl = result.data.secure_url;
-        // setProductLogoPath(imageUrl);
-        setNewProduct((prevProduct) => ({
-          ...prevProduct
-          // productLogoPath: imageUrl
-        }));
+
+      try {
+        const response = await fetch('https://api.cloudinary.com/v1_1/dchov8fes/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const result = await response.json();
+        const imageUrl = result.secure_url;
+
+        setProductImgPath(imageUrl);
         setProductToEdit((prevProduct) => ({
-          ...prevProduct
-          // productLogoPath: imageUrl
+          ...prevProduct,
+          productImgPath: imageUrl
         }));
-      });
+
+
+        console.log('Result hihi: ', result.secure_url);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
     }
   };
 
@@ -402,6 +467,11 @@ const MyProduct = () => {
     const results = products.filter((product) => product.productName.toLowerCase().includes(searchTerm.toLowerCase()));
     setFilteredProducts(results);
   }, [searchTerm, products]);
+
+  // Snackbar
+  const [errorMessage, setErrorMessage] = React.useState('');
+  const [successMessage, setSuccessMessage] = React.useState('');
+  const [openSnackBar, setOpenSnackBar] = React.useState(false);
 
   return (
     <>
@@ -614,11 +684,14 @@ const MyProduct = () => {
           />
           <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText> */}
         </DialogContent>
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleAddProduct} disabled={isSubmitting}>
+          <Button onClick={(e) => handleAddProduct(e)} disabled={!isSubmitting}>
             Add
           </Button>
         </DialogActions>
@@ -676,7 +749,7 @@ const MyProduct = () => {
             type="file"
             name="productImgFile"
             accept="image/*"
-            onChange={handleImageUpload}
+            onChange={handleImageUploadEdit}
             error={!!validationErrors.productImgPath}
             fullWidth
             margin="dense"
@@ -693,11 +766,14 @@ const MyProduct = () => {
           />
           <FormHelperText error={!!validationErrors.productLogoPath}>{validationErrors.productLogoPath}</FormHelperText> */}
         </DialogContent>
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEditDialog} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleUpdateProduct} disabled={isSubmitting}>
+          <Button onClick={handleUpdateProduct} disabled={!isSubmitting}>
             Update
           </Button>
         </DialogActions>
@@ -717,6 +793,30 @@ const MyProduct = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar error message */}
+      <Box sx={{ width: 500 }}>
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right'
+          }}
+          autoHideDuration={4000}
+          open={openSnackBar}
+          onClose={() => setOpenSnackBar(false)}
+          // message={errorMessage}
+          // key={groupItem.productId}
+        >
+          <Alert
+            onClose={() => setOpenSnackBar(false)}
+            severity={errorMessage === '' ? 'success' : 'error'}
+            variant="filled"
+            sx={{ width: '100%' }}
+          >
+            {errorMessage === '' ? successMessage : errorMessage}
+          </Alert>
+        </Snackbar>
+      </Box>
     </>
   );
 };
