@@ -20,7 +20,8 @@ import {
   Select,
   FormControl,
   InputLabel,
-  TablePagination
+  TablePagination,
+  DialogContentText
 } from '@mui/material';
 import MainCard from 'ui-component/cards/MainCard';
 import { gridSpacing } from 'store/constant';
@@ -58,6 +59,7 @@ const Staff = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [errorInput, setErrorInput] = useState('');
 
   const validateNewUserData = () => {
     const errors = {};
@@ -179,13 +181,44 @@ const Staff = () => {
     setValidationErrors({ ...validationErrors, [e.target.name]: '' });
   };
 
+  useEffect(() => {
+    // Email validation using regular expression
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (newUser.userName.length < 6 || newUser.password.length > 20) {
+      setErrorInput('User name must be between 6 and 20 characters');
+      setIsSubmitting(false);
+    } else if (newUser.password.length < 6 || newUser.password.length > 20) {
+      setErrorInput('Password must be between 6 and 20 characters');
+      setIsSubmitting(false);
+    }     else if (!emailRegex.test(newUser.email)) {
+      setErrorInput('Invalid email format');
+      setIsSubmitting(false);
+    } else if (newUser.email.length < 6 || newUser.email.length > 50) {
+      setErrorInput('Email must be between 6 and 50 characters');
+      setIsSubmitting(false);
+    } else {
+      setErrorInput('');
+      setIsSubmitting(true);
+    }
+
+
+  }, [newUser]);
+
+  // useEffect(() => {
+  //   if (newUser.userName === '' || newUser.password === '' || newUser.email === '' || assignData.storeId === 0) {
+  //     setIsSubmitting(true);
+  //   } else {
+  //     setIsSubmitting(false);
+  //   }
+  // }, [newUser, assignData]);
+
   const handleAssignChange = async (e) => {
     const { name, value } = e.target;
     console.log(value);
     setAssignData({ ...assignData, storeId: value });
     setValidationErrors({ ...validationErrors, [name]: '' });
     setError(null);
-    setIsSubmitting(true);
 
     if (name === 'brandId') {
       const storesForBrand = filteredStores.filter((store) => store.brandId === parseInt(value));
@@ -195,8 +228,11 @@ const Staff = () => {
 
   const handleSubmit = async () => {
     if (!validateNewUserData()) {
+      setIsSubmitting(true);
       return;
     }
+
+    setIsSubmitting(false);
 
     try {
       // Create the new user
@@ -205,9 +241,12 @@ const Staff = () => {
       const userId = response.data.userId;
       setAssignData({ ...assignData, userId });
       setAssignOpen(true);
+      setIsSubmitting(true);
     } catch (err) {
       setError('Error adding user');
+      setIsSubmitting(true);
     } finally {
+      setIsSubmitting(true);
       setIsLoading(false);
       handleClose();
     }
@@ -230,22 +269,24 @@ const Staff = () => {
     // if (!validateAssignData()) {
     //   return;
     // }
-    setIsSubmitting(false);
+    setIsSubmitting(true);
 
     const existingAssignment = await checkExistingAssignment();
     if (existingAssignment) {
       setError('This store already has a Store Manager assigned');
-      setIsSubmitting(true);
+      setIsSubmitting(false);
       return;
     }
 
+    const brandId = localStorage.getItem('brandId');
     const data = {
+      brandId: brandId,
       userId: assignData.userId,
       storeId: assignData.storeId
     };
 
     axios
-      .put(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs/${assignData.brandStaffId}`, data)
+      .post(`https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/BrandStaffs`, data)
       .then((response) => {
         Toastify({
           text: 'Assigned staff successfully!',
@@ -257,7 +298,7 @@ const Staff = () => {
         fetchData();
         console.log('Response:', response.data);
         handleAssignClose();
-        setIsSubmitting(true);
+        setIsSubmitting(false);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -387,7 +428,7 @@ const Staff = () => {
         <Grid item xs={12}>
           <Box justifyContent="space-between" alignItems="center">
             <TextField label="Search" variant="outlined" value={searchTerm} onChange={handleSearchChange} sx={{ marginBottom: '16px' }} />
-            <FormControl sx={{ marginLeft: '1rem' }}>
+            {/* <FormControl sx={{ marginLeft: '1rem' }}>
               <InputLabel id="roleSelect">Role</InputLabel>
               <Select
                 labelId="roleSelect"
@@ -401,7 +442,7 @@ const Staff = () => {
                 <MenuItem value={1}>Brand Manager</MenuItem>
                 <MenuItem value={2}>Store Manager</MenuItem>
               </Select>
-            </FormControl>
+            </FormControl> */}
             <FormControl sx={{ marginLeft: '1rem' }}>
               <InputLabel id="storeSelect">Store</InputLabel>
               <Select labelId="storeSelect" sx={{ minWidth: '210px' }} id="storeSelect" defaultValue={0} onChange={handleChangeStoreSelect}>
@@ -436,91 +477,94 @@ const Staff = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredBrandData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((brand) => (
-                      <TableRow key={brand.user.userId} hover>
-                        <TableCell>{brand.user.role === 1 ? 'Brand Manager' : 'Store Manager'}</TableCell>
-                        <TableCell>{brand.user.userName}</TableCell>
-                        <TableCell>{brand.user.email}</TableCell>
-                        {brand.storeId === null && brand.user.isDeleted === false ? (
+                    {filteredBrandData
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .filter((brand) => brand.user.role !== 1)
+                      .map((brand) => (
+                        <TableRow key={brand.user.userId} hover>
+                          <TableCell>{brand.user.role === 1 ? 'Brand Manager' : 'Store Manager'}</TableCell>
+                          <TableCell>{brand.user.userName}</TableCell>
+                          <TableCell>{brand.user.email}</TableCell>
+                          {brand.storeId === null && brand.user.isDeleted === false ? (
+                            <TableCell>
+                              <Button
+                                size="small"
+                                sx={{ color: 'white' }}
+                                color="success"
+                                onClick={() => handleAssignOpen(brand)}
+                                variant="contained"
+                              >
+                                Assign
+                              </Button>
+                            </TableCell>
+                          ) : (
+                            <TableCell>
+                              {stores.filter((store) => store.storeId === brand.storeId).map((store) => store.storeName) || 'N/A'}
+                            </TableCell>
+                          )}
                           <TableCell>
                             <Button
+                              variant="outlined"
+                              color="info"
                               size="small"
-                              sx={{ color: 'white' }}
-                              color="success"
-                              onClick={() => handleAssignOpen(brand)}
-                              variant="contained"
+                              onClick={() => handleViewDetails(brand)}
+                              startIcon={<Visibility />}
+                              sx={{
+                                color: 'info.main',
+                                borderColor: 'info.main',
+                                '&:hover': {
+                                  backgroundColor: 'info.light'
+                                },
+                                marginRight: '0.5rem'
+                              }}
                             >
-                              Assign
+                              View Details
                             </Button>
-                          </TableCell>
-                        ) : (
-                          <TableCell>
-                            {stores.filter((store) => store.storeId === brand.storeId).map((store) => store.storeName) || 'N/A'}
-                          </TableCell>
-                        )}
-                        <TableCell>
-                          <Button
-                            variant="outlined"
-                            color="info"
-                            size="small"
-                            onClick={() => handleViewDetails(brand)}
-                            startIcon={<Visibility />}
-                            sx={{
-                              color: 'info.main',
-                              borderColor: 'info.main',
-                              '&:hover': {
-                                backgroundColor: 'info.light'
-                              },
-                              marginRight: '0.5rem'
-                            }}
-                          >
-                            View Details
-                          </Button>
-                          {/* <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
+                            {/* <Button size="small" color="error" onClick={() => handleDeleteOpen(staff)} variant="contained">
                             Disable
                           </Button> */}
-                          <Button
-                            variant="outlined"
-                            color="error"
-                            size="small"
-                            onClick={() => handleDeleteOpen(brand)}
-                            startIcon={<Delete />}
-                            sx={{
-                              color: 'error.main',
-                              borderColor: 'error.main',
-                              '&:hover': {
-                                backgroundColor: 'error.light'
-                              }
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => handleDeleteOpen(brand)}
+                              startIcon={<Delete />}
+                              sx={{
+                                color: 'error.main',
+                                borderColor: 'error.main',
+                                '&:hover': {
+                                  backgroundColor: 'error.light'
+                                }
+                              }}
+                            >
+                              Delete
+                            </Button>
+                          </TableCell>
+
+                          <Dialog
+                            open={openDeleteDialog[brand.brandStaffId] || false}
+                            onClose={() => {
+                              setOpenDeleteDialog({ ...openDeleteDialog, [brand.brandStaffId]: false }), setIsSubmitting(false);
                             }}
                           >
-                            Delete
-                          </Button>
-                        </TableCell>
+                            <DialogTitle sx={{ minWidth: '15rem' }} variant="h3">
+                              Delete
+                            </DialogTitle>
+                            <DialogContent>
+                              Delete brand staff <b>{brand.user.userName}</b>
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={() => setOpenDeleteDialog(false)} color="secondary">
+                                Cancel
+                              </Button>
 
-                        <Dialog
-                          open={openDeleteDialog[brand.brandStaffId] || false}
-                          onClose={() => {
-                            setOpenDeleteDialog({ ...openDeleteDialog, [brand.brandStaffId]: false }), setIsSubmitting(false);
-                          }}
-                        >
-                          <DialogTitle sx={{ minWidth: '15rem' }} variant="h3">
-                            Delete
-                          </DialogTitle>
-                          <DialogContent>
-                            Delete brand staff <b>{brand.user.userName}</b>
-                          </DialogContent>
-                          <DialogActions>
-                            <Button onClick={() => setOpenDeleteDialog(false)} color="secondary">
-                              Cancel
-                            </Button>
-
-                            <Button onClick={(e) => handleSubmitDeleteBrandStaff(e)} disabled={isSubmitting}>
-                              OK
-                            </Button>
-                          </DialogActions>
-                        </Dialog>
-                      </TableRow>
-                    ))}
+                              <Button onClick={(e) => handleSubmitDeleteBrandStaff(e)} disabled={isSubmitting}>
+                                OK
+                              </Button>
+                            </DialogActions>
+                          </Dialog>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -575,11 +619,14 @@ const Staff = () => {
                     required
                   />
                 </DialogContent>
+                <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+                  <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+                </DialogContent>
                 <DialogActions>
                   <Button onClick={handleClose} color="secondary">
                     Cancel
                   </Button>
-                  <Button onClick={handleSubmit} color="primary">
+                  <Button onClick={handleSubmit} color="primary" disabled={!isSubmitting}>
                     Submit
                   </Button>
                 </DialogActions>

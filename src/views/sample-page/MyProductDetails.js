@@ -147,6 +147,7 @@ const MyProductDetails = () => {
             `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices?productId=${productData.productId}`
           );
           setProductSizePrices(response.data);
+          console.log(response.data);
         } catch (error) {
           console.error('Error fetching product size prices:', error);
         }
