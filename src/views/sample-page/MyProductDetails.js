@@ -256,8 +256,8 @@ const MyProductDetails = () => {
               </Box> */}
               <Grid item xs={6}>
                 <TextField
-                  label="Category"
-                  value={getCategoryName(productData.categoryId)}
+                  label="Product Name"
+                  value={productData.productName}
                   variant="outlined"
                   fullWidth
                   margin="normal"
@@ -272,8 +272,8 @@ const MyProductDetails = () => {
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  label="Product Name"
-                  value={productData.productName}
+                  label="Category"
+                  value={getCategoryName(productData.categoryId)}
                   variant="outlined"
                   fullWidth
                   margin="normal"
