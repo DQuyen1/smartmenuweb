@@ -165,272 +165,272 @@ function Template() {
     box_item_service.deleteBoxItem(boxItemId);
   };
 
-  // const handleDimensionChange = (e, type) => {
-  //   let value = e.target.value;
-
-  //   // Allow both commas and dots in the input without changing the display value
-  //   // Only replace for parsing
-  //   const normalizedValue = value.replace(/,/g, '.'); // Replace commas with dots for parsing
-  //   let parsedValue = parseFloat(normalizedValue);
-
-  //   // If parsed value is NaN, we should stop further processing
-  //   if (isNaN(parsedValue)) {
-  //     return; // Exit if the value is not a number
-  //   }
-
-  //   let element = editor.canvas.getActiveObject();
-  //   if (!element) return; // Exit if no object is selected
-
-  //   // Apply constraints only if the selected element is of type 'text'
-  //   let isValid = true;
-
-  //   if (element.type === 'image') {
-  //     const originalWidth = element.originalWidth; // Use original dimensions
-  //     const originalHeight = element.originalHeight;
-
-  //     switch (type) {
-  //       case 'width':
-  //         element.scaleX = parsedValue / originalWidth; // Update scale
-  //         break;
-  //       case 'height':
-  //         element.scaleY = parsedValue / originalHeight; // Update scale
-  //         break;
-  //       case 'positionX':
-  //         element.left = parsedValue;
-  //         break;
-  //       case 'positionY':
-  //         element.top = parsedValue;
-  //         break;
-  //       default:
-  //         break;
-  //     }
-
-  //     // Update the width and height properties accordingly
-  //     // element.set({
-  //     //   width: newWidth,
-  //     //   height: newHeight
-  //     // });
-  //   }
-
-  //   if (element.type === 'text') {
-  //     const renderLayerBounds = {
-  //       left: selectedRect.left, // Render layer's top-left X position
-  //       top: selectedRect.top, // Render layer's top-left Y position
-  //       right: selectedRect.left + selectedRect.width, // Render layer's width
-  //       bottom: selectedRect.top + selectedRect.height // Render layer's height
-  //     };
-
-  //     let newPositionX = element.left;
-  //     let newPositionY = element.top;
-  //     let newWidth = element.width;
-  //     let newHeight = element.height;
-
-  //     switch (type) {
-  //       case 'width':
-  //         newWidth = parsedValue;
-  //         if (newPositionX + newWidth > renderLayerBounds.right) {
-  //           showToast('Width exceeds the render layer bounds!');
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'height':
-  //         newHeight = parsedValue;
-  //         if (newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           showToast('Height exceeds the render layer bounds!');
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionX':
-  //         newPositionX = parsedValue;
-  //         if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-  //           showToast('X position exceeds the render layer bounds!');
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       case 'positionY':
-  //         newPositionY = parsedValue;
-  //         if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-  //           showToast('Y position exceeds the render layer bounds!');
-  //           isValid = false;
-  //         }
-  //         break;
-
-  //       default:
-  //         break;
-  //     }
-  //   }
-
-  //   // Update the UI input and object properties regardless of type
-  //   switch (type) {
-  //     case 'width':
-  //       setWidth(parsedValue);
-  //       if (isValid || element.type !== 'text') element.set({ scaleX: 1 });
-  //       element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'height':
-  //       setHeight(parsedValue);
-  //       if (isValid || element.type !== 'text') element.set({ scaleY: 1 });
-  //       element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionX':
-  //       setPositionX(parsedValue);
-  //       if (isValid || element.type !== 'text') element.set('left', parsedValue); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     case 'positionY':
-  //       setPositionY(parsedValue);
-  //       if (isValid || element.type !== 'text') element.set('top', parsedValue); // Apply to all, but check constraints for 'text'
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   editor.canvas.renderAll(); // Re-render the canvas
-  // };
-
   const handleDimensionChange = (e, type) => {
     let value = e.target.value;
 
-    // Normalize input to handle both commas and dots
-    const normalizedValue = value.replace(/,/g, '.');
+    // Allow both commas and dots in the input without changing the display value
+    // Only replace for parsing
+    const normalizedValue = value.replace(/,/g, '.'); // Replace commas with dots for parsing
     let parsedValue = parseFloat(normalizedValue);
 
-    // Update the input field (this allows the user to type normally)
+    // If parsed value is NaN, we should stop further processing
+    if (isNaN(parsedValue)) {
+      return; // Exit if the value is not a number
+    }
+
+    let element = editor.canvas.getActiveObject();
+    if (!element) return; // Exit if no object is selected
+
+    // Apply constraints only if the selected element is of type 'text'
+    let isValid = true;
+
+    if (element.type === 'image') {
+      const originalWidth = element.originalWidth; // Use original dimensions
+      const originalHeight = element.originalHeight;
+
+      switch (type) {
+        case 'width':
+          element.scaleX = parsedValue / originalWidth; // Update scale
+          break;
+        case 'height':
+          element.scaleY = parsedValue / originalHeight; // Update scale
+          break;
+        case 'positionX':
+          element.left = parsedValue;
+          break;
+        case 'positionY':
+          element.top = parsedValue;
+          break;
+        default:
+          break;
+      }
+
+      // Update the width and height properties accordingly
+      // element.set({
+      //   width: newWidth,
+      //   height: newHeight
+      // });
+    }
+
+    if (element.type === 'text') {
+      const renderLayerBounds = {
+        left: selectedRect.left, // Render layer's top-left X position
+        top: selectedRect.top, // Render layer's top-left Y position
+        right: selectedRect.left + selectedRect.width, // Render layer's width
+        bottom: selectedRect.top + selectedRect.height // Render layer's height
+      };
+
+      let newPositionX = element.left;
+      let newPositionY = element.top;
+      let newWidth = element.width;
+      let newHeight = element.height;
+
+      switch (type) {
+        case 'width':
+          newWidth = parsedValue;
+          if (newPositionX + newWidth > renderLayerBounds.right) {
+            showToast('Width exceeds the render layer bounds!');
+            isValid = false;
+          }
+          break;
+
+        case 'height':
+          newHeight = parsedValue;
+          if (newPositionY + newHeight > renderLayerBounds.bottom) {
+            showToast('Height exceeds the render layer bounds!');
+            isValid = false;
+          }
+          break;
+
+        case 'positionX':
+          newPositionX = parsedValue;
+          if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
+            showToast('X position exceeds the render layer bounds!');
+            isValid = false;
+          }
+          break;
+
+        case 'positionY':
+          newPositionY = parsedValue;
+          if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
+            showToast('Y position exceeds the render layer bounds!');
+            isValid = false;
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    // Update the UI input and object properties regardless of type
     switch (type) {
       case 'width':
-        setWidth(value); // Update state with current input
+        setWidth(parsedValue);
+        if (isValid || element.type !== 'text') element.set({ scaleX: 1 });
+        element.set('width', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'height':
-        setHeight(value);
+        setHeight(parsedValue);
+        if (isValid || element.type !== 'text') element.set({ scaleY: 1 });
+        element.set('height', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionX':
-        setPositionX(value);
+        setPositionX(parsedValue);
+        if (isValid || element.type !== 'text') element.set('left', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       case 'positionY':
-        setPositionY(value);
+        setPositionY(parsedValue);
+        if (isValid || element.type !== 'text') element.set('top', parsedValue); // Apply to all, but check constraints for 'text'
         break;
       default:
         break;
     }
 
-    // Prevent further processing if the input is invalid
-    if (isNaN(parsedValue)) return;
-
-    const element = editor.canvas.getActiveObject();
-    if (!element) return; // Exit if no object is selected
-
-    const handleKeyDown = (event) => {
-      if (event.key === 'Enter') {
-        let isValid = true;
-
-        if (element.type === 'image') {
-          const originalWidth = element.originalWidth;
-          const originalHeight = element.originalHeight;
-
-          switch (type) {
-            case 'width':
-              element.scaleX = parsedValue / originalWidth;
-              break;
-            case 'height':
-              element.scaleY = parsedValue / originalHeight;
-              break;
-            case 'positionX':
-              element.left = parsedValue;
-              break;
-            case 'positionY':
-              element.top = parsedValue;
-              break;
-            default:
-              break;
-          }
-        }
-
-        if (element.type === 'text') {
-          const renderLayerBounds = {
-            left: selectedRect.left,
-            top: selectedRect.top,
-            right: selectedRect.left + selectedRect.width,
-            bottom: selectedRect.top + selectedRect.height
-          };
-
-          let newPositionX = element.left;
-          let newPositionY = element.top;
-          let newWidth = element.width;
-          let newHeight = element.height;
-
-          switch (type) {
-            case 'width':
-              newWidth = parsedValue;
-              if (newPositionX + newWidth > renderLayerBounds.right) {
-                showToast('Width exceeds the render layer bounds!');
-                isValid = false;
-              }
-              break;
-
-            case 'height':
-              newHeight = parsedValue;
-              if (newPositionY + newHeight > renderLayerBounds.bottom) {
-                showToast('Height exceeds the render layer bounds!');
-                isValid = false;
-              }
-              break;
-
-            case 'positionX':
-              newPositionX = parsedValue;
-              if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
-                showToast('X position exceeds the render layer bounds!');
-                isValid = false;
-              }
-              break;
-
-            case 'positionY':
-              newPositionY = parsedValue;
-              if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
-                showToast('Y position exceeds the render layer bounds!');
-                isValid = false;
-              }
-              break;
-
-            default:
-              break;
-          }
-        }
-
-        // Update the object properties and render canvas if valid
-        if (isValid || element.type !== 'text') {
-          switch (type) {
-            case 'width':
-              element.set('width', parsedValue);
-              if (element.type !== 'text') element.set({ scaleX: 1 });
-              break;
-            case 'height':
-              element.set('height', parsedValue);
-              if (element.type !== 'text') element.set({ scaleY: 1 });
-              break;
-            case 'positionX':
-              element.set('left', parsedValue);
-              break;
-            case 'positionY':
-              element.set('top', parsedValue);
-              break;
-            default:
-              break;
-          }
-          editor.canvas.renderAll();
-        }
-      }
-    };
-
-    // Add the keydown event listener for Enter key
-    document.addEventListener('keydown', handleKeyDown);
-
-    // Cleanup event listener
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
+    editor.canvas.renderAll(); // Re-render the canvas
   };
+
+  // const handleDimensionChange = (e, type) => {
+  //   let value = e.target.value;
+
+  //   // Normalize input to handle both commas and dots
+  //   const normalizedValue = value.replace(/,/g, '.');
+  //   let parsedValue = parseFloat(normalizedValue);
+
+  //   // Update the input field (this allows the user to type normally)
+  //   switch (type) {
+  //     case 'width':
+  //       setWidth(value); // Update state with current input
+  //       break;
+  //     case 'height':
+  //       setHeight(value);
+  //       break;
+  //     case 'positionX':
+  //       setPositionX(value);
+  //       break;
+  //     case 'positionY':
+  //       setPositionY(value);
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+  //   // Prevent further processing if the input is invalid
+  //   if (isNaN(parsedValue)) return;
+
+  //   const element = editor.canvas.getActiveObject();
+  //   if (!element) return; // Exit if no object is selected
+
+  //   const handleKeyDown = (event) => {
+  //     if (event.key === 'Enter') {
+  //       let isValid = true;
+
+  //       if (element.type === 'image') {
+  //         const originalWidth = element.originalWidth;
+  //         const originalHeight = element.originalHeight;
+
+  //         switch (type) {
+  //           case 'width':
+  //             element.scaleX = parsedValue / originalWidth;
+  //             break;
+  //           case 'height':
+  //             element.scaleY = parsedValue / originalHeight;
+  //             break;
+  //           case 'positionX':
+  //             element.left = parsedValue;
+  //             break;
+  //           case 'positionY':
+  //             element.top = parsedValue;
+  //             break;
+  //           default:
+  //             break;
+  //         }
+  //       }
+
+  //       if (element.type === 'text') {
+  //         const renderLayerBounds = {
+  //           left: selectedRect.left,
+  //           top: selectedRect.top,
+  //           right: selectedRect.left + selectedRect.width,
+  //           bottom: selectedRect.top + selectedRect.height
+  //         };
+
+  //         let newPositionX = element.left;
+  //         let newPositionY = element.top;
+  //         let newWidth = element.width;
+  //         let newHeight = element.height;
+
+  //         switch (type) {
+  //           case 'width':
+  //             newWidth = parsedValue;
+  //             if (newPositionX + newWidth > renderLayerBounds.right) {
+  //               showToast('Width exceeds the render layer bounds!');
+  //               isValid = false;
+  //             }
+  //             break;
+
+  //           case 'height':
+  //             newHeight = parsedValue;
+  //             if (newPositionY + newHeight > renderLayerBounds.bottom) {
+  //               showToast('Height exceeds the render layer bounds!');
+  //               isValid = false;
+  //             }
+  //             break;
+
+  //           case 'positionX':
+  //             newPositionX = parsedValue;
+  //             if (newPositionX < renderLayerBounds.left || newPositionX + newWidth > renderLayerBounds.right) {
+  //               showToast('X position exceeds the render layer bounds!');
+  //               isValid = false;
+  //             }
+  //             break;
+
+  //           case 'positionY':
+  //             newPositionY = parsedValue;
+  //             if (newPositionY < renderLayerBounds.top || newPositionY + newHeight > renderLayerBounds.bottom) {
+  //               showToast('Y position exceeds the render layer bounds!');
+  //               isValid = false;
+  //             }
+  //             break;
+
+  //           default:
+  //             break;
+  //         }
+  //       }
+
+  //       // Update the object properties and render canvas if valid
+  //       if (isValid || element.type !== 'text') {
+  //         switch (type) {
+  //           case 'width':
+  //             element.set('width', parsedValue);
+  //             if (element.type !== 'text') element.set({ scaleX: 1 });
+  //             break;
+  //           case 'height':
+  //             element.set('height', parsedValue);
+  //             if (element.type !== 'text') element.set({ scaleY: 1 });
+  //             break;
+  //           case 'positionX':
+  //             element.set('left', parsedValue);
+  //             break;
+  //           case 'positionY':
+  //             element.set('top', parsedValue);
+  //             break;
+  //           default:
+  //             break;
+  //         }
+  //         editor.canvas.renderAll();
+  //       }
+  //     }
+  //   };
+
+  //   // Add the keydown event listener for Enter key
+  //   document.addEventListener('keydown', handleKeyDown);
+
+  //   // Cleanup event listener
+  //   return () => {
+  //     document.removeEventListener('keydown', handleKeyDown);
+  //   };
+  // };
 
   // Helper function to show toast notifications
   const showToast = (message) => {
@@ -504,7 +504,7 @@ function Template() {
     try {
       const images = await cloudinary_service.getAllImages(tag);
 
-      console.log('images: ', images);
+      //console.log('images: ', images);
       // setAssetImage(images);
 
       return images;
@@ -519,7 +519,7 @@ function Template() {
       setFonts(value); // Update fonts state with the fetched value
       // console.log('Updated fonts: ', value);
 
-      console.log('Updated fonts: ', value);
+      //onsole.log('Updated fonts: ', value);
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
@@ -631,7 +631,7 @@ function Template() {
   // };
 
   useEffect(() => {
-    console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
+    //console.log('api key: ', process.env.REACT_APP_PRESET_KEY);
 
     getAssetImages('asset/images');
 
@@ -1417,8 +1417,7 @@ function Template() {
       // editor.canvas.renderAll();
 
       editor.canvas.preserveObjectStacking = true;
-      //loadCanvas(420);
-      //loadAllText();
+      //loadCanvas(templateId);
     }
   }, [editor]);
 
