@@ -8,7 +8,7 @@ class cloudinaryService {
 
     try {
       const response = await axios.get(url);
-      console.log(tag);
+      //console.log(tag);
       const data = response.data;
       // console.log('Data service: ', data);
       //   console.log('Response get image:', JSON.stringify(response.data));
