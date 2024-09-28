@@ -28,6 +28,8 @@ class layerService {
 
     let backgroundImage = null;
 
+    let textBox = [];
+
     try {
       const response = await axios.get(
         `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/Templates/Layers?templateId=${templateId}&pageNumber=1&pageSize=100`
@@ -140,6 +142,9 @@ class layerService {
 
           let fontStyle = canvasFeature.getFontStyle(textStyle.fontStyle);
 
+          // let scaleX = 1;
+          // let scaleY = 1;
+
           const canvasText = new CanvasText(
             textStyle.angle ? textStyle.angle : 0,
             backgroundColor,
@@ -148,11 +153,12 @@ class layerService {
             textStyle.textColor ? textStyle.textColor : 'black',
             // fill,
             fontFamily,
-            textStyle.fontSize ? textStyle.fontSize : 30,
+            textStyle.fontSize ? parseInt(textStyle.fontSize, 10) : 30,
             height,
             left,
             textStyle.transparency ? textStyle.transparency : 1,
-            //opacity,
+            // scaleX,
+            // scaleY,
             text,
             top,
             type,
@@ -164,8 +170,8 @@ class layerService {
           );
 
           console.log('canvas text info: ', canvasText);
-
-          myCanvas.objects.push(canvasText);
+          textBox.push(canvasText);
+          //myCanvas.objects.push(canvasText);
         } else if (layer.layerType == 3) {
           console.log('this is render layer content product content');
           if (layer.boxes[0].boxType == 1) {
@@ -219,6 +225,9 @@ class layerService {
 
               let fontStyle = canvasFeature.getFontStyle(textStyle.fontStyle);
 
+              // let scaleX = 1;
+              // let scaleY = 1;
+
               //let fontFamily = canvasFeature.getFontFamilyName(textStyle.bFontId);
 
               const productContent = new CanvasText(
@@ -228,10 +237,12 @@ class layerService {
                 boxItemId,
                 textStyle.textColor ? textStyle.textColor : 'black',
                 fontFamily,
-                fontSize,
+                parseInt(fontSize, 10),
                 height,
                 left,
                 textStyle.transparency ? textStyle.transparency : 1,
+                // scaleX,
+                // scaleY,
                 text,
                 top,
                 type,
@@ -243,8 +254,8 @@ class layerService {
               );
 
               // console.log('product content info: ', productContent);
-
-              myCanvas.objects.push(productContent);
+              textBox.push(productContent);
+              //myCanvas.objects.push(productContent);
             });
           }
         }
@@ -252,7 +263,7 @@ class layerService {
 
       console.log('my canvas: ', myCanvas);
 
-      return { canvasJson: JSON.stringify(myCanvas), backgroundImage };
+      return { canvasJson: JSON.stringify(myCanvas), backgroundImage, textBox };
     } catch (error) {
       console.log('Error message: ' + error.message);
     }
