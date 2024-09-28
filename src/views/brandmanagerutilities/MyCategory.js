@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { AddCircleOutlined, Visibility, Delete, Edit } from '@mui/icons-material';
+import { edit } from '@cloudinary/url-gen/actions/animated';
 
 const MyCategory = () => {
   const [categoryData, setCategoryData] = useState([]);
@@ -50,6 +51,8 @@ const MyCategory = () => {
     isDeleted: false
   });
   const [validationErrors, setValidationErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorInput, setErrorInput] = useState('');
 
   const validateNewCategoryData = () => {
     const errors = {};
@@ -73,12 +76,33 @@ const MyCategory = () => {
     return categoryData.some((category) => category.categoryName.toLowerCase() === categoryName.toLowerCase());
   };
 
-  const handleAddCategory = async () => {
-    if (!validateNewCategoryData()) {
-      return;
+  useEffect(() => {
+    if (newCategoryData.categoryName.length < 5 || newCategoryData.categoryName.length > 50) {
+      setErrorInput('Category name must be 5-50 characters long');
+      setIsSubmitting(false);
+    } else {
+      setErrorInput('');
+      setIsSubmitting(true);
     }
+
+  }, [newCategoryData]);
+
+  useEffect(() => {
+    if (editCategoryData.categoryName.length < 5 || editCategoryData.categoryName.length > 50) {
+      setErrorInput('Category name must be 5-50 characters long');
+      setIsSubmitting(false);
+    } else {
+      setErrorInput('');
+      setIsSubmitting(true);
+    }
+
+  }, [editCategoryData]);
+
+  const handleAddCategory = async () => {
+    setIsSubmitting(false);
     if (isDuplicateCategoryName(newCategoryData.categoryName)) {
-      setValidationErrors({ categoryName: 'Category name already exists' });
+      setErrorInput('Category name already exists');
+      setIsSubmitting(true);
       return;
     }
     try {
@@ -98,6 +122,7 @@ const MyCategory = () => {
         fetchCategoryData(); // Refresh category list
         setOpenSnackbar(true);
         setSnackbarMessage('Category added successfully!');
+        setErrorInput('');
       } else {
         console.error('Error creating category:', response);
         setError(response.statusText);
@@ -109,11 +134,10 @@ const MyCategory = () => {
   };
 
   const handleEditCategory = async () => {
-    if (!validateEditCategoryData()) {
-      return;
-    }
-    if (isDuplicateCategoryName(editCategoryData.categoryName)) {
-      setValidationErrors({ categoryName: 'Category name already exists' });
+    setIsSubmitting(false);
+    if (isDuplicateCategoryName(newCategoryData.categoryName)) {
+      setErrorInput('Category name already exists');
+      setIsSubmitting(true);
       return;
     }
     try {
@@ -132,6 +156,7 @@ const MyCategory = () => {
         fetchCategoryData();
         setOpenSnackbar(true);
         setSnackbarMessage('Category updated successfully!');
+        setErrorInput('');
       } else {
         console.error('Error updating category:', response);
         setError(response.statusText);
@@ -311,6 +336,7 @@ const MyCategory = () => {
                   whiteSpace: 'nowrap' // Prevent text from wrapping
                 }}
                 size="small"
+                disabled={isLoading}
               >
                 Add Category
               </Button>
@@ -417,6 +443,8 @@ const MyCategory = () => {
       >
         <Alert severity={snackbarMessage ? 'success' : 'error'}>{snackbarMessage}</Alert>
       </Snackbar>
+
+      {/* Add Category Dialog */}
       <Dialog
         open={showAddCategoryDialog}
         onClose={handleCloseAddCategoryDialog}
@@ -440,15 +468,20 @@ const MyCategory = () => {
             helperText={validationErrors.categoryName}
           />
         </DialogContent>
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddCategoryDialog} color="secondary">
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleAddCategory}>
+          <Button variant="contained" onClick={handleAddCategory} disabled={!isSubmitting}>
             Add Category
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Category Dialog */}
       <Dialog
         open={showEditCategoryDialog}
         onClose={handleCloseEditCategoryDialog}
@@ -473,11 +506,14 @@ const MyCategory = () => {
             helperText={validationErrors.categoryName}
           />
         </DialogContent>
+        <DialogContent sx={{ minHeight: '46.67px', minWidth: '432px', padding: '0px 24px' }}>
+          <DialogContentText>{errorInput && <p style={{ color: 'red' }}>{errorInput}</p>}</DialogContentText>
+        </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseEditCategoryDialog} color="secondary">
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleEditCategory}>
+          <Button variant="contained" onClick={handleEditCategory} disabled={!isSubmitting}>
             Save Changes
           </Button>
         </DialogActions>

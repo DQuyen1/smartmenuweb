@@ -147,6 +147,7 @@ const MyProductDetails = () => {
             `https://ec2-3-1-81-96.ap-southeast-1.compute.amazonaws.com/api/ProductSizePrices?productId=${productData.productId}`
           );
           setProductSizePrices(response.data);
+          console.log(response.data);
         } catch (error) {
           console.error('Error fetching product size prices:', error);
         }
@@ -256,8 +257,8 @@ const MyProductDetails = () => {
               </Box> */}
               <Grid item xs={6}>
                 <TextField
-                  label="Category"
-                  value={getCategoryName(productData.categoryId)}
+                  label="Product Name"
+                  value={productData.productName}
                   variant="outlined"
                   fullWidth
                   margin="normal"
@@ -272,8 +273,8 @@ const MyProductDetails = () => {
               </Grid>
               <Grid item xs={6}>
                 <TextField
-                  label="Product Name"
-                  value={productData.productName}
+                  label="Category"
+                  value={getCategoryName(productData.categoryId)}
                   variant="outlined"
                   fullWidth
                   margin="normal"

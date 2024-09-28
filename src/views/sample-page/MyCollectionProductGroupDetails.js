@@ -917,7 +917,7 @@ const MyCollectionProductGroupDetails = ({ collectionDataId }) => {
                                   minWidth: '100px',
                                   maxHeight: '150px',
                                   minHeight: '150px',
-                                  objectFit: 'fill'
+                                  objectFit: 'contain'
                                 }}
                               />
                             </a>
