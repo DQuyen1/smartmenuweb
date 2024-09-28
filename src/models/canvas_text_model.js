@@ -84,8 +84,8 @@ class CanvasText {
     // // this.pathAlign = pathAlign;
     // // this.pathSide = pathSide;
     // // this.pathStartOffset = pathStartOffset;
-    // // this.scaleX = scaleX;
-    // // this.scaleY = scaleY;
+    // this.scaleX = scaleX;
+    // this.scaleY = scaleY;
     // // this.shadow = shadow;
     // // this.skewX = skewX;
     // // this.skewY = skewY;
