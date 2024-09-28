@@ -3161,7 +3161,7 @@ function Template() {
       // fontFamily: 'Arial',
       // fontStyle: 'normal',
       // textAlign: 'left',
-      opacity: 100,
+      // opacity: 1,
       productCounter: 1,
       editable: false,
       bFontId: 14
