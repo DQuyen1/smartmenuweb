@@ -2795,58 +2795,64 @@ function Template() {
       const layerItemValue = `https://res.cloudinary.com/dchov8fes/image/upload/v1722891805/${public_id}`;
 
       // Add the image to Fabric.js first
-      fabric.Image.fromURL(layerItemValue, async (img) => {
-        try {
-          // Set properties for the Fabric.js image object
-          let myImg = img.set({
-            left: 100, // Adjust as necessary
-            top: 100, // Adjust as necessary
-            angle: 0,
-            scaleX: 0.5,
-            scaleY: 0.5,
-            selectable: true // Ensure the image is selectable
-          });
+      fabric.Image.fromURL(
+        layerItemValue,
+        async (img) => {
+          try {
+            // Set properties for the Fabric.js image object
+            let myImg = img.set({
+              left: 100, // Adjust as necessary
+              top: 100, // Adjust as necessary
+              angle: 0,
+              scaleX: 0.5,
+              scaleY: 0.5,
+              selectable: true // Ensure the image is selectable
+            });
 
-          // Add image to the canvas
-          editor.canvas.add(myImg);
-          editor.canvas.renderAll();
+            // Add image to the canvas
+            editor.canvas.add(myImg);
+            editor.canvas.renderAll();
 
-          // Calculate width, height, and position
-          let width = myImg.getScaledWidth();
-          let height = myImg.getScaledHeight();
-          let positionX = myImg.left;
-          let positionY = myImg.top;
+            // Calculate width, height, and position
+            let width = myImg.getScaledWidth();
+            let height = myImg.getScaledHeight();
+            let positionX = myImg.left;
+            let positionY = myImg.top;
 
-          // API Calls after the image is added to Fabric.js
-          const result = await createLayer(templateId, 1); // Call API to create a layer
-          const layerItemId = await createLayerItem(result.layerId, layerItemValue); // Create layer item
+            // API Calls after the image is added to Fabric.js
+            const result = await createLayer(templateId, 1); // Call API to create a layer
+            const layerItemId = await createLayerItem(result.layerId, layerItemValue); // Create layer item
 
-          // Create box and box item
-          const boxId = await createBox(result.layerId, positionX, positionY, width, height, 0);
-          const { boxItemId, bFontId } = await createBoxItem(
-            boxId,
-            5,
-            positionX,
-            positionY,
-            width,
-            height,
-            7,
-            JSON.stringify({ transparency: 100 })
-          );
+            // Create box and box item
+            const boxId = await createBox(result.layerId, positionX, positionY, width, height, 0);
+            const { boxItemId, bFontId } = await createBoxItem(
+              boxId,
+              5,
+              positionX,
+              positionY,
+              width,
+              height,
+              7,
+              JSON.stringify({ transparency: 100 })
+            );
 
-          // Attach box, boxItem, and layerItem info to the image object
-          myImg.boxId = boxId;
-          myImg.boxItemId = boxItemId;
-          myImg.layerItemId = layerItemId;
-          myImg.layerId = result.layerId;
+            // Attach box, boxItem, and layerItem info to the image object
+            myImg.boxId = boxId;
+            myImg.boxItemId = boxItemId;
+            myImg.layerItemId = layerItemId;
+            myImg.layerId = result.layerId;
 
-          console.log('boxItemId:', boxItemId);
-          console.log('boxId:', boxId);
-          console.log('layerItemId:', layerItemId);
-        } catch (error) {
-          console.error('Error during image addition or API calls:', error);
+            console.log('boxItemId:', boxItemId);
+            console.log('boxId:', boxId);
+            console.log('layerItemId:', layerItemId);
+          } catch (error) {
+            console.error('Error during image addition or API calls:', error);
+          }
+        },
+        {
+          crossOrigin: 'anonymous'
         }
-      });
+      );
     } catch (error) {
       console.error('Error in clickToImage:', error);
     }
@@ -2858,65 +2864,71 @@ function Template() {
       const layerItemValue = `https://res.cloudinary.com/dchov8fes/image/upload/v1722891805/${public_id}`;
 
       // Add the image to Fabric.js first
-      fabric.Image.fromURL(layerItemValue, async (img) => {
-        try {
-          img.scaleX = editor.canvas.width / img.width;
-          img.scaleY = editor.canvas.height / img.height;
-          // Set properties for the Fabric.js image object
-          let myImg = img.set({
-            selectable: true,
-            hasControls: true,
-            evented: true,
-            lockMovementX: true,
-            lockMovementY: true,
-            lockScalingX: true,
-            lockScalingY: true,
-            lockRotation: true,
-            hasBorders: true,
-            isBackground: true
-          });
+      fabric.Image.fromURL(
+        layerItemValue,
+        async (img) => {
+          try {
+            img.scaleX = editor.canvas.width / img.width;
+            img.scaleY = editor.canvas.height / img.height;
+            // Set properties for the Fabric.js image object
+            let myImg = img.set({
+              selectable: true,
+              hasControls: true,
+              evented: true,
+              lockMovementX: true,
+              lockMovementY: true,
+              lockScalingX: true,
+              lockScalingY: true,
+              lockRotation: true,
+              hasBorders: true,
+              isBackground: true
+            });
 
-          // Add image to the canvas
-          editor.canvas.add(myImg);
-          editor.canvas.sendToBack(img);
-          editor.canvas.renderAll();
+            // Add image to the canvas
+            editor.canvas.add(myImg);
+            editor.canvas.sendToBack(img);
+            editor.canvas.renderAll();
 
-          // Calculate width, height, and position
-          let width = myImg.getScaledWidth();
-          let height = myImg.getScaledHeight();
-          let positionX = myImg.left;
-          let positionY = myImg.top;
+            // Calculate width, height, and position
+            let width = myImg.getScaledWidth();
+            let height = myImg.getScaledHeight();
+            let positionX = myImg.left;
+            let positionY = myImg.top;
 
-          // API Calls after the image is added to Fabric.js
-          const result = await createLayer(templateId, 0); // Call API to create a layer
-          const layerItemId = await createLayerItem(result.layerId, layerItemValue); // Create layer item
+            // API Calls after the image is added to Fabric.js
+            const result = await createLayer(templateId, 0); // Call API to create a layer
+            const layerItemId = await createLayerItem(result.layerId, layerItemValue); // Create layer item
 
-          // Create box and box item
-          const boxId = await createBox(result.layerId, positionX, positionY, width, height, 0);
-          const { boxItemId, bFontId } = await createBoxItem(
-            boxId,
-            5,
-            positionX,
-            positionY,
-            width,
-            height,
-            7,
-            JSON.stringify({ transparency: 100 })
-          );
+            // Create box and box item
+            // const boxId = await createBox(result.layerId, positionX, positionY, width, height, 0);
+            // const { boxItemId, bFontId } = await createBoxItem(
+            //   boxId,
+            //   5,
+            //   positionX,
+            //   positionY,
+            //   width,
+            //   height,
+            //   7,
+            //   JSON.stringify({ transparency: 100 })
+            // );
 
-          // Attach box, boxItem, and layerItem info to the image object
-          myImg.boxId = boxId;
-          myImg.boxItemId = boxItemId;
-          myImg.layerItemId = layerItemId;
-          myImg.layerId = result.layerId;
+            // // Attach box, boxItem, and layerItem info to the image object
+            // myImg.boxId = boxId;
+            // myImg.boxItemId = boxItemId;
+            myImg.layerItemId = layerItemId;
+            myImg.layerId = result.layerId;
 
-          console.log('boxItemId:', boxItemId);
-          console.log('boxId:', boxId);
-          console.log('layerItemId:', layerItemId);
-        } catch (error) {
-          console.error('Error during image addition or API calls:', error);
+            // console.log('boxItemId:', boxItemId);
+            // console.log('boxId:', boxId);
+            console.log('layerItemId:', layerItemId);
+          } catch (error) {
+            console.error('Error during image addition or API calls:', error);
+          }
+        },
+        {
+          crossOrigin: 'anonymous'
         }
-      });
+      );
     } catch (error) {
       console.error('Error in clickToImage:', error);
     }
