@@ -2813,6 +2813,67 @@ function Template() {
             editor.canvas.add(myImg);
             editor.canvas.renderAll();
 
+            myImg.on('mouseup', () => {
+              let adjustedAngle = myImg.angle;
+              if (adjustedAngle > 180) {
+                adjustedAngle -= 360;
+              } else if (adjustedAngle < -180) {
+                adjustedAngle += 360;
+              }
+
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = myImg.getScaledWidth();
+              const scaledHeight = myImg.getScaledHeight();
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+              setPositionX((myImg.left * scaleX).toFixed(1));
+              setPositionY((myImg.top * scaleY).toFixed(1));
+              setRotationAngle(adjustedAngle);
+
+              console.log('Image clicked');
+              setActiveTab('positionSize');
+              setSelectedTool('image');
+            });
+
+            myImg.on('moving', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+              setActiveTab('positionSize');
+              setSelectedTool('rect');
+              setPositionX((myImg.left * scaleX).toFixed(1));
+              setPositionY((myImg.top * scaleY).toFixed(1));
+            });
+
+            myImg.on('scaling', function () {
+              const scaleX = canvasWidth / displayWidth;
+              const scaleY = canvasHeight / displayHeight;
+
+              const scaledWidth = myImg.getScaledWidth();
+              const scaledHeight = myImg.getScaledHeight();
+
+              setActiveTab('positionSize');
+
+              setPositionX((myImg.left * scaleX).toFixed(1));
+              setPositionY((myImg.top * scaleY).toFixed(1));
+
+              setHeight((scaledHeight * scaleX).toFixed(1));
+              setWidth((scaledWidth * scaleY).toFixed(1));
+
+              setIsHeaderVisible(true);
+
+              setSelectedTool('textBox');
+            });
+
+            // Defer canvas-wide mouse:down event listener until after the image is rendered
+            editor.canvas.on('mouse:down', function (options) {
+              setActiveTab(null);
+
+              setSelectedTool(null);
+            });
+
             // Calculate width, height, and position
             let width = myImg.getScaledWidth();
             let height = myImg.getScaledHeight();
@@ -3161,7 +3222,7 @@ function Template() {
       // fontFamily: 'Arial',
       // fontStyle: 'normal',
       // textAlign: 'left',
-      opacity: 100,
+      // opacity: 1,
       productCounter: 1,
       editable: false,
       bFontId: 14
@@ -3750,6 +3811,7 @@ function Template() {
       } else if (adjustedAngle < -180) {
         adjustedAngle += 360;
       }
+      setOpacity(textBox.opacity);
 
       setRotationAngle(adjustedAngle);
 
@@ -3764,7 +3826,7 @@ function Template() {
       setPositionY(textBox.top.toFixed(1));
       setFontSize(convertFabricFontSizeToCanvasFontSize(textBox.fontSize * textBox.scaleX).toFixed(1));
       setIsHeaderVisible(true);
-      setSelectedTool('rect');
+      setSelectedTool('image');
       setActiveTab('positionSize');
     });
 
